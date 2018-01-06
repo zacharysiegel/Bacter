@@ -111,7 +111,7 @@ var ability = {
 		i: 3, 
 		j: 0, 
 		interval: undefined, 
-		speed: 6, 
+		speed: 12, 
 		spores: [], 
 		count: 0, 
 		can: true, 
@@ -270,7 +270,7 @@ function spore() {
 				ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
 				socket.emit('Ability', ability);
 			}
-		}, 40);
+		}, 80);
 		ability.spore.timeout = setTimeout(function() { // End Spore
 			if (ability.spore.value == true && ability.secrete.value == false) { // If secrete() has not been called
 				clearInterval(ability.spore.interval); // Clear interval

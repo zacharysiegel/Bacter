@@ -111,7 +111,6 @@ function newConnection(sockeT) {
 
 	// Verify Password on Join or Spectate
 	sockeT.on('Check Password', function(datA) {
-		console.log(datA, passwords);
 		var confirmed = false;
 		var hasPassword = false;
 		for (let i = 0; i < passwords.length; i++) {
