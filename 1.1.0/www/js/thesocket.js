@@ -18,11 +18,15 @@ function connectSocket() {
 				let host = row.insertCell(1);
 				host.innerHTML = games[i].info.host;
 				host.style.width = '200px';
-				let pop = row.insertCell(2);
-				pop.innerHTML = games[i].players.length;
-				pop.style.width = '100px';
-				pop.style.textAlign = 'center';
-				let join = row.insertCell(3);
+				let players = row.insertCell(2);
+				players.innerHTML = games[i].players.length;
+				players.style.width = '100px';
+				players.style.textAlign = 'center';
+				let spectators = row.insertCell(3);
+				spectators.innerHTML = games[i].spectators.length;
+				spectators.style.width = '100px';
+				spectators.style.textAlign = 'center';
+				let join = row.insertCell(4);
 				join.innerHTML = 'Join';
 				join.style.width = '190px';
 				join.style.textAlign = 'center';
@@ -31,8 +35,11 @@ function connectSocket() {
 				join.addEventListener('mousedown', function() { join.style.backgroundColor = 'rgb(180, 180, 180)'; });
 				join.addEventListener('mouseup', function() { join.style.backgroundColor = baseColor; });
 				join.addEventListener('mouseleave', function() { join.style.backgroundColor = baseColor; });
-				join.addEventListener('click', function() { initialize(games[i]); });
-				let spectate = row.insertCell(4);
+				join.addEventListener('click', function() {
+					let passInput = document.getElementById(games[i].info.name + 'passInput');
+					socket.emit('Check Password', { pass: passInput.value, info: games[i].info, spectate: false }); // Initialize game as a player
+				});
+				let spectate = row.insertCell(5);
 				spectate.innerHTML = 'Spectate';
 				spectate.style.width = '190px';
 				spectate.style.textAlign = 'center';
@@ -41,20 +48,63 @@ function connectSocket() {
 				spectate.addEventListener('mousedown', function() { spectate.style.backgroundColor = 'rgb(180, 180, 180)'; });
 				spectate.addEventListener('mouseup', function() { spectate.style.backgroundColor = baseColor; });
 				spectate.addEventListener('mouseleave', function() { spectate.style.backgroundColor = baseColor; });
-				spectate.addEventListener('click', function() { alert('Spectate mode is coming soon'); });		
+				spectate.addEventListener('click', function() {
+					let passInput = document.getElementById(games[i].info.name + 'passInput');
+					socket.emit('Check Password', { pass: passInput.value, info: games[i].info, spectate: true }); // Initialize game as a spectator
+				});
+				let password = row.insertCell(6);
+				password.style.width = '150px';
+				password.textAlign = 'center';
+				let passwordInput = document.createElement('input');
+				password.appendChild(passwordInput);
+				passwordInput.type = 'text';
+				passwordInput.value = '';
+				passwordInput.autocomplete = 'off';
+				passwordInput.id = games[i].info.name + 'passInput';
+				passwordInput.style.width = '100%';
+				passwordInput.style.boxSizing = 'border-box';
 			}
+		}
+	});
+
+	socket.on('Password Confirmed', function(datA) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.name == datA.info.name) {
+				initialize(games[i], datA.spectate);
+				break;
+			}
+		}
+	});
+
+	socket.on('Password Denied', function(datA) {
+		if (datA.pass == '') {
+			alert('The game requires a password');
+		} else {
+			alert('The password is incorrect');
 		}
 	});
 
 	socket.on('Game', function(gamE) {
 		game = gamE;
 		if (state == 'game') {
+			translate(-org.off.x, -org.off.y);
 			renderWorld();
 			renderOrgs();
 			for (let i = 0; i < game.info.count; i++) {
 				renderAbilities(game.abilities[i]);
 			}
 			renderUI();
+			move(); // Move goes at the end so player does not see his movements before others
+			translate(org.off.x, org.off.y);
+		} else if (state == 'spectate') {
+			translate(-org.off.x, -org.off.y);
+			renderWorld();
+			renderOrgs();
+			for (let i = 0; i < game.info.count; i++) {
+				renderAbilities(game.abilities[i]);
+			}
+			move();
+			translate(org.off.x, org.off.y);
 		}
 	});
 
@@ -69,6 +119,10 @@ function connectSocket() {
 	socket.on('Game Ended', function(gamE) {
 		alert('The game has ended');
 		document.location.reload();
+	});
+
+	socket.on('Spectate', function() {
+		spectate();
 	});
 
 	{ // Abilities
@@ -88,10 +142,7 @@ function connectSocket() {
 				if (org.range > 50) {
 					org.range = 50; // Extend does not stack
 				}
-				setTimeout(function() { // Cooldown
-					ability.extend.can = true;
-					socket.emit('Ability', ability);
-				}, ability.extend.cooldown);
+				ability.extend.cooling = true;
 				socket.emit('Ability', ability);
 			}, ability.extend.time);
 		});
@@ -146,11 +197,7 @@ function connectSocket() {
 			ability.immortality.timeout = setTimeout(function() { // End ability
 				ability.immortality.value = false;
 				ability.immortality.end = new Date();
-				setTimeout(function() { // Cooldown
-					ability.immortality.can = true;
-					socket.emit('Ability', ability);
-				}, ability.immortality.cooldown);
-				socket.emit('Ability', ability);
+				ability.immortality.cooling = true;
 			}, ability.immortality.time);
 		});
 
@@ -173,10 +220,7 @@ function connectSocket() {
 			ability.stimulate.timeout = setTimeout(function() { // End ability
 				ability.stimulate.value = false;
 				ability.stimulate.end = new Date();
-				setTimeout(function() { // Cooldown
-					ability.stimulate.can = true;
-					socket.emit('Ability', ability);
-				}, ability.stimulate.cooldown);
+				ability.stimulate.cooling = true;
 				socket.emit('Ability', ability);
 			}, ability.stimulate.time);
 		});

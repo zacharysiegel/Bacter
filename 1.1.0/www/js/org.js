@@ -23,6 +23,28 @@ var Org = function(playeR) {
 		x: random(0, game.world.width), 
 		y: random(0, game.world.height)
 	};
+	let rePos = false;
+	for (let i = 0; i < game.info.count; i++) { // Search orgs
+		for (let j = 0; j < game.orgs[i].count; j++) { // Pick org
+			if (game.orgs[i].cells[j].x - game.orgs[i].cells[j].width <= this.pos.x && game.orgs[i].cells[j].x + game.orgs[i].cells[j].width >= this.pos.x && game.orgs[i].cells[j].y - game.orgs[i].cells[j].height <= this.pos.y && game.orgs[i].cells[j].y + game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
+				rePos = true;
+			}
+		}
+	}
+	while (rePos == true) {
+		this.pos = { // Position is the target's location in the world
+			x: random(0, game.world.width), 
+			y: random(0, game.world.height)
+		};
+		let rePos = false;
+		for (let i = 0; i < game.info.count; i++) { // Search orgs
+			for (let j = 0; j < game.orgs[i].count; j++) { // Pick org
+				if (game.orgs[i].cells[j].x - game.orgs[i].cells[j].width <= this.pos.x && game.orgs[i].cells[j].x + game.orgs[i].cells[j].width >= this.pos.x && game.orgs[i].cells[j].y - game.orgs[i].cells[j].height <= this.pos.y && game.orgs[i].cells[j].y + game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
+					rePos = true;
+				}
+			}
+		}
+	}
 	
 	this.off = { // Offset is the difference between pos and center
 		x: this.pos.x - center.x, 
@@ -59,7 +81,11 @@ var Org = function(playeR) {
 	};
 	this.coefficient = -27.5;
 	this.range = 50;
-	this.speed = MOVESPEED; // Speed of position movement
+	if (state == 'spectate') {
+		this.speed = SPECTATESPEED; // Faster movement when spectating
+	} else {
+		this.speed = MOVESPEED; // Speed of position movement
+	}
 	this.alive = false;
 	this.count = this.cells.length;
 	this.interval = undefined;

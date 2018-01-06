@@ -19,7 +19,7 @@ var game = {
 	orgs: [], 
 	abilities: []
 };
-function initialize(gamE) {
+function initialize(gamE, spectatE) {
 	state = 'initialize';
 	game = gamE;
 
@@ -45,11 +45,14 @@ function initialize(gamE) {
 	ellipseMode(RADIUS);
 	angleMode(DEGREES);
 
-	spawn();
+	if (spectatE != true) {
+		spawn();
+	} else if (spectatE == true) {
+		spectate();
+	}
 }
 
 function createGame() {
-	game.players = [];
 	game.info = {
 		host: socket.id, 
 		name: nameInput.value, 
@@ -75,8 +78,14 @@ function createGame() {
 			}
 		}
 	}
+	game.players = [];
+	game.spectators = [];
 	game.orgs = [];
 	game.abilities = [];
 	socket.emit('Game Created', game);
+	let passwordInput = document.getElementById('PasswordInput');
+	if (passwordInput.value != '' || passwordInput != undefined || passwordInput != null) {
+		socket.emit('Password Created', { pass: passwordInput.value, info: game.info });
+	}
 	initialize(game);
 }

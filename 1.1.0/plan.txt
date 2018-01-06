@@ -35,17 +35,11 @@ Bugs:
 	chooseAbilities translation issue
 
 To-Do:
-	Add cannot cross world border
-	Add ability letters in rectangles under circles
-	Add spectate mode
-	Add cannot spawn on top of an opponent org
-	Add password-protected games
 	Add substance to the world (background)
 	Add music
 	Add SFX
 
 Improvements:
-	Balance ability cooldowns and times
 	Secrete interval animation
 		X Circle grows to full size
 		X Circle jiggles to noise

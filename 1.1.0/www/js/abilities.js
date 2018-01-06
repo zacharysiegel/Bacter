@@ -16,8 +16,9 @@ var ability = {
 		j: 0, 
 		start: undefined, 
 		end: undefined, 
+		cooling: false, 
 		time: 5000, 
-		cooldown: 3000
+		cooldown: 4000
 	}, 
 	compress: {
 		value: false, 
@@ -28,8 +29,9 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
+		cooling: false, 
 		time: 5000, 
-		cooldown: 3000
+		cooldown: 4000
 	}, 
 	// speed: { // Not updated
 	// 	value: false, 
@@ -58,8 +60,9 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
+		cooling: false, 
 		time: 3000, 
-		cooldown: 3000
+		cooldown: 6000
 	}, 
 	stunt: {
 		value: false, 
@@ -70,8 +73,9 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
+		cooling: false, 
 		time: 3000, 
-		cooldown: 3000
+		cooldown: 6000
 	}, 
 	stimulate: {
 		value: false, 
@@ -83,8 +87,9 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
-		time: 5000, 
-		cooldown: 3000
+		cooling: false, 
+		time: 3000, 
+		cooldown: 5000
 	}, 
 	poison: {
 		value: false, 
@@ -96,8 +101,9 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
-		time: 5000, 
-		cooldown: 3000
+		cooling: false, 
+		time: 3000, 
+		cooldown: 5000
 	}, 
 	spore: {
 		value: false, 
@@ -105,15 +111,16 @@ var ability = {
 		i: 3, 
 		j: 0, 
 		interval: undefined, 
-		speed: 15, 
+		speed: 6, 
 		spores: [], 
 		count: 0, 
 		can: true, 
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
-		time: 3000, 
-		cooldown: 5000
+		cooling: false, 
+		time: 2500, 
+		cooldown: 7000
 	}, 
 	secrete: {
 		value: false, 
@@ -126,7 +133,7 @@ var ability = {
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
-		time: 1000
+		time: 1500
 	}
 };
 
@@ -141,7 +148,7 @@ function chooseAbilities() {
 	rect(center.x, height / 30, textWidth('Choose Three Abilities') * 4 / 3, height / 15, 0, 0, 15, 15); // Choose Abilities Box
 	fill(255);
 	noStroke();
-	text('Choose Three Abilities', center.x - textWidth('Choose Three Abilities') / 2, height / 20); // Choose Abilities Text
+	text('Choose Three Abilities', center.x - textWidth('Choose Three Abilities') / 2, height / 24); // Choose Abilities Text
 	ability.choose.width = width / 5;
 	ability.choose.height = height / 3.5;
 	for (let i = 0; i < 3; i++) {
@@ -191,10 +198,8 @@ function compress(playeR) {
 	socket.emit('Ability', ability);
 	setTimeout(function() {
 		ability.compress.end = new Date();
+		ability.compress.cooling = true;
 	}, ability.compress.time);
-	setTimeout(function() { // Cooldown
-		ability.compress.can = true;
-	}, ability.compress.time + ability.compress.cooldown);
 }
 
 // function speed(playeR) {
@@ -216,10 +221,8 @@ function stunt(playeR) {
 	socket.emit('Ability', ability);
 	setTimeout(function() {
 		ability.stunt.end = new Date();
+		ability.stunt.cooling = true;
 	}, ability.stunt.time);
-	setTimeout(function() { // Cooldown
-		ability.stunt.can = true;
-	}, ability.stunt.time + ability.stunt.cooldown);
 }
 
 function stimulate(playeR) {
@@ -233,10 +236,8 @@ function poison(playeR) {
 	socket.emit('Ability', ability);
 	setTimeout(function() {
 		ability.poison.end = new Date();
+		ability.poison.cooling = true;
 	}, ability.poison.time);
-	setTimeout(function() { // Cooldown
-		ability.poison.can = true;
-	}, ability.poison.time + ability.poison.cooldown);
 }
 
 function spore() {
@@ -269,7 +270,7 @@ function spore() {
 				ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
 				socket.emit('Ability', ability);
 			}
-		}, 100);
+		}, 40);
 		ability.spore.timeout = setTimeout(function() { // End Spore
 			if (ability.spore.value == true && ability.secrete.value == false) { // If secrete() has not been called
 				clearInterval(ability.spore.interval); // Clear interval
@@ -277,11 +278,8 @@ function spore() {
 				ability.spore.spores = []; // Clear spores array
 				ability.spore.value = false;
 				ability.spore.end = new Date();
+				ability.spore.cooling = true;
 				socket.emit('Ability', ability);
-				setTimeout(function() { // Cooldown
-					ability.spore.can = true;
-					socket.emit('Ability', ability);
-				}, ability.spore.cooldown);
 			}
 		}, ability.spore.time);
 	}
@@ -305,12 +303,9 @@ function secrete() {
 				ability.spore.interval = undefined;
 				ability.spore.spores = []; // Clear spores array
 				ability.spore.end = new Date();
+				ability.spore.cooling = true;
 			}
 			ability.secrete.end = new Date();
-			setTimeout(function() { // Cooldown
-				ability.spore.can = true;
-				socket.emit('Ability', ability);
-			}, ability.spore.cooldown);
 			socket.emit('Ability', ability);
 		}, ability.secrete.time);
 	}
@@ -329,6 +324,17 @@ function renderAbilities(abilitY) {
 				noStroke();
 				ellipse(celL.x, celL.y, abilitY.secrete.radius);
 			}
+		}
+	}
+}
+
+function cooldown(abilitY) {
+	if (abilitY.cooling == true) { // If abilitY is cooling down
+		let current = new Date(); // Get current time
+		if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
+			abilitY.can = true; // Re-enable abilitY
+			abilitY.cooling = false;
+			socket.emit('Ability', ability); // Update server
 		}
 	}
 }

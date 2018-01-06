@@ -1,18 +1,24 @@
 var org;
 function spawn() {
+	state = 'spawn';
 	org = new Org(socket.id);
-	socket.emit('Game Joined', { info: game.info, org: org, ability: ability });
+	socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 };
+
+function spectate() {
+	socket.emit('Spectator Joined', game);
+	state = 'spectate';
+	org = new Org(socket.id);
+}
 
 function renderWorld() {
 	// Regardless of position in world
 	background(game.world.background.r, game.world.background.g, game.world.background.b);
 	
 	// Relative to position in world
-	translate(-org.off.x, -org.off.y);
-	// fill(game.world.background.r, game.world.background.g, game.world.background.b);
-	// stroke(0);
-	// rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
+	fill(game.world.background.r, game.world.background.g, game.world.background.b);
+	stroke(255);
+	rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
 }
 
 function renderOrgs() {
@@ -29,7 +35,7 @@ function renderOrgs() {
 function renderUI() {
 	// Crosshair (Art Subject to Change)
 	noFill();
-	stroke(0);
+	stroke(255);
 	strokeWeight(1);
 	line(org.pos.x - 4, org.pos.y, org.pos.x + 4, org.pos.y);
 	line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
@@ -46,6 +52,13 @@ function renderUI() {
 		}
 	}
 
+	// Ability Cooldowns
+	for (let i in ability) {
+		if (ability[i].cooling == true) {
+			cooldown(ability[i]);
+		}
+	}
+
 	// Ability Tooltips
 	translate(org.off.x, org.off.y);
 	var current = new Date();
@@ -56,13 +69,17 @@ function renderUI() {
 		rect(center.x - 150 + i * 100, height  * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
 		let letter;
 		if (i == 0) {
-			letter = 'X';
+			letter = ABILITYLETTER1;
 		} else if (i == 1) {
-			letter = 'C';
+			letter = ABILITYLETTER2;
 		} else if (i == 2) {
-			letter = 'V';
+			letter = ABILITYLETTER3;
 		} else if (i == 3) {
-			letter = '_';
+			if (ABILITYLETTER4 == ' ') {
+				letter = '_';
+			} else {
+				letter = ABILITYLETTER4;
+			}
 		}
 		fill(0);
 		noStroke();
@@ -108,38 +125,63 @@ function renderUI() {
 	translate(-org.off.x, -org.off.y);
 }
 
+function move() {
+	if (keyIsDown(65) || keyIsDown(37) || keyIsDown(87) || keyIsDown(38) || keyIsDown(68) || keyIsDown(39) || keyIsDown(83) || keyIsDown(40)) { // If a directional key
+		if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(87) || keyIsDown(38))) { // Left + Up
+			if (org.pos.x - org.speed > 0) { // Stay inside world
+				org.pos.x -= org.speed * cos45;
+			}
+			if (org.pos.y - org.speed > 0) {
+				org.pos.y -= org.speed * cos45;
+			}
+		} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(87) || keyIsDown(38))) { // Right + Up
+			if (org.pos.x + org.speed < game.world.width) {
+				org.pos.x += org.speed * cos45;
+			}
+			if (org.pos.y - org.speed > 0) {
+				org.pos.y -= org.speed * cos45;
+			}
+		} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(83) || keyIsDown(40))) { // Right + Down
+			if (org.pos.x + org.speed < game.world.width) {
+				org.pos.x += org.speed * cos45;
+			}
+			if (org.pos.y + org.speed < game.world.height) {
+				org.pos.y += org.speed * cos45;
+			}
+		} else if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(83) || keyIsDown(40))) { // Left + Down
+			if (org.pos.x - org.speed > 0) {
+				org.pos.x -= org.speed * cos45;
+			}
+			if (org.pos.y + org.speed < game.world.height) {
+				org.pos.y += org.speed * cos45;
+			}
+		} else if (keyIsDown(65) || keyIsDown(37)) { // A or LEFT_ARROW
+			if (org.pos.x - org.speed > 0) { // Stay inside world
+				org.pos.x -= org.speed; // Move the position org.speed pixels in the indicated direction
+			}
+		} else if (keyIsDown(87) || keyIsDown(38)) { // W or UP_ARROW
+			if (org.pos.y - org.speed > 0) {
+				org.pos.y -= org.speed;
+			}
+		} else if (keyIsDown(68) || keyIsDown(39)) { // D or RIGHT_ARROW
+			if (org.pos.x + org.speed < game.world.width) {
+				org.pos.x += org.speed;
+			}
+		} else if (keyIsDown(83) || keyIsDown(40)) { // S or DOWN_ARROW
+			if (org.pos.y + org.speed < game.world.height) {
+				org.pos.y += org.speed;
+			}
+		}
+		org.off.x = org.pos.x - center.x;
+		org.off.y = org.pos.y - center.y;
+	}
+}
+
 function grow() {
 	state = 'game';
 	if (org.alive == false) {
 		org.alive = true;
 		org.interval = setInterval(function() {
-			// Movement
-			if (keyIsDown(65) || keyIsDown(37) || keyIsDown(87) || keyIsDown(38) || keyIsDown(68) || keyIsDown(39) || keyIsDown(83) || keyIsDown(40)) { // If a directional key
-				if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(87) || keyIsDown(38))) { // Left + Up
-					org.pos.x -= org.speed * cos45;
-					org.pos.y -= org.speed * cos45;
-				} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(87) || keyIsDown(38))) { // Right + Up
-					org.pos.x += org.speed * cos45;
-					org.pos.y -= org.speed * cos45;
-				} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(83) || keyIsDown(40))) { // Right + Down
-					org.pos.x += org.speed * cos45;
-					org.pos.y += org.speed * cos45;
-				} else if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(83) || keyIsDown(39))) { // Left + Down
-					org.pos.x -= org.speed * cos45;
-					org.pos.y += org.speed * cos45;
-				} else if (keyIsDown(65) || keyIsDown(37)) { // A or LEFT_ARROW
-					org.pos.x -= org.speed; // Move the position org.speed pixels in the indicated direction
-				} else if (keyIsDown(87) || keyIsDown(38)) { // W or UP_ARROW
-					org.pos.y -= org.speed;
-				} else if (keyIsDown(68) || keyIsDown(39)) { // D or RIGHT_ARROW
-					org.pos.x += org.speed;
-				} else if (keyIsDown(83) || keyIsDown(40)) { // S or DOWN_ARROW
-					org.pos.y += org.speed;
-				}
-				org.off.x = org.pos.x - center.x;
-				org.off.y = org.pos.y - center.y;
-			}
-
 			var regions = getRegionInfo(org);
 			// Birth
 			if (ability.stunt.value == false) { // If org is not Stunted
@@ -390,6 +432,20 @@ var getRegionInfo = function(orG) {
 
 function gameOver() {
 	clearInterval(org.interval);
+	for (let i in ability) { // Reset Ability Cooldowns
+		ability[i].value = false;
+		if (ability[i].can == false) {
+			if (ability[i].timeout != undefined) {
+				clearTimeout(ability[i].timeout);
+			}
+			if (ability[i].interval != undefined) {
+				clearInterval(ability[i].interval);
+			}
+			ability[i].can = true;
+			ability[i].cooling = false;
+		}
+	}
+	socket.emit('Ability', ability);
 	socket.emit('Dead');
 	alert('You are Dead\nPress \'R\' to Respawn');
 	// let respawn = confirm('Respawn? (Press \'R\' to Respawn Later)');
@@ -398,6 +454,7 @@ function gameOver() {
 	// 		spawn();
 	// 	}
 	// }
+
 }
 
 function keyPressed() {
@@ -416,11 +473,12 @@ function keyPressed() {
 	// }
 	switch (keyCode) {
 		case 82: // R
-			if (state == 'game' && org.alive == false) {
+			if (state == 'spectate' && org.alive == false) {
+				socket.emit('Spectator Spawned', game);
 				spawn();
 			}
 			break;
-		case 32: // SPACE
+		case ABILITYKEY4: // SPACE by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.spore.value == false && ability.secrete.value == false) {
 					spore();
@@ -429,7 +487,7 @@ function keyPressed() {
 				}
 				break;
 			}
-		case 88: // X
+		case ABILITYKEY1: // X by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.extend.activated == true && ability.extend.can == true) {
 					extend(org.player);
@@ -448,7 +506,7 @@ function keyPressed() {
 				// }
 			}
 			break;
-		case 67: // C
+		case ABILITYKEY2: // C by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.immortality.activated == true && ability.immortality.can == true) {
 					immortality(org.player);
@@ -462,7 +520,7 @@ function keyPressed() {
 				}
 				break;
 			}
-		case 86: // V
+		case ABILITYKEY3: // V by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.stimulate.activated == true && ability.stimulate.can == true) {
 					stimulate(org.player);

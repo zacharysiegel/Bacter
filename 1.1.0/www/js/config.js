@@ -1,7 +1,7 @@
 const worldColors = {
 	// blue: { r: 247, g: 250, b: 255 }
-	white: { r: 255, g: 255, b: 255 }
-	// black: { r: 0, g: 0, b: 0 }
+	// white: { r: 255, g: 255, b: 255 }
+	black: { r: 0, g: 0, b: 0 }
 };
 
 const orgColors = {
@@ -17,4 +17,14 @@ const orgColors = {
 const cos45 = 0.70710678118;
 
 const CELLWIDTH = 7;
-const MOVESPEED = 5.5;
+const MOVESPEED = 2.5;
+const SPECTATESPEED = 5;
+
+const ABILITYLETTER1 = 'X'; // Ability Letters
+const ABILITYLETTER2 = 'C';
+const ABILITYLETTER3 = 'V';
+const ABILITYLETTER4 = ' ';
+const ABILITYKEY1 = 88; // Ability Letter-Corresponding Key Codes
+const ABILITYKEY2 = 67;
+const ABILITYKEY3 = 86;
+const ABILITYKEY4 = 32;

@@ -36,6 +36,12 @@ var games = [
 		// orgs: []
 	// }
 ];
+var passwords = [
+	// {
+	// 	name: (name of game), 
+	// 	pass: (password)
+	// }
+];
 var intervals = [];
 
 console.log('Running...');
@@ -74,18 +80,53 @@ function newConnection(sockeT) {
 		}
 		// Leave Current Game
 		for (let i = 0; i < games.length; i++) {
-			for (let j = 0; j < games[i].players.length; j++) {
-				if (games[i].players[j] == sockeT.id) { // Find current game
+			for (let j = 0; j < games[i].players.length; j++) { // Search Players
+				if (games[i].players[j] == sockeT.id) { // Find Player
 					sockeT.leave(games[i].info.name); // Leave 'Game' Room
 					games[i].players.splice(j, 1); // Remove Player
 					games[i].orgs.splice(j, 1); // Remove Player Org
 					games[i].abilities.splice(j, 1); // Remove Player Abilities
 					games[i].info.count = games[i].orgs.length;
 					io.sockets.emit('Games', games);
-					console.log('                                               Game Left: ' + games[i].info.name + ' (' + sockeT.id + ')');
+					console.log('                                               Player Left: ' + games[i].info.name + ' (' + sockeT.id + ')');
 					break;
 				}
 			}
+			for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
+				if (games[i].spectators[j] == sockeT.id) { // Find Spectator
+					sockeT.leave(games[i].info.name);
+					games[i].spectators.splice(j, 1);
+					io.sockets.emit('Games', games);
+					console.log('                                               Spectator Left: ' + games[i].info.name + ' (' + sockeT.id + ')');
+					break;
+				}
+			}
+		}
+	});
+
+	// Create Password
+	sockeT.on('Password Created', function(datA) {
+		passwords.push({ pass: datA.pass, name: datA.info.name });
+	});
+
+	// Verify Password on Join or Spectate
+	sockeT.on('Check Password', function(datA) {
+		console.log(datA, passwords);
+		var confirmed = false;
+		var hasPassword = false;
+		for (let i = 0; i < passwords.length; i++) {
+			if (datA.info.name == passwords[i].name) {
+				hasPassword = true;
+				if (datA.pass == passwords[i].pass) {
+					confirmed = true;
+				}
+				break;
+			}
+		}
+		if (confirmed == true || hasPassword == false) {
+			sockeT.emit('Password Confirmed', datA);
+		} else if (confirmed == false && hasPassword == true) {
+			sockeT.emit('Password Denied', datA);
 		}
 	});
 
@@ -104,11 +145,11 @@ function newConnection(sockeT) {
 					break;
 				}
 			}
-		}, 50));
+		}, 40));
 	});
 
-	// Game Joined
-	sockeT.on('Game Joined', function(datA) {
+	// Player Joined
+	sockeT.on('Player Joined', function(datA) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == datA.info.host) {
 				sockeT.leave('Lobby'); // Leave 'Lobby' Room
@@ -124,7 +165,37 @@ function newConnection(sockeT) {
 						break;
 					}
 				}
-				console.log('                                               Game Joined: ' + games[i].info.name + ' (' + sockeT.id + ')');
+				console.log('                                               Player Joined: ' + games[i].info.name + ' (' + sockeT.id + ')');
+				break;
+			}
+		}
+	});
+
+	// Spectator Joined
+	sockeT.on('Spectator Joined', function(gamE) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == gamE.info.host) {
+				sockeT.leave('Lobby'); // Leave 'Lobby' Room
+				sockeT.join(gamE.info.name); // Join 'Game' Room
+				games[i].spectators.push(sockeT.id);
+				io.sockets.emit('Games', games);
+				console.log('                                               Spectator Joined: ' + games[i].info.name + ' (' + sockeT.id + ')');
+				break;
+			}
+		}
+	});
+
+	// Spectator Left
+	sockeT.on('Spectator Spawned', function(gamE) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == gamE.info.host) {
+				for (let j = 0; j < games[i].spectators.length; j++) {
+					if (games[i].spectators[j] == sockeT.id) {
+						games[i].spectators.splice(j, 1);
+						io.sockets.emit('Games', games);
+						break;
+					}
+				}
 				break;
 			}
 		}
@@ -133,9 +204,11 @@ function newConnection(sockeT) {
 	// Update Server Org
 	sockeT.on('Org', function(orG) {
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].orgs[orG.index].player == sockeT.id) {
-				games[i].orgs[orG.index] = orG;
-				break;
+			for (let j = 0; j < games[i].orgs.length; j++) {
+				if (games[i].orgs[j].player == sockeT.id) {
+					games[i].orgs[j] = orG;
+					break;
+				}
 			}
 		}
 	});
@@ -226,6 +299,7 @@ function newConnection(sockeT) {
 						games[i].players.splice(j, 1);
 						games[i].abilities.splice(j, 1);
 						games[i].info.count = games[i].orgs.length;
+						sockeT.emit('Spectate'); // Dead player becomes spectator
 						for (let k = 0; k < games[i].players.length; k++) {
 							sockeT.to(games[i].players[k]).emit('Index', { index: k, spawn: false }); // Emit new indices to all players in game
 						}
