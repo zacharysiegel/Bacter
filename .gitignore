@@ -57,5 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
-#Initial Build
+#Static Versions
 1.0.0
+1.1.0
