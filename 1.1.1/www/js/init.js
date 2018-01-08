@@ -36,6 +36,7 @@ function initialize(gamE, spectatE) {
 	blank.style.padding = '0px';
 
 	// Initialize Game
+	defaultCanvas.style.display = 'block';
 	cnv = createCanvas(window.innerWidth, window.innerHeight);
 	center = {
 		x: width / 2, 

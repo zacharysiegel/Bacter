@@ -4,13 +4,13 @@ function connectSocket() {
 
 	socket.on('Games', function(gameS) {
 		if (state == 'browser') {
-			let browser = document.getElementById('browser');
+			let browserBody = document.getElementById('browserBody');
 			for (let i = 0; i < games.length; i++) {
-				browser.deleteRow(-1);
+				browserBody.deleteRow(-1);
 			}
 			games = gameS;
 			for (let i = 0; i < games.length; i++) {
-				let row = browser.insertRow(-1);
+				let row = browserBody.insertRow(-1);
 				row.style.height = '20px';
 				let name = row.insertCell(0);
 				name.innerHTML = games[i].info.name;

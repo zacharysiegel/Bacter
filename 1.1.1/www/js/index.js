@@ -1,9 +1,10 @@
 var games = [];
+var defaultCanvas;
 function setup() {
 	state = 'browser';
 	connectSocket();
 	var nameInput = document.getElementById('nameInput');
-	nameInput.addEventListener('keyup', function() { 
+	nameInput.addEventListener('keyup', function() { // Enter event listener for name input field
 		if (event.keyCode == 13) { // ENTER
 			var invalid = false;
 			if (nameInput.value == '' || nameInput.value == undefined || nameInput.value == null) {
@@ -19,12 +20,12 @@ function setup() {
 			if (invalid == true) {
 				alert('Invalid Name');
 			} else {
-				createGame();
+				createGame(); // Creates new game
 			}
 		}
 	});
 	var passwordInput = document.getElementById('PasswordInput');
-	passwordInput.addEventListener('keyup', function() { 
+	passwordInput.addEventListener('keyup', function() { // Enter event listener for password field
 		if (event.keyCode == 13) { // ENTER
 			var invalid = false;
 			if (nameInput.value == '' || nameInput.value == undefined || nameInput.value == null) {
@@ -40,8 +41,10 @@ function setup() {
 			if (invalid == true) {
 				alert('Invalid Name');
 			} else {
-				createGame();
+				createGame(); // Creates new game
 			}
 		}
 	});
+	defaultCanvas = document.getElementById('defaultCanvas0'); // Hide canvas defaulted into the document body
+	defaultCanvas.style.display = 'none';
 }

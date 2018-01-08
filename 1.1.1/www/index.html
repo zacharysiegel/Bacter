@@ -21,21 +21,18 @@
 	<script type="text/javascript" src="./js/items.js"></script>
 	<script type="text/javascript" src="./js/init.js"></script>
 	<script type="text/javascript" src="./js/index.js"></script>
-
+	
 </head>
 <body>
-	<!-- <h4>
-		Find the desired game in the list
-	</h4> -->
 	<table id="browser">
 		<thead>
 			<tr id="head">
-				<th colspan="1">Name</th>
-				<th colspan="1">Host</th>
-				<th colspan="1">Players</th>
-				<th colspan="1">Spectators</th>
-				<th colspan="2">Host a Game:&nbsp&nbsp<input id="nameInput" type="text" name="name" value="" autocomplete="off"><!--   Password:&nbsp&nbsp<input id="passInput" type="text" name="passInput" value="" autocomplete="off"> --></th>
-				<th colspan="1">Password:  <input id="PasswordInput" type="text" name="PasswordInput" value="" autocomplete="off"></th>
+				<th colspan="1" id="name">Name</th>
+				<th colspan="1" id="host">Host</th>
+				<th colspan="1" id="players">Players</th>
+				<th colspan="1" id="spectators">Spectators</th>
+				<th colspan="2" id="join-spectate">Host a Game:&nbsp&nbsp<input id="nameInput" type="text" name="name" value="" autocomplete="off"></th>
+				<th colspan="1" id="password">Password:&nbsp&nbsp<input id="PasswordInput" type="text" name="PasswordInput" value="" autocomplete="off"></th>
 			</tr>
 		</thead>
 		<tbody id="browserBody">
