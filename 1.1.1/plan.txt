@@ -49,6 +49,7 @@ To-Do:
 		Pickups that lower cooldowns
 	Add music
 	Add SFX
+	Add 'Return to menu' option
 
 Improvements:
 	Secrete interval animation
