@@ -1,0 +1,25 @@
+{
+  "name": "bacter",
+  "version": "1.1.2",
+  "description": "2D Arena Multiplayer Game",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io": "^2.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siegelzc/Bacter.git"
+  },
+  "author": "Zachary Siegel",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "bugs": {
+    "url": "https://github.com/siegelzc/Bacter/issues"
+  },
+  "homepage": "https://github.com/siegelzc/Bacter#readme"
+}
