@@ -46,7 +46,6 @@ Bugs/Fixes:
 
 To-Do:
 	1.1.2
-		✔ NPM fix
 		? Do not automatically join game after creation
 		? Countdown before join game
 		Add cannot spawn over world border
