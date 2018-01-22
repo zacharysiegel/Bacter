@@ -13,7 +13,7 @@ socket.on('ID', function(parameter) {});
 */
 
 // Express
-var port = 8080;
+var port = process.env.PORT || 80;
 var express = require('express');
 var app = express();
 var server = app.listen(port);

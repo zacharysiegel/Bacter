@@ -18,6 +18,7 @@ function renderWorld() {
 	// Relative to position in world
 	fill(game.world.background.r, game.world.background.g, game.world.background.b);
 	stroke(255);
+	strokeWeight(1);
 	rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
 }
 
@@ -187,6 +188,11 @@ function grow() {
 			if (ability.stunt.value == false) { // If org is not Stunted
 				for (let a = 0; a < ability.stimulate.factor; a++) { // Run twice for birth acceleration (Heal)
 					for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
+						// Don't birth new cell outside world boundary
+						if (regions.adjacent[i].x - CELLWIDTH / 2 <= 0 || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= 0 || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.height) { // If new cell would be outside world boundary
+							continue;
+						}
+
 						// Don't birth new cell on top of an opponent org
 						var overlap = false;
 						for (let j = 0; j < game.info.count; j++) {

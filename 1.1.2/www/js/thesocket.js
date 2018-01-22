@@ -1,6 +1,7 @@
 var socket;
 function connectSocket() {
-	socket = io.connect('24.55.26.67');
+	socket = io.connect('24.55.26.67'); // Local Server
+	// socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
 
 	socket.on('Games', function(gameS) {
 		if (state == 'browser') {
