@@ -1,4 +1,5 @@
 var ability = {
+	player: undefined, 
 	index: undefined, 
 	choose: {
 		width: undefined, 

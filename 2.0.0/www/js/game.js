@@ -2,6 +2,7 @@ var org;
 function spawn() {
 	state = 'spawn';
 	org = new Org(socket.id);
+	ability.player = socket.id;
 	socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 };
 
@@ -425,7 +426,7 @@ function grow() {
 				}
 				if (game.abilities[i].toxin.value == true) { // Toxin
 					for (let j = 0; j < org.count; j++) {
-						if (org.index == game.abilities[i].index) { // If is own org's toxin
+						if (org.player == game.abilities[i].player) { // If is own org's toxin
 							continue; // Do not kill own cells
 						}
 						if (sqrt(sq(org.cells[j].x - game.abilities[i].toxin.x) + sq(org.cells[j].y - game.abilities[i].toxin.y)) <= game.abilities[i].toxin.radius) { // If center of cell is within toxin circle
