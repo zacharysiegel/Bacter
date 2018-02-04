@@ -16,17 +16,35 @@ function renderWorld() {
 	background(game.world.background.r, game.world.background.g, game.world.background.b);
 	
 	// Relative to position in world
-	fill(game.world.background.r, game.world.background.g, game.world.background.b);
-	stroke(255);
-	strokeWeight(1);
-	rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
+	// Border
+	// fill(game.world.background.r, game.world.background.g, game.world.background.b);
+	// stroke(255);
+	// strokeWeight(1);
+	// rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
+
+	// Dots
+	fill(random(150, 220));
+	noStroke();
+	for (let i = 0; i < game.world.dots.count; i++) {
+		let dot = game.world.dots.array[i];
+		ellipse(dot.x, dot.y, dot.r);
+	}
+
+	// Grid
+	// for (let i = 0; i < game.world.height / game.world.grid.width; i++) {
+	// 	line(0, i * game.world.grid.width + (game.world.height % game.world.grid.width / 2), game.world.width, i * game.world.grid.width + (game.world.height % game.world.grid.width / 2));
+	// }
+	// for (let i = 0; i < game.world.width / game.world.grid.width; i++) {
+	// 	line(i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), 0, i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.height);
+	// }
 }
 
 function renderOrgs() {
 	for (let i = 0; i < game.info.count; i++) {
 		for (let j = 0; j < game.orgs[i].count; j++) {
 			fill(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b);
-			noStroke();
+			stroke(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b);
+			strokeWeight(1);
 			let celL = game.orgs[i].cells[j];
 			rect(celL.x, celL.y, celL.width, celL.height);
 		}
@@ -67,7 +85,7 @@ function renderUI() {
 		fill(215);
 		stroke(0);
 		strokeWeight(2);
-		rect(center.x - 150 + i * 100, height  * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+		rect(center.x - 150 + i * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
 		let letter;
 		if (i == 0) {
 			letter = ABILITYLETTER1;
@@ -93,33 +111,66 @@ function renderUI() {
 		strokeWeight(2);
 		ellipse(center.x - 150 + i * 100, height * 9 / 10, 30); // Background ellipse
 		for (let j in ability) {
-			if (ability[j].i == i && ability[j].activated == true) { // Find corresponding ability to tooltip
-				if (j == 'spore' && ability.secrete.value == true) {
-					continue; // Do not draw spore
-				}
-				if (j == 'secrete' && ability.secrete.value == false) {
-					continue; // Do not draw secrete
-				}
-				fill(215);
-				noStroke();
-				if (ability[j].j == 0) { // If defensive ability (or spore)
-					if (ability[j].value == true) { // If during ability
-						arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-					} else if (ability[j].value == false && ability[j].can == false) { // If during cooldown
-						arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
-					} else if (ability[j].value == false && ability[j].can == true) {
-						ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+			if (ability[j].i == i) { // Find corresponding ability set to tooltip
+				if (ability[j].activated == true) { // Find corresponding activated ability to tooltip
+					if (j == 'spore' && ability.secrete.value == true) {
+						continue; // Do not draw spore
 					}
-				} else if (ability[j].j == 1) { // If offensive ability (or secrete)
-					if (ability[j].can == true) {
-						ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-					} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
-						arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-					} else if (ability[j].can == false && current - ability[j].start > ability[j].time) { // If during cooldown
-						arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+					if (j == 'secrete' && ability.secrete.value == false) {
+						continue; // Do not draw secrete
+					}
+					fill(215);
+					noStroke();
+					if (ability[j].j == 0) { // If defensive ability (or spore)
+						// Ability
+						if (ability[j].value == true) { // If during ability
+							arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+						} else if (ability[j].value == false && ability[j].can == false) { // If during cooldown
+							arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+						} else if (ability[j].value == false && ability[j].can == true) {
+							ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+						}
+					} else if (ability[j].j == 1) { // If offensive ability (or secrete)
+						if (ability[j].i < 3) { // If one of first three abilities
+							// Ability
+							if (ability[j].can == true) { // Idle
+								ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+							} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
+								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+							} else if (ability[j].can == false && current - ability[j].start > ability[j].time) { // If during cooldown
+								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+							}
+							// Shoot
+							if (j != 'toxin') { // No shoot for Toxin
+								if (ability.shoot.value[i] == false && ability.shoot.can[i] == true) { // Idle
+									ellipse(center.x - 150 + i * 100 - 41, height * 9 / 10, 8);
+								} else if (ability.shoot.value[i] == true && ability.shoot.can[i] == false) { // Timeout
+									arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[i]) / ability.shoot.time * 360); // Ability timeout timer
+								} else if (ability.shoot.secrete[i].value == true) { // Secrete
+									arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360) + (current - ability.shoot.secrete[i].start) / ability.shoot.secrete[i].time * ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360)); // Ability cooldown timer
+								}
+							}
+						} else if (ability[j].i == 3) { // Secrete
+							if (ability[j].can == true) { // Idle
+								ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+							} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
+								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360) - (current - ability[j].start) / ability[j].time * (360 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360))); // Ability cooldown timer
+							}
+						}
+					}
+					itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + i * 100, height * 9 / 10);
+				}
+				if (ability[j].value == true && ability[j].i < 3) { // Ability Activated Tooltip (Not for spore/secrete)
+					if (ability[j].j == 0 || ability[j].i == 3) { // If defensive ability (+ secrete)
+						fill(66, 244, 176); // Green
+						noStroke();
+						ellipse(center.x - 150 + i * 100 - 9, height * 9 / 10 - 37, 5, 5);
+					} else if (ability[j].j == 1 && ability[j].i != 3) { // If offensive ability (No secrete)
+						fill(255, 141, 135); // Red
+						noStroke();
+						ellipse(center.x - 150 + i * 100 + 9, height * 9 / 10 - 37, 5, 5);
 					}
 				}
-				itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + i * 100, height * 9 / 10);
 			}
 		}
 	}
@@ -185,66 +236,70 @@ function grow() {
 		org.interval = setInterval(function() {
 			var regions = getRegionInfo(org);
 			// Birth
-			if (ability.stunt.value == false) { // If org is not Stunted
-				for (let a = 0; a < ability.stimulate.factor; a++) { // Run twice for birth acceleration (Heal)
-					for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
-						// Don't birth new cell outside world boundary
-						if (regions.adjacent[i].x - CELLWIDTH / 2 <= 0 || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= 0 || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.height) { // If new cell would be outside world boundary
+			if (ability.stunt.value == false) { // If org is not Stunted (cannot birth or die naturally)
+				// for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
+					// if (ability.poison.value == true) {
+					// 	if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
+					// 		continue;
+					// 	}
+					// }
+				for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
+					// Don't birth new cell outside world boundary
+					if (regions.adjacent[i].x - CELLWIDTH / 2 <= 0 || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= 0 || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.height) { // If new cell would be outside world boundary
+						continue;
+					}
+
+					// Don't birth new cell on top of an opponent org
+					var overlap = false;
+					for (let j = 0; j < game.info.count; j++) {
+						if (j == org.index) {
 							continue;
 						}
-
-						// Don't birth new cell on top of an opponent org
-						var overlap = false;
-						for (let j = 0; j < game.info.count; j++) {
-							if (j == org.index) {
-								continue;
-							}
-							for (let k = 0; k < game.orgs[j].count; k++) {
-								if (regions.adjacent[i].x + CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x + CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If right side collides
-									if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
-										overlap = true;
-									} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
-										overlap = true;
-									}
-								} else if (regions.adjacent[i].x - CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x - CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If left side collides
-									if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
-										overlap = true;
-									} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
-										overlap = true;
-									}
+						for (let k = 0; k < game.orgs[j].count; k++) {
+							if (regions.adjacent[i].x + CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x + CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If right side collides
+								if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
+									overlap = true;
+								} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
+									overlap = true;
 								}
-							}
-						}
-						if (overlap == true) {
-							continue;
-						}
-
-						// Birth new cell accordingly
-						let chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[i].x - org.pos.x) + sq(regions.adjacent[i].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
-						if (random(0, 100) <= chance) {
-							var repeat = false;
-							for (let j = 0; j < org.count; j++) {
-								if (regions.adjacent[i].x == org.cells[j].x && regions.adjacent[i].y == org.cells[j].y) {
-									repeat = true;
-									break;
+							} else if (regions.adjacent[i].x - CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x - CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If left side collides
+								if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
+									overlap = true;
+								} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
+									overlap = true;
 								}
-							}
-							if (repeat == false) {
-								org.cells.push(new Cell(regions.adjacent[i].x, regions.adjacent[i].y, org));
-								org.count++;
 							}
 						}
 					}
-					if (ability.stimulate.value == false) { // If org is not being healed
-						break; // Run only once
+					if (overlap == true) {
+						continue;
+					}
+
+					// Birth new cell accordingly
+					let chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[i].x - org.pos.x) + sq(regions.adjacent[i].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
+					if (random(0, 100) <= chance) {
+						var repeat = false;
+						for (let j = 0; j < org.count; j++) {
+							if (regions.adjacent[i].x == org.cells[j].x && regions.adjacent[i].y == org.cells[j].y) {
+								repeat = true;
+								break;
+							}
+						}
+						if (repeat == false) {
+							org.cells.push(new Cell(regions.adjacent[i].x, regions.adjacent[i].y, org));
+							org.count++;
+						}
 					}
 				}
-
+				// if (ability.stimulate.value == false) { // If org is not being stimulated
+				// 	break; // Run only once
+				// }
+				// }
 			}
 
 			// Death
-			if (ability.immortality.value == false) { // If org is not Immortal
-				for (let a = 0; a < ability.poison.factor; a++) { // Run twice for death acceleration (Poison)
+			if (ability.stunt.value == false) { // If org is not stunted (cannot birth or die naturally)
+				if (ability.immortality.value == false) { // If org is not Immortal
 					for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
 						if (regions.exposed[i].d(org) > org.range) {
 							for (let j = 0; j < org.count; j++) {
@@ -290,9 +345,6 @@ function grow() {
 					// 		org.count--;
 					// 	}
 					// }
-					if (ability.poison.value == false) { // If org is not poisoned
-						break; // Run only once
-					}
 				}
 			}
 
@@ -326,20 +378,99 @@ function grow() {
 
 			// Abilities
 			for (let i = 0; i < game.info.count; i++) {
-				if (game.abilities[i].secrete.value == true) { // Secrete
+				if (game.abilities[i].secrete.value == true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
 					for (let j = 0; j < org.count; j++) {
 						for (let k = 0; k < game.abilities[i].spore.count; k++) {
-							if (sqrt(sq(org.cells[j].x - game.abilities[i].spore.spores[k].x) + sq(org.cells[j].y - game.abilities[i].spore.spores[k].y)) < game.abilities[i].secrete.radius) { // If center of cell is within circle (subject to change)
+							if (sqrt(sq(org.cells[j].x - game.abilities[i].spore.spores[k].x) + sq(org.cells[j].y - game.abilities[i].spore.spores[k].y)) <= game.abilities[i].secrete.radius) { // If center of cell is within secrete circle (subject to change)
+								let skip = false;
+								for (let l = 0; l < game.info.count; l++) {
+									if (game.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - game.abilities[l].neutralize.x) + sq(org.cells[j].y - game.abilities[l].neutralize.y)) <= game.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+										skip = true;
+										break;
+									}
+								}
+								if (skip == true) {
+									continue; // Acid is ineffectual when neutralized
+								}
 								org.cells.splice(j, 1);
 								org.count--;
 								j--;
 								break;
 							}
+							// Break causes cells to die one at a time (not default) (more complicated to implement here)
+						}
+					}
+				}
+				for (let j = 0; j < 3; j++) { // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
+					if (game.abilities[i].shoot.secrete[j].value == true) {
+						for (let k = 0; k < org.count; k++) {
+							if (sqrt(sq(org.cells[k].x - game.abilities[i].shoot.spore[j].x) + sq(org.cells[k].y - game.abilities[i].shoot.spore[j].y)) <= game.abilities[i].shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
+								let skip = false;
+								for (let l = 0; l < game.info.count; l++) {
+									if (game.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - game.abilities[l].neutralize.x) + sq(org.cells[j].y - game.abilities[l].neutralize.y)) <= game.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+										skip = true;
+										break;
+									}
+								}
+								if (skip == true) {
+									continue; // Acid is ineffectual when neutralized
+								}
+								org.cells.splice(k, 1);
+								org.count--;
+								k--;
+								// break; // Break causes cells to die one at a time (not default)
+							}
+						}
+					}
+				}
+				if (game.abilities[i].toxin.value == true) { // Toxin
+					for (let j = 0; j < org.count; j++) {
+						if (org.index == game.abilities[i].index) { // If is own org's toxin
+							continue; // Do not kill own cells
+						}
+						if (sqrt(sq(org.cells[j].x - game.abilities[i].toxin.x) + sq(org.cells[j].y - game.abilities[i].toxin.y)) <= game.abilities[i].toxin.radius) { // If center of cell is within toxin circle
+							let skip = false;
+							for (let l = 0; l < game.info.count; l++) {
+								if (game.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - game.abilities[l].neutralize.x) + sq(org.cells[j].y - game.abilities[l].neutralize.y)) <= game.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+									skip = true;
+									break;
+								}
+							}
+							if (skip == true) {
+								continue; // Acid is ineffectual when neutralized
+							}
+							org.cells.splice(j, 1); // Kill cell
+							org.count--;
+							j--;
+							// break; // Break causes cells to die one at a time (not default)
 						}
 					}
 				}
 			}
 
+			// Dots
+			for (let i = 0; i < game.world.dots.count; i++) {
+				let dot = game.world.dots.array[i];
+				let broken = false;
+				for (let j = 0; j < org.count; j++) {
+					let cell = org.cells[j];
+					if (dot.x >= cell.x - cell.width / 2 && dot.x <= cell.x + cell.width / 2 && dot.y >= cell.y - cell.height / 2 && dot.y <= cell.y + cell.height / 2) {
+						let doT = {
+							i: dot.i, 
+							r: random(game.world.dots.r.min, game.world.dots.r.max), 
+							x: random(0, game.world.width), 
+							y: random(0, game.world.height)
+						};
+						game.world.dots.array.splice(dot.i, 1, doT); // Replace eaten dot with new random doT
+						socket.emit('World', game.world);
+						broken = true;
+						break;
+					}
+				}
+				if (broken == true) {
+					break;
+				}
+			}
 
 			if (org.count == 0) {
 				org.alive = false;
@@ -439,28 +570,33 @@ var getRegionInfo = function(orG) {
 function gameOver() {
 	clearInterval(org.interval);
 	for (let i in ability) { // Reset Ability Cooldowns
-		ability[i].value = false;
-		if (ability[i].can == false) {
-			if (ability[i].timeout != undefined) {
-				clearTimeout(ability[i].timeout);
-			}
-			if (ability[i].interval != undefined) {
-				clearInterval(ability[i].interval);
-			}
+		if (ability[i].i != undefined) { // If is a usable ability
+			clearTimeout(ability[i].timeout);
+			ability[i].value = false;
 			ability[i].can = true;
 			ability[i].cooling = false;
+			ability[i].start = undefined;
+			ability[i].end = undefined;
 		}
+	}
+	for (let i = 0; i < 3; i++) { // Reset shoot
+		clearTimeout(ability.shoot.timeout[i]);
+		ability.shoot.value[i] = false;
+		ability.shoot.can[i] = true;
+		ability.shoot.spore[i] = undefined;
+		ability.shoot.secrete[i] = {};
+		ability.shoot.start[i] = undefined;
+		ability.shoot.end[i] = undefined;
 	}
 	socket.emit('Ability', ability);
 	socket.emit('Dead');
-	alert('You are Dead\nPress \'R\' to Respawn');
+	alert('Press \'R\' to Respawn');
 	// let respawn = confirm('Respawn? (Press \'R\' to Respawn Later)');
 	// if (respawn == true) {
 	// 	if (state == 'game' && org.alive == false) {
 	// 		spawn();
 	// 	}
 	// }
-
 }
 
 function keyPressed() {
@@ -484,26 +620,18 @@ function keyPressed() {
 				spawn();
 			}
 			break;
-		case ABILITYKEY4: // SPACE by default
-			if (state == 'game' && org.alive == true) {
-				if (ability.spore.value == false && ability.secrete.value == false) {
-					spore();
-				} else if (ability.spore.value == true && ability.secrete.value == false) {
-					secrete();
-				}
-				break;
-			}
 		case ABILITYKEY1: // X by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.extend.activated == true && ability.extend.can == true) {
-					extend(org.player);
+					extend(org.player); // Extend self
 				} else if (ability.compress.activated == true && ability.compress.can == true) {
-					for (let i = 0; i < game.info.count; i++) {
-						if (org.target == game.players[i]) {
-							compress(org.target);
-							break;
-						}
-					}
+					shoot(0, 1);
+					// for (let i = 0; i < game.info.count; i++) {
+					// 	if (org.target == game.players[i]) { // Find targeted org
+					// 		compress(org.target); // Compress targetec org
+					// 		break;
+					// 	}
+					// }
 				}
 				// if (ability.speed.activated == true) { (Not updated)
 				// 	speed(org.player);
@@ -515,28 +643,44 @@ function keyPressed() {
 		case ABILITYKEY2: // C by default
 			if (state == 'game' && org.alive == true) {
 				if (ability.immortality.activated == true && ability.immortality.can == true) {
-					immortality(org.player);
+					immortality(org.player); // Immortalize self
 				} else if (ability.stunt.activated == true && ability.stunt.can == true) {
-					for (let i = 0; i < game.info.count; i++) {
-						if (org.target == game.players[i]) {
-							stunt(org.target);
-							break;
-						}
-					}
+					shoot(1, 1);
+					// for (let i = 0; i < game.info.count; i++) {
+					// 	if (org.target == game.players[i]) { // Find targeted org
+					// 		stunt(org.target); // Stunt targeted org
+					// 		break;
+					// 	}
+					// }
 				}
 				break;
 			}
 		case ABILITYKEY3: // V by default
 			if (state == 'game' && org.alive == true) {
-				if (ability.stimulate.activated == true && ability.stimulate.can == true) {
-					stimulate(org.player);
-				} else if (ability.poison.activated == true && ability.poison.can == true) {
-					for (let i = 0; i < game.info.count; i++) {
-						if (org.target == game.players[i]) {
-							poison(org.target);
-							break;
-						}
-					}
+				// if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
+				// 	stimulate(org.player); // Stimulate self
+				// } else if (ability.poison.activated == true && ability.poison.can == true) {
+				// 	shoot(2, 1);
+				// 	// for (let i = 0; i < game.info.count; i++) {
+				// 	// 	if (org.target == game.players[i]) { // Find targeted org
+				// 	// 		poison(org.target); // Poison targeted org
+				// 	// 		break;
+				// 	// 	}
+				// 	// }
+				// }
+				if (ability.neutralize.activated == true && ability.neutralize.can == true) {
+					neutralize(org.player);
+				} else if (ability.toxin.activated == true && ability.toxin.can == true) {
+					toxin(org.player);
+				}
+				break;
+			}
+		case ABILITYKEY4: // SPACE by default
+			if (state == 'game' && org.alive == true) {
+				if (ability.spore.value == false && ability.secrete.value == false) {
+					spore();
+				} else if (ability.spore.value == true && ability.secrete.value == false) {
+					secrete();
 				}
 				break;
 			}

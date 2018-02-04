@@ -17,7 +17,7 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 5000, 
+		time: 4000, 
 		cooldown: 4000
 	}, 
 	compress: {
@@ -30,7 +30,7 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 5000, 
+		time: 3000, 
 		cooldown: 4000
 	}, 
 	// speed: { // Not updated
@@ -61,7 +61,7 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 3000, 
+		time: 4000, 
 		cooldown: 6000
 	}, 
 	stunt: {
@@ -74,36 +74,72 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 3000, 
+		time: 4000, 
 		cooldown: 6000
 	}, 
-	stimulate: {
+	// stimulate: {
+	// 	value: false, 
+	// 	activated: false, 
+	// 	can: false, 
+	// 	i: 2, 
+	// 	j: 0, 
+	// 	factor: 9, // Factor must be equal to that of poison
+	// 	timeout: undefined, 
+	// 	start: undefined, 
+	// 	end: undefined, 
+	// 	cooling: false, 
+	// 	time: 3000, 
+	// 	cooldown: 5000
+	// }, 
+	// poison: {
+	// 	value: false, 
+	// 	activated: false, 
+	// 	can: false, 
+	// 	i: 2, 
+	// 	j: 1, 
+	// 	factor: 9, // Factor must be equal to that of stimulate
+	// 	timeout: undefined, 
+	// 	start: undefined, 
+	// 	end: undefined, 
+	// 	cooling: false, 
+	// 	time: 3000, 
+	// 	cooldown: 5000
+	// }, 
+	neutralize: {
 		value: false, 
 		activated: false, 
 		can: false, 
 		i: 2, 
 		j: 0, 
-		factor: 4, 
+		radius: 60, 
+		color: { r: 0, g: 179, b: 12 }, 
+		weight: 3, 
+		x: undefined, 
+		y: undefined, 
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 3000, 
-		cooldown: 5000
+		time: 4000, 
+		cooldown: 6000
 	}, 
-	poison: {
+	toxin: {
 		value: false, 
 		activated: false, 
 		can: false, 
 		i: 2, 
 		j: 1, 
-		factor: 4, 
+		radius: 60, 
+		color: { r: 255, g: 111, b: 92}, 
+		weight: 3, 
+		x: undefined, 
+		y: undefined, 
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 3000, 
-		cooldown: 5000
+		time: 4000, 
+		cooldown: 6000
 	}, 
 	spore: {
 		value: false, 
@@ -111,7 +147,7 @@ var ability = {
 		i: 3, 
 		j: 0, 
 		interval: undefined, 
-		speed: 12, 
+		speed: 6, 
 		spores: [], 
 		count: 0, 
 		can: true, 
@@ -119,8 +155,8 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 2500, 
-		cooldown: 7000
+		time: 2200, 
+		cooldown: 7500 // 7500 default
 	}, 
 	secrete: {
 		value: false, 
@@ -128,12 +164,35 @@ var ability = {
 		i: 3, 
 		j: 1, 
 		color: { r: undefined, g: undefined, b: undefined }, 
-		radius: CELLWIDTH / cos45 * 5 / 2, 
+		radius: CELLWIDTH / cos45 * 2.9, 
 		can: false, 
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
-		time: 1500
+		time: 800
+	}, 
+	shoot: {
+		value: [ false, false, false ], 
+		can: [ true, true, true ], 
+		secrete: [ {}, {}, {}
+			// { // Sets values on use
+			// 	value: false, 
+			// 	color: undefined, 
+			// 	radius: CELLWIDTH / cos45 * 2.7 / 2, // Half 'secrete'
+			// 	hit: false, 
+			// 	timeout: undefined, 
+			// 	start: undefined, 
+			// 	end: undefined, 
+			// 	time: 800 // Same as 'secrete'
+			// }
+		], 
+		spore: [ undefined, undefined, undefined ], 
+		speed: 5, 
+		interval: [ undefined, undefined, undefined ], 
+		timeout: [ undefined, undefined, undefined ], 
+		start: [ undefined, undefined, undefined ], 
+		end: [ undefined, undefined, undefined ], 
+		time: 2000, 
 	}
 };
 
@@ -187,13 +246,148 @@ function chooseAbilities() {
 	text('Spawn', center.x - textWidth('Spawn') / 2, height * 8 / 9 + textSize() / 3); // Spawn Text
 }
 
+function shoot(I, J) {
+	if (ability.shoot.value[I] == false && ability.shoot.can[I] == true) { // If not currently shooting and if can shoot specified ability (Should have been checked before this point)
+		ability.shoot.value[I] = true;
+		ability.shoot.can[I] = false;
+		ability.shoot.secrete[I].value = false;
+		clearTimeout(ability.shoot.timeout[I]); // Reset timeout
+		ability.shoot.start[I] = new Date(); // Set start time
+
+		// Get Spore
+		let regions = getRegionInfo(org); // Get region data
+		let theta = atan((mouseY - center.y) / (mouseX - center.x)); // Get angle (theta) from mouse pointer
+		if (mouseX < center.x) { // If mouse is in second or third quadrants
+			theta += 180; // Correct theta for negative x
+		}
+		let deltas = [];
+		for (let i = 0; i < regions.exposed.length; i++) { // Loop through exposed cells
+			let phi = atan((regions.exposed[i].y - org.y()) / (regions.exposed[i].x - org.x())); // Get angle (phi) of each exposed cell
+			if (regions.exposed[i].x - org.x() < 0) {
+				phi += 180;
+			}
+			deltas.push(abs(theta - phi)); // Calculate difference between theta and phi and collect in 'deltas' array
+		}
+		let min;
+		for (let i = 0; i < deltas.length; i++) {
+			if (i == 0) {
+				min = deltas[i]; // Set first delta as min for comparison value
+				continue;
+			} else if (min > deltas[i]) { // Calculate minimum delta
+				min = deltas[i];
+			}
+		}
+		ability.shoot.spore[I] = regions.exposed[deltas.indexOf(min)]; // Set spore as the cell with angle phi closest to mouse angle theta
+		for (let i = 0; i < org.count; i++) {
+			if (ability.shoot.spore[I].x == org.cells[i].x && ability.shoot.spore[I].y == org.cells[i].y) { // Find spore in org
+				org.cells.splice(i, 1); // Remove spore cell from org
+				org.count--;
+				i--;
+				break;
+			}
+		}
+		ability.shoot.spore[I].speed = ability.shoot.speed;
+		ability.shoot.spore[I].theta = theta;
+
+		// Interval
+		ability.shoot.interval[I] = function() {
+			ability.shoot.spore[I].x += ability.shoot.spore[I].speed * cos(ability.shoot.spore[I].theta);
+			ability.shoot.spore[I].y += ability.shoot.spore[I].speed * sin(ability.shoot.spore[I].theta);
+			socket.emit('Ability', ability);
+		};
+
+		// Timeout
+		ability.shoot.timeout[I] = setTimeout(function() {
+			if (ability.shoot.value[I] == true && ability.shoot.secrete[I].value == false) {
+				ability.shoot.value[I] = false;
+				ability.shoot.can[I] = true;
+				ability.shoot.spore[I] = undefined;
+				ability.shoot.secrete[I].end = new Date();
+				socket.emit('Ability', ability);
+			}
+		}, ability.shoot.time);
+
+	} else if (ability.shoot.value[I] == true) { // If currently shooting (secrete)
+		ability.shoot.value[I] = false;
+		ability.shoot.secrete[I].radius = CELLWIDTH / cos45 * 2.9 / 2; // Not predefined (Half secrete)
+		ability.shoot.secrete[I].hit = false;
+		ability.shoot.secrete[I].time = 800; // Not predefined (Same as secrete)
+		ability.shoot.end[I] = new Date();
+		clearTimeout(ability.shoot.timeout[I]);
+		ability.shoot.secrete[I].start = new Date();
+		ability.shoot.secrete[I].color = org.color;
+
+		// Hit (Apply Ability) (Hit detection on local machine)
+		for (let i = 0; i < game.info.count; i++) {
+			if (game.orgs[i].player == socket.id) {
+				continue;
+			}
+			for (let j = 0; j < game.orgs[i].count; j++) {
+				if (sqrt(sq(game.orgs[i].cells[j].x - ability.shoot.spore[I].x) + sq(game.orgs[i].cells[j].y - ability.shoot.spore[I].y)) < ability.shoot.secrete[I].radius) { // If center of cell is within circle (subject to change)
+					if (game.abilities[i].neutralize.value == true && sqrt(sq(game.orgs[i].cells[j].x - game.abilities[i].neutralize.x) + sq(game.orgs[i].cells[j].y - game.abilities[i].neutralize.y)) <= game.abilities[i].neutralize.radius) { // If center of cell is within neutralize circle
+						continue;
+					}
+					use(I, J, game.orgs[i].player); // Apply ability to target
+					ability.shoot.secrete[I].hit = true;
+					break;
+				}
+			}
+		}
+		
+		ability.shoot.secrete[I].value = true; // Value after hit detection so 'grow' hit detection does not run before initial
+		socket.emit('Ability', ability);
+		ability.shoot.secrete[I].timeout = setTimeout(function() {
+			ability.shoot.secrete[I].value = false;
+			ability.shoot.secrete[I].end = new Date();
+			{ // Copy of 'shoot' timeout
+				ability.shoot.value[I] = false;
+				ability.shoot.can[I] = true;
+				ability.shoot.spore[I] = undefined;
+				ability.shoot.end[I] = new Date();
+			}
+			clearTimeout(ability.shoot.timeout[I]);
+			ability.shoot.timeout[I] = undefined;
+			socket.emit('Ability', ability);
+		}, ability.shoot.secrete[I].time);
+	}
+}
+
+function use(I, J, playeR) {
+	if (I == 0) {
+		if (J == 0) {
+			extend(playeR);
+		} else if (J == 1) {
+			compress(playeR);
+		}
+	} else if (I == 1) {
+		if (J == 0) {
+			immortality(playeR);
+		} else if (J == 1) {
+			stunt(playeR);
+		}
+	} else if (I == 2) {
+		if (J == 0) {
+			neutralize(playeR);
+		} else if (J == 1) {
+			toxin(playeR);
+		}
+	} else if (I == 3) {
+		if (J == 0) {
+			spore();
+		} else if (J == 1) {
+			secrete();
+		}
+	}
+}
+
 function extend(playeR) {
+	ability.extend.can = false;
 	socket.emit('Extend', playeR);
 }
 
 function compress(playeR) {
 	socket.emit('Compress', playeR);
-	ability.compress.can = false;
+	ability.compress.can = false; // Redundancy
 	ability.compress.start = new Date();
 	socket.emit('Ability', ability);
 	setTimeout(function() {
@@ -211,12 +405,13 @@ function compress(playeR) {
 // }
 
 function immortality(playeR) {
+	ability.immortality.can = false;
 	socket.emit('Immortality', playeR);
 }
 
 function stunt(playeR) {
 	socket.emit('Stunt', playeR);
-	ability.stunt.can = false;
+	ability.stunt.can = false; // Redundancy
 	ability.stunt.start = new Date();
 	socket.emit('Ability', ability);
 	setTimeout(function() {
@@ -225,19 +420,30 @@ function stunt(playeR) {
 	}, ability.stunt.time);
 }
 
-function stimulate(playeR) {
-	socket.emit('Stimulate', playeR);
+// function stimulate(playeR) {
+// 	ability.stimulate.can = false;
+// 	socket.emit('Stimulate', playeR);
+// }
+
+// function poison(playeR) {
+// 	socket.emit('Poison', playeR);
+// 	ability.poison.can = false; // Redundancy
+// 	ability.poison.start = new Date();
+// 	socket.emit('Ability', ability);
+// 	setTimeout(function() {
+// 		ability.poison.end = new Date();
+// 		ability.poison.cooling = true;
+// 	}, ability.poison.time);
+// }
+
+function neutralize(playeR) {
+	socket.emit('Neutralize', playeR);
+	ability.neutralize.can = false;
 }
 
-function poison(playeR) {
-	socket.emit('Poison', playeR);
-	ability.poison.can = false;
-	ability.poison.start = new Date();
-	socket.emit('Ability', ability);
-	setTimeout(function() {
-		ability.poison.end = new Date();
-		ability.poison.cooling = true;
-	}, ability.poison.time);
+function toxin(playeR) {
+	socket.emit('Toxin', playeR);
+	ability.toxin.can = false;
 }
 
 function spore() {
@@ -264,17 +470,15 @@ function spore() {
 				}
 			}
 		}
-		ability.spore.interval = setInterval(function() {
+		ability.spore.interval = function() {
 			for (let i = 0; i < ability.spore.count; i++) {
 				ability.spore.spores[i].x += ability.spore.spores[i].speed * cos(ability.spore.spores[i].theta);
 				ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
-				socket.emit('Ability', ability);
 			}
-		}, 80);
+			socket.emit('Ability', ability);
+		};
 		ability.spore.timeout = setTimeout(function() { // End Spore
 			if (ability.spore.value == true && ability.secrete.value == false) { // If secrete() has not been called
-				clearInterval(ability.spore.interval); // Clear interval
-				ability.spore.interval = undefined;
 				ability.spore.spores = []; // Clear spores array
 				ability.spore.value = false;
 				ability.spore.end = new Date();
@@ -290,7 +494,7 @@ function secrete() {
 		ability.secrete.value = true;
 		ability.secrete.can = false;
 		ability.spore.value = false;
-		clearInterval(ability.spore.interval);
+		ability.spore.end = new Date(); // Set spore end date for secrete timer calculations
 		clearTimeout(ability.secrete.timeout);
 		ability.secrete.start = new Date();
 		ability.secrete.color = org.color;
@@ -299,10 +503,8 @@ function secrete() {
 			ability.secrete.value = false;
 			ability.secrete.can = true;
 			{ // Copy of spore timeout so spore ends when secrete ends
-				clearInterval(ability.spore.interval); // Clear interval
-				ability.spore.interval = undefined;
 				ability.spore.spores = []; // Clear spores array
-				ability.spore.end = new Date();
+				ability.spore.end = new Date(); // Overwrite actual end date for cooldown purposes
 				ability.spore.cooling = true;
 			}
 			ability.secrete.end = new Date();
@@ -311,20 +513,122 @@ function secrete() {
 	}
 }
 
-function renderAbilities(abilitY) {
-	if (abilitY.spore.value == true || abilitY.secrete.value == true) {
+// function renderAbilities(abilitY) {
+// 	if (abilitY.index != org.index) { // Render for non-self under neutralize (visual neutralization)
+// 		if (abilitY.spore.value == true || abilitY.secrete.value == true) { // Spore and Secrete
+// 			for (let i = 0; i < abilitY.spore.count; i++) {
+// 				let celL = abilitY.spore.spores[i];
+// 				if (abilitY.spore.value == true) {
+// 					fill(celL.color.r, celL.color.g, celL.color.b);
+// 					noStroke();
+// 					rect(celL.x, celL.y, celL.width, celL.height);
+// 				} else if (abilitY.secrete.value == true) {
+// 					fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
+// 					noStroke();
+// 					ellipse(celL.x, celL.y, abilitY.secrete.radius);
+// 				}
+// 			}
+// 		}
+// 		for (let i = 0; i < 3; i++) {
+// 			if (abilitY.shoot.value[i] == true) {
+// 				let cell = abilitY.shoot.spore[i];
+// 				fill(cell.color.r, cell.color.g, cell.color.b);
+// 				noStroke();
+// 				rect(cell.x, cell.y, cell.width * .8, cell.height * .8); // .8 (default) size of spore (so as to differentiate between the two)
+// 			} else if (abilitY.shoot.secrete[i].value == true) {
+// 				let cell = abilitY.shoot.spore[i];
+// 				fill(abilitY.shoot.secrete[i].color.r, abilitY.shoot.secrete[i].color.g, abilitY.shoot.secrete[i].color.b);
+// 				noStroke();
+// 				ellipse(cell.x, cell.y, abilitY.shoot.secrete[i].radius);
+// 			}
+// 		}
+// 	}
+// 	if (abilitY.index == org.index) { // Own shoots, spores, and secretes render over neutralize (not toxin)
+// 		if (abilitY.spore.value == true || abilitY.secrete.value == true) { // Spore and Secrete
+// 			for (let i = 0; i < abilitY.spore.count; i++) {
+// 				let celL = abilitY.spore.spores[i];
+// 				if (abilitY.spore.value == true) {
+// 					fill(celL.color.r, celL.color.g, celL.color.b);
+// 					noStroke();
+// 					rect(celL.x, celL.y, celL.width, celL.height);
+// 				} else if (abilitY.secrete.value == true) {
+// 					fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
+// 					noStroke();
+// 					ellipse(celL.x, celL.y, abilitY.secrete.radius);
+// 				}
+// 			}
+// 		}
+// 		for (let i = 0; i < 3; i++) {
+// 			if (abilitY.shoot.value[i] == true) {
+// 				let cell = abilitY.shoot.spore[i];
+// 				fill(cell.color.r, cell.color.g, cell.color.b);
+// 				noStroke();
+// 				rect(cell.x, cell.y, cell.width * .8, cell.height * .8); // .8 (default) size of spore (so as to differentiate between the two)
+// 			} else if (abilitY.shoot.secrete[i].value == true) {
+// 				let cell = abilitY.shoot.spore[i];
+// 				fill(abilitY.shoot.secrete[i].color.r, abilitY.shoot.secrete[i].color.g, abilitY.shoot.secrete[i].color.b);
+// 				noStroke();
+// 				ellipse(cell.x, cell.y, abilitY.shoot.secrete[i].radius);
+// 			}
+// 		}
+// 	}
+// }
+
+function renderSpores(abilitY) {
+	if (abilitY.spore.value == true) {
 		for (let i = 0; i < abilitY.spore.count; i++) {
-			let celL = abilitY.spore.spores[i];
-			if (abilitY.spore.value == true) {
-				fill(abilitY.spore.spores[i].color.r, abilitY.spore.spores[i].color.g, abilitY.spore.spores[i].color.b);
-				noStroke();
-				rect(celL.x, celL.y, celL.width, celL.height);
-			} else if (abilitY.secrete.value == true) {
-				fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
-				noStroke();
-				ellipse(celL.x, celL.y, abilitY.secrete.radius);
-			}
+			let cell = abilitY.spore.spores[i];
+			fill(cell.color.r, cell.color.g, cell.color.b);
+			noStroke();
+			rect(cell.x, cell.y, cell.width, cell.height);
 		}
+	}
+	for (let i = 0; i < 3; i++) {
+		if (abilitY.shoot.value[i] == true) {
+			let cell = abilitY.shoot.spore[i];
+			fill(cell.color.r, cell.color.g, cell.color.b);
+			noStroke();
+			rect(cell.x, cell.y, cell.width * .8, cell.height * .8); // .8 (default) size of spore (so as to differentiate between the two)
+		}
+	}
+}
+
+function renderSecretions(abilitY) {
+	if (abilitY.secrete.value == true) {
+		for (let i = 0; i < abilitY.spore.count; i++) {
+			let cell = abilitY.spore.spores[i];
+			fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
+			noStroke();
+			ellipse(cell.x, cell.y, abilitY.secrete.radius);
+		}
+	}
+	for (let i = 0; i < 3; i++) {
+		if (abilitY.shoot.secrete[i].value == true) {
+			let cell = abilitY.shoot.spore[i];
+			fill(abilitY.shoot.secrete[i].color.r, abilitY.shoot.secrete[i].color.g, abilitY.shoot.secrete[i].color.b);
+			noStroke();
+			ellipse(cell.x, cell.y, abilitY.shoot.secrete[i].radius);
+		}
+	}
+}
+
+function renderNeutralize(abilitY) {
+	if (abilitY.neutralize.value == true) { // Render neutralize (not toxin) over shoots, spores, and secretes of opponents
+		let orG = game.orgs[abilitY.index];
+		fill(100);
+		stroke(abilitY.neutralize.color.r, abilitY.neutralize.color.g, abilitY.neutralize.color.b);
+		strokeWeight(abilitY.neutralize.weight);
+		ellipse(abilitY.neutralize.x, abilitY.neutralize.y, abilitY.neutralize.radius);
+	}
+}
+
+function renderToxin(abilitY) {
+	if (abilitY.toxin.value == true) { // Toxin renders at bottom
+		let orG = game.orgs[abilitY.index];
+		fill(100);
+		stroke(abilitY.toxin.color.r, abilitY.toxin.color.g, abilitY.toxin.color.b);
+		strokeWeight(abilitY.toxin.weight);
+		ellipse(abilitY.toxin.x, abilitY.toxin.y, abilitY.toxin.radius);
 	}
 }
 

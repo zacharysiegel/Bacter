@@ -3,6 +3,14 @@
 	{
 		"selected_items":
 		[
+			[
+				"abili",
+				"Abilities"
+			],
+			[
+				"font-",
+				"font-weight"
+			]
 		]
 	},
 	"buffers":
@@ -11,16 +19,17 @@
 			"file": "changelog.md",
 			"settings":
 			{
-				"buffer_size": 751,
+				"buffer_size": 1474,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "2.0.0/plan.txt",
+			"file": "2.0.0/plan.md",
 			"settings":
 			{
-				"buffer_size": 1629,
+				"buffer_size": 2890,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -28,7 +37,8 @@
 			"file": "2.0.0/www/js/thesocket.js",
 			"settings":
 			{
-				"buffer_size": 8840,
+				"buffer_size": 7010,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -36,7 +46,8 @@
 			"file": "2.0.0/www/js/init.js",
 			"settings":
 			{
-				"buffer_size": 1827,
+				"buffer_size": 1842,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -44,7 +55,17 @@
 			"file": "2.0.0/www/js/game.js",
 			"settings":
 			{
-				"buffer_size": 21974,
+				"buffer_size": 28549,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "2.0.0/www/js/abilities.js",
+			"settings":
+			{
+				"buffer_size": 18586,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -52,7 +73,8 @@
 			"file": "2.0.0/server.js",
 			"settings":
 			{
-				"buffer_size": 8971,
+				"buffer_size": 9435,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		}
@@ -90,6 +112,7 @@
 	"expanded_folders":
 	[
 		"/C/Bacter",
+		"/C/Bacter/1.0.0",
 		"/C/Bacter/2.0.0",
 		"/C/Bacter/2.0.0/www",
 		"/C/Bacter/2.0.0/www/css",
@@ -97,6 +120,19 @@
 	],
 	"file_history":
 	[
+		"/C/Bacter/2.0.0/www/js/config.js",
+		"/C/Bacter/2.0.0/www/js/browser.js",
+		"/C/Bacter/2.0.0/www/js/org.js",
+		"/C/Bacter/2.0.0/www/css/index.css",
+		"/C/Bacter/2.0.0/www/js/items.js",
+		"/C/Bacter/2.0.0/www/index.html",
+		"/C/Bacter/2.0.0/www/css/canvas.css",
+		"/C/Bacter/2.0.0/www/js/init.js",
+		"/C/Bacter/2.0.0/server.js",
+		"/C/Bacter/2.0.0/www/js/game.js",
+		"/C/Bacter/2.0.0/www/js/thesocket.js",
+		"/C/Bacter/2.0.0/plan.txt",
+		"/C/Bacter/changelog.md",
 		"/C/bacterCurrent/www/js/thesocket.js",
 		"/C/Bacter/1.1.2/server.js",
 		"/C/Bacter/1.1.2/www/js/game.js",
@@ -127,7 +163,7 @@
 	],
 	"find":
 	{
-		"height": 0.0
+		"height": 26.0
 	},
 	"find_in_files":
 	{
@@ -141,6 +177,29 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"2.8",
+			"CELLWIDTH / cos45 * ",
+			"stimulate",
+			"poison",
+			"stimulate",
+			"shoot.spore",
+			"applied",
+			"game.abilities[i]",
+			"shoot",
+			" ==",
+			"shoot.spore",
+			"shoot.spores",
+			".r",
+			".d",
+			"r()",
+			"d()",
+			"abilitY.spore.spores[i]",
+			"cooling",
+			"ability.spore.interval",
+			"spectatemousedown",
+			"joinmousedown",
+			"emit('Games'",
+			"sockeT.broadcast.emit('Games'"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -167,15 +226,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 751,
+						"buffer_size": 1474,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								751,
-								751
+								474,
+								474
 							]
 						],
 						"settings":
@@ -184,7 +243,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 5,
@@ -192,28 +251,28 @@
 				},
 				{
 					"buffer": 1,
-					"file": "2.0.0/plan.txt",
+					"file": "2.0.0/plan.md",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1629,
+						"buffer_size": 2890,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2890,
+								2890
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"syntax": "Packages/Markdown/Markdown.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1026.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
@@ -225,15 +284,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8840,
+						"buffer_size": 7010,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								978,
+								978
 							]
 						],
 						"settings":
@@ -242,7 +301,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 510.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -254,73 +313,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1827,
+						"buffer_size": 1842,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "2.0.0/www/js/game.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 21974,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								550,
-								550
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "2.0.0/server.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8971,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
+								319,
+								319
 							]
 						],
 						"settings":
@@ -334,13 +335,100 @@
 					},
 					"stack_index": 4,
 					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "2.0.0/www/js/game.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 28549,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								15116,
+								15116
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 7770.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "2.0.0/www/js/abilities.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 18586,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								18163,
+								18163
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 9370.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "2.0.0/server.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9435,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8595,
+								8595
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4659.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
 				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 0.0
+		"height": 26.0
 	},
 	"input":
 	{
@@ -377,7 +465,7 @@
 	"project": "bacter.sublime-project",
 	"replace":
 	{
-		"height": 0.0
+		"height": 48.0
 	},
 	"save_all_on_build": true,
 	"select_file":

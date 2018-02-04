@@ -1,7 +1,7 @@
 /*
 NPM Version: 5.6.0
 	Update npm code: <npm install npm@latest -g>
-Node.js Version: 9.3.0
+Node.js Version: 9.4.0
 */
 
 /* 
@@ -59,10 +59,12 @@ function newConnection(sockeT) {
 
 	sockeT.join('Lobby'); // Join 'Lobby' Room
 	sockeT.emit('Games', games);
+	io.sockets.emit('Connections', connections);
 
 	// Disconnect
 	sockeT.on('disconnect', function() {
 		connections--;
+		io.sockets.emit('Connections', connections);
 		console.log('Client disconnected: ' + sockeT.id); // Server Message
 		console.log('Connections: ' + connections);
 
@@ -222,6 +224,16 @@ function newConnection(sockeT) {
 		}
 	});
 
+	// World
+	sockeT.on('World', function(worlD) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == worlD.host) { // Find game
+				games[i].world = worlD;
+				break;
+			}
+		}
+	});
+
 	{ // Abilities
 		sockeT.on('Extend', function(playeR) {
 			if (playeR == sockeT.id) {
@@ -271,19 +283,35 @@ function newConnection(sockeT) {
 			}
 		});
 
-		sockeT.on('Stimulate', function(playeR) {
+		// sockeT.on('Stimulate', function(playeR) {
+		// 	if (playeR == sockeT.id) {
+		// 		sockeT.emit('Stimulate');
+		// 	} else {
+		// 		sockeT.to(playeR).emit('Stimulate');
+		// 	}
+		// });
+
+		// sockeT.on('Poison', function(playeR) {
+		// 	if (playeR == sockeT.id) {
+		// 		sockeT.emit('Poison');
+		// 	} else {
+		// 		sockeT.to(playeR).emit('Poison');
+		// 	}
+		// });
+
+		sockeT.on('Neutralize', function(playeR) {
 			if (playeR == sockeT.id) {
-				sockeT.emit('Stimulate');
+				sockeT.emit('Neutralize');
 			} else {
-				sockeT.to(playeR).emit('Stimulate');
+				sockeT.to(playeR).emit('Neutralize');
 			}
 		});
 
-		sockeT.on('Poison', function(playeR) {
+		sockeT.on('Toxin', function(playeR) {
 			if (playeR == sockeT.id) {
-				sockeT.emit('Poison');
+				sockeT.emit('Toxin');
 			} else {
-				sockeT.to(playeR).emit('Poison');
+				sockeT.to(playeR).emit('Toxin');
 			}
 		});
 	}

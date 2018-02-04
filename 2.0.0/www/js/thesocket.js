@@ -3,77 +3,17 @@ function connectSocket() {
 	socket = io.connect('24.55.26.67'); // Local Server
 	// socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
 
+	socket.on('Connections', function(connectionS) {
+		connections = connectionS;
+		if (state == 'browser') {
+			renderBrowser();
+		}
+	});
+
 	socket.on('Games', function(gameS) {
 		if (state == 'browser') {
-			// let body = document.getElementsByTagName('body')[0];
-			document.addEventListener('mouseup', function() {
-				joinMouseDown = false;
-				spectateMouseDown = false;
-			});
-			let browserBody = document.getElementById('browserBody');
-			for (let i = 0; i < games.length; i++) {
-				browserBody.deleteRow(-1);
-			}
 			games = gameS;
-			for (let i = 0; i < games.length; i++) {
-				let row = browserBody.insertRow(-1);
-				row.style.height = '20px';
-				let name = row.insertCell(0);
-				name.innerHTML = games[i].info.name;
-				name.style.width = '500px';
-				let host = row.insertCell(1);
-				host.innerHTML = games[i].info.host;
-				host.style.width = '200px';
-				let players = row.insertCell(2);
-				players.innerHTML = games[i].players.length;
-				players.style.width = '100px';
-				players.style.textAlign = 'center';
-				let spectators = row.insertCell(3);
-				spectators.innerHTML = games[i].spectators.length;
-				spectators.style.width = '100px';
-				spectators.style.textAlign = 'center';
-				let join = row.insertCell(4);
-				join.innerHTML = 'Join';
-				join.style.width = '190px';
-				join.style.textAlign = 'center';
-				join.style.cursor = 'pointer';
-				let baseColor = join.style.backgroundColor;
-				var joinMouseDown = false;
-				join.addEventListener('mouseover', function() { if (joinMouseDown == true) { join.style.backgroundColor = 'rgb(180, 180, 180)'; } });
-				join.addEventListener('mousedown', function() { joinMouseDown = true; join.style.backgroundColor = 'rgb(180, 180, 180)'; });
-				join.addEventListener('mouseup', function() { joinMouseDown = false; join.style.backgroundColor = baseColor; });
-				join.addEventListener('mouseleave', function() { join.style.backgroundColor = baseColor; });
-				join.addEventListener('click', function() {
-					let passInput = document.getElementById(games[i].info.name + 'passInput');
-					socket.emit('Check Password', { pass: passInput.value, info: games[i].info, spectate: false }); // Initialize game as a player
-				});
-				let spectate = row.insertCell(5);
-				spectate.innerHTML = 'Spectate';
-				spectate.style.width = '190px';
-				spectate.style.textAlign = 'center';
-				spectate.style.cursor = 'pointer';
-				baseColor = spectate.style.backgroundColor;
-				var spectateMouseDown = false;
-				spectate.addEventListener('mouseover', function() { if (spectateMouseDown == true) { spectate.style.backgroundColor = 'rgb(180, 180, 180)'; } });
-				spectate.addEventListener('mousedown', function() { spectateMouseDown = true; spectate.style.backgroundColor = 'rgb(180, 180, 180)'; });
-				spectate.addEventListener('mouseup', function() { spectateMouseDown = false; spectate.style.backgroundColor = baseColor; });
-				spectate.addEventListener('mouseleave', function() { spectate.style.backgroundColor = baseColor; });
-				spectate.addEventListener('click', function() {
-					let passInput = document.getElementById(games[i].info.name + 'passInput');
-					socket.emit('Check Password', { pass: passInput.value, info: games[i].info, spectate: true }); // Initialize game as a spectator
-				});
-				let password = row.insertCell(6);
-				password.style.width = '150px';
-				password.textAlign = 'center';
-				let passwordInput = document.createElement('input');
-				password.appendChild(passwordInput);
-				passwordInput.type = 'text';
-				passwordInput.value = '';
-				passwordInput.autocomplete = 'off';
-				passwordInput.id = games[i].info.name + 'passInput';
-				passwordInput.style.width = '100%';
-				passwordInput.style.boxSizing = 'border-box';
-			}
+			renderBrowser();
 		}
 	});
 
@@ -98,22 +38,44 @@ function connectSocket() {
 		game = gamE;
 		if (state == 'game') {
 			translate(-org.off.x, -org.off.y);
+
+			if (ability.spore.value == true) {
+				ability.spore.interval();
+			}
+			for (let i = 0; i < 3; i++) {
+				if (ability.shoot.value[i] == true) {
+					ability.shoot.interval[i]();
+				}
+			}
 			renderWorld();
+			for (let i = 0; i < game.info.count; i++) {
+				renderToxin(game.abilities[i]);
+				renderSecretions(game.abilities[i]);
+				renderNeutralize(game.abilities[i]);
+			}
 			renderOrgs();
 			for (let i = 0; i < game.info.count; i++) {
-				renderAbilities(game.abilities[i]);
+				renderSpores(game.abilities[i]);
 			}
 			renderUI();
-			move(); // Move goes at the end so player does not see his movements before others
+			move(); // Move goes at the end so player does not render his movements before others
+
 			translate(org.off.x, org.off.y);
 		} else if (state == 'spectate') {
 			translate(-org.off.x, -org.off.y);
+
 			renderWorld();
-			renderOrgs();
 			for (let i = 0; i < game.info.count; i++) {
-				renderAbilities(game.abilities[i]);
+				renderToxin(game.abilities[i]);
+				renderSecretions(game.abilities[i]);
+				renderNeutralize(game.abilities[i]);
+			}
+			renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
+			for (let i = 0; i < game.info.count; i++) {
+				renderSpores(game.abilities[i]);
 			}
 			move();
+
 			translate(org.off.x, org.off.y);
 		}
 	});
@@ -138,7 +100,6 @@ function connectSocket() {
 	{ // Abilities
 		socket.on('Extend', function() {
 			ability.extend.value = true;
-			ability.extend.can = false;
 			clearTimeout(ability.extend.timeout);
 			org.coefficient = -25.5;
 			org.range = 70;
@@ -200,7 +161,6 @@ function connectSocket() {
 
 		socket.on('Immortality', function() {
 			ability.immortality.value = true;
-			ability.immortality.can = false;
 			clearTimeout(ability.immortality.timeout);
 			ability.immortality.start = new Date();
 			socket.emit('Ability', ability);
@@ -221,28 +181,57 @@ function connectSocket() {
 			}, ability.stunt.time);
 		});
 
-		socket.on('Stimulate', function() {
-			ability.stimulate.value = true;
-			ability.stimulate.can = false;
-			clearTimeout(ability.stimulate.timeout);
-			ability.stimulate.start = new Date();
+		// socket.on('Stimulate', function() {
+		// 	ability.stimulate.value = true;
+		// 	clearTimeout(ability.stimulate.timeout);
+		// 	ability.stimulate.start = new Date();
+		// 	socket.emit('Ability', ability);
+		// 	ability.stimulate.timeout = setTimeout(function() { // End ability
+		// 		ability.stimulate.value = false;
+		// 		ability.stimulate.end = new Date();
+		// 		ability.stimulate.cooling = true;
+		// 		socket.emit('Ability', ability);
+		// 	}, ability.stimulate.time);
+		// });
+
+		// socket.on('Poison', function() {
+		// 	ability.poison.value = true;
+		// 	clearTimeout(ability.poison.timeout);
+		// 	socket.emit('Ability', ability);
+		// 	ability.poison.timeout = setTimeout(function() { // End ability
+		// 		ability.poison.value = false;
+		// 		socket.emit('Ability', ability);
+		// 	}, ability.poison.time);
+		// });
+
+		socket.on('Neutralize', function() {
+			ability.neutralize.value = true;
+			ability.neutralize.start = new Date();
+			clearTimeout(ability.neutralize.timeout);
+			ability.neutralize.x = org.x();
+			ability.neutralize.y = org.y();
 			socket.emit('Ability', ability);
-			ability.stimulate.timeout = setTimeout(function() { // End ability
-				ability.stimulate.value = false;
-				ability.stimulate.end = new Date();
-				ability.stimulate.cooling = true;
+			ability.neutralize.timeout = setTimeout(function() {
+				ability.neutralize.value = false;
+				ability.neutralize.end = new Date();
+				ability.neutralize.cooling = true;
 				socket.emit('Ability', ability);
-			}, ability.stimulate.time);
+			}, ability.neutralize.time);
 		});
 
-		socket.on('Poison', function() {
-			ability.poison.value = true;
-			clearTimeout(ability.poison.timeout);
+		socket.on('Toxin', function() {
+			ability.toxin.value = true;
+			ability.toxin.start = new Date();
+			clearTimeout(ability.toxin.timeout);
+			ability.toxin.x = org.x();
+			ability.toxin.y = org.y();
 			socket.emit('Ability', ability);
-			ability.poison.timeout = setTimeout(function() { // End ability
-				ability.poison.value = false;
+			ability.toxin.timeout = setTimeout(function() {
+				ability.toxin.value = false;
+				ability.toxin.end = new Date();
+				ability.toxin.cooling = true;
 				socket.emit('Ability', ability);
-			}, ability.poison.time);
+			}, ability.toxin.time);
 		});
 	}
 }

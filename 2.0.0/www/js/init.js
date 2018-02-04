@@ -7,13 +7,23 @@ var game = {
 		name: undefined
 	}, 
 	world: {
+		host: undefined, 
 		width: undefined, 
 		height: undefined, 
 		x: undefined, 
 		y: undefined, 
 		background: undefined, 
 		grid: {
-			width: 20
+			width: 100
+		}, 
+		dots: {
+			r: {
+				min: .5, 
+				max: 2
+			}, 
+			prob: .2, 
+			array: [], 
+			count: 0
 		}
 	}, 
 	orgs: [], 
@@ -59,8 +69,9 @@ function createGame() {
 		name: nameInput.value, 
 		count: 0
 	};
-	game.world.width = 500;
-	game.world.height = 500;
+	game.world.host = game.info.host;
+	game.world.width = WORLDWIDTH;
+	game.world.height = WORLDWIDTH;
 	game.world.x = 0;
 	game.world.y = 0;
 	{ // game.world.background
@@ -83,6 +94,18 @@ function createGame() {
 	game.spectators = [];
 	game.orgs = [];
 	game.abilities = [];
+	for (let i = 0; i < game.world.width; i++) {
+		if (random() < game.world.dots.prob) { // About every five pixels, draw dot
+			let dot = {
+				i: game.world.dots.array.length, 
+				r: random(game.world.dots.r.min, game.world.dots.r.max), 
+				x: i, 
+				y: random(0, game.world.height)
+			};
+			game.world.dots.array.push(dot);
+		}
+	}
+	game.world.dots.count = game.world.dots.array.length;
 	socket.emit('Game Created', game);
 	let passwordInput = document.getElementById('PasswordInput');
 	if (passwordInput.value != '' || passwordInput != undefined || passwordInput != null) {

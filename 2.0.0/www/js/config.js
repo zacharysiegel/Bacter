@@ -16,9 +16,10 @@ const orgColors = {
 
 const cos45 = 0.70710678118;
 
-const CELLWIDTH = 7;
-const MOVESPEED = 2.5;
+const CELLWIDTH = 6; // 6 Default
+const MOVESPEED = 2;
 const SPECTATESPEED = 5;
+const WORLDWIDTH = 800;
 
 const ABILITYLETTER1 = 'X'; // Ability Letters
 const ABILITYLETTER2 = 'C';

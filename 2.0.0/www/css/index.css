@@ -2,8 +2,15 @@
 	font-family: UbuntuMono;
 	src: url('../assets/UbuntuMono-R.ttf');
 }
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+
+html {
+	height: 100%;
+}
 
 body {
+	height: 100%;
+	margin: 0;
 	/*No Selection*/
 	-webkit-touch-callout: none; /* iOS Safari */
 	-webkit-user-select: none; /* Safari */
@@ -12,21 +19,28 @@ body {
 	-ms-user-select: none; /* Internet Explorer/Edge */
 	user-select: none; /* Chrome and Opera */
 }
+.body {
+	position: relative;
+	min-height: 100%;
+}
 
+.content {
+	padding-bottom: 30px;
+}
 #browser {
+	position: relative;
+	overflow: auto;
 	font-family: 'Verdana';
 	font-size: 15px;
 	width: 100%;
-	/*outline-width: 2px;
-	outline-color: rgb(0, 0, 0);
-	outline-offset: 1px;
-	outline-style: solid;*/
-}
-table {
 	border-width: 2px;
 	border-color: black;
 	border-style: solid;
 	border-collapse: collapse;
+	/*outline-width: 2px;
+	outline-color: rgb(0, 0, 0);
+	outline-offset: 1px;
+	outline-style: solid;*/
 }
 tr:nth-child(even) {
 	background-color: rgb(230, 230, 230);
@@ -52,4 +66,26 @@ td {
 	border-style: solid;
 	border-collapse: collapse;
 	padding: 5px;
+}
+
+.footer {
+	position: absolute;
+}
+footer {
+	height: 30px;
+	width: 100%;
+	position: fixed;
+	bottom: 0px;
+	background-color: rgb(0, 0, 0);
+
+}
+#displayConnections {
+	margin: 0px;
+	margin-left: 10px;
+	color: rgb(255, 255, 255);
+	font-family: 'Verdana';
+	font-size: 15px;
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
 }
