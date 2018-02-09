@@ -35,30 +35,6 @@ function connectSocket() {
 	});
 
 	socket.on('Enter', function() {
-		var namE = prompt('Enter a screen name');
-		fixName();
-		function fixName() {
-			if (namE == '') { // Name must contain a character
-				namE = prompt('Enter a screen name\nField cannot be left blank');
-				fixName();
-				return;
-			}
-			for (let i = 0; i < game.info.count; i++) {
-				if (namE == game.board.list[i].name) { // Name cannot match another player's name
-					namE = prompt('Enter a screen name\nName matches that of another player');
-					fixName();
-					return;
-				}
-			}
-		}
-		game.board.list.push({ // Add player to leaderboard
-			player: socket.id, 
-			name: namE, 
-			kills: 0, 
-			deaths: 0
-		});
-		orderBoard(game.board.list);
-		socket.emit('Board', game.board.list);
 		chooseAbilities();
 	});
 
@@ -78,7 +54,11 @@ function connectSocket() {
 			renderWorld();
 			for (let i = 0; i < game.info.count; i++) {
 				renderToxin(game.abilities[i]);
+			}
+			for (let i = 0; i < game.info.count; i++) {
 				renderSecretions(game.abilities[i]);
+			}
+			for (let i = 0; i < game.info.count; i++) {
 				renderNeutralize(game.abilities[i]);
 			}
 			renderOrgs();
@@ -86,6 +66,7 @@ function connectSocket() {
 				renderSpores(game.abilities[i]);
 			}
 			renderUI();
+			renderLeaderboard();
 			move(); // Move goes at the end so player does not render his movements before others
 
 			translate(org.off.x, org.off.y);
@@ -95,13 +76,18 @@ function connectSocket() {
 			renderWorld();
 			for (let i = 0; i < game.info.count; i++) {
 				renderToxin(game.abilities[i]);
+			}
+			for (let i = 0; i < game.info.count; i++) {
 				renderSecretions(game.abilities[i]);
+			}
+			for (let i = 0; i < game.info.count; i++) {
 				renderNeutralize(game.abilities[i]);
 			}
 			renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
 			for (let i = 0; i < game.info.count; i++) {
 				renderSpores(game.abilities[i]);
 			}
+			renderLeaderboard();
 			move();
 
 			translate(org.off.x, org.off.y);

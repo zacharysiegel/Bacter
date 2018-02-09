@@ -51,6 +51,74 @@ function renderOrgs() {
 	}
 }
 
+function renderLeaderboard() {
+	// Leaderboard
+	translate(org.off.x, org.off.y); // Settings for entire board
+	rectMode(CORNER);
+	game.board.x = width - (game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.ratioWidth) - game.board.marginRight;
+	game.board.y = game.board.marginTop;
+	noFill();
+	stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+	strokeWeight(game.board.tableWeight);
+	textSize(game.board.text.size);
+	textFont(game.board.text.font);
+	rect(game.board.x, game.board.y, game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.ratioWidth, game.board.rowHeight * (1 + min(game.board.show, game.board.list.length))); // Board Outline (Constant Border)
+	fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+	strokeWeight(game.board.headWeight);
+	rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
+	rect(game.board.x + game.board.nameWidth, game.board.y, game.board.killWidth, game.board.rowHeight); // Kills Header
+	rect(game.board.x + game.board.nameWidth + game.board.killWidth, game.board.y, game.board.deathWidth, game.board.rowHeight); // Deaths Header
+	rect(game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth, game.board.y, game.board.ratioWidth, game.board.rowHeight); // Ratios Header
+	fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+	noStroke();
+	text('Screen Name', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+	text('Kills', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+	text('Deaths', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+	text('K:D', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+	fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+	stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+	strokeWeight(game.board.cellWeight);
+	for (let i = 0; i < min(game.board.show, game.board.list.length); i++) { // Cell Boxes
+		rect(game.board.x, game.board.y + (i + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
+		rect(game.board.x + game.board.nameWidth, game.board.y + (i + 1) * game.board.rowHeight, game.board.killWidth, game.board.rowHeight); // Kills Body
+		rect(game.board.x + game.board.nameWidth + game.board.killWidth, game.board.y + (i + 1) * game.board.rowHeight, game.board.deathWidth, game.board.rowHeight); // Deaths Body
+		rect(game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth, game.board.y + (i + 1) * game.board.rowHeight, game.board.ratioWidth, game.board.rowHeight); // Ratios Body
+	}
+	fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+	noStroke();
+	for (let i = 0; i < min(game.board.show, game.board.list.length); i++) { // Cell Text
+		if (game.board.list[i].player == socket.id) {
+			textFont(game.board.text.boldFont);
+		} else {
+			textFont(game.board.text.font);
+		}
+		text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop);
+		text(game.board.list[i].kills, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop);
+		text(game.board.list[i].deaths, game.board.x + game.board.nameWidth + game.board.killWidth + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop);
+		game.board.list[i].ratio = game.board.list[i].kills / game.board.list[i].deaths;
+		if (game.board.list[i].ratio == Infinity) { // n / 0, n != 0 (Divide by Zero)
+			text('∞', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+		} else if (game.board.list[i].kills == 0 && game.board.list[i].deaths == 0) { // 0 / 0 (Indeterminate Form) (Ratio is NaN)
+			text(0, game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+		} else { // n / m, m != 0 (Rational Number)
+			text(round(game.board.list[i].ratio * 100) / 100, game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (i + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+		}
+	}
+	rectMode(CENTER); // Reset Mode
+	translate(-org.off.x, -org.off.y);
+}
+
+function orderBoard(lisT) {
+	lisT.sort(function(a, b) { // Sorts in descending order of K:D ratio
+		let N = b.kills - a.kills; // If a.kills is greater than b.kills, value will be negative, so will sort a before b
+		if (N == 0) {
+			N = a.deaths - b.deaths; // If b.deaths is greater than a.deaths, value will be positive, so will sort b before a
+		}
+		return N;
+	});
+	return lisT;
+}
+
 function renderUI() {
 	// Crosshair (Art Subject to Change)
 	noFill();
@@ -66,7 +134,14 @@ function renderUI() {
 				noFill();
 				stroke(game.orgs[i].clickbox.color.r, game.orgs[i].clickbox.color.g, game.orgs[i].clickbox.color.b);
 				strokeWeight(1);
-				rect(game.orgs[i].clickbox.x, game.orgs[i].clickbox.y, game.orgs[i].clickbox.width, game.orgs[i].clickbox.height, 2);
+				rect(game.orgs[i].clickbox.x, game.orgs[i].clickbox.y, game.orgs[i].clickbox.width, game.orgs[i].clickbox.height, 2); // Draw Target Box
+				fill(240);
+				noStroke();
+				textFont('Helvetica');
+				textSize(18);
+				translate(org.off.x, org.off.y);
+				text('Targeting: ' + game.orgs[i].name, center.x - textWidth('Targeting: ' + game.orgs[i].name) / 2, height - 8 - textSize() * 2 / 3);
+				translate(-org.off.x, -org.off.y);
 			}
 		}
 	}
@@ -78,13 +153,8 @@ function renderUI() {
 		}
 	}
 
-	translate(org.off.x, org.off.y);
-
-	// Leaderboard
-	fill(240);
-	noStroke();
-
 	// Ability Tooltips
+	translate(org.off.x, org.off.y);
 	var current = new Date();
 	for (let i = 0; i < 4; i++) {
 		fill(215);
@@ -180,13 +250,6 @@ function renderUI() {
 		}
 	}
 	translate(-org.off.x, -org.off.y);
-}
-
-function orderBoard(lisT) {
-	lisT.sort(function(a, b) { // Sorts in descending order of K:D ratio
-		(b.kills / b.deaths) - (a.kills / a.deaths); // If K/D of a is greater than that of b, value will be negative, so will sort array with a before b
-	});
-	return lisT;
 }
 
 function move() {
@@ -309,21 +372,33 @@ function grow() {
 				// }
 			}
 
-			// Death
+			// Natural Death
 			if (ability.stunt.value == false) { // If org is not stunted (cannot birth or die naturally)
 				if (ability.immortality.value == false) { // If org is not Immortal
 					for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
-						if (regions.exposed[i].d(org) > org.range) {
+						if (regions.exposed[i].d(org) > org.range) { // If exposed cell is outside maximum radius
 							for (let j = 0; j < org.count; j++) {
+								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) { // Find exposed cell within org cells array
+									org.cells.splice(j, 1);
+									org.count--;
+									regions.exposed.splice(i, 1);
+									i--;
+									j--;
+									break;
+								}
+							}
+							continue;
+						} else if (regions.exposed[i].x < 0 || regions.exposed[i].x > game.world.width || regions.exposed[i].y < 0 || regions.exposed[i].y > game.world.height) {
+							for (let j = 0; j < org.ocunt; j++) {
 								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) {
 									org.cells.splice(j, 1);
 									org.count--;
 									regions.exposed.splice(i, 1);
 									i--;
+									j--;
 									break;
 								}
 							}
-							continue;
 						}
 						let chance = org.coefficient * Math.log(-regions.exposed[i].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
 						if (random(0, 100) <= chance) {
@@ -333,6 +408,7 @@ function grow() {
 									org.count--;
 									regions.exposed.splice(i, 1);
 									i--;
+									j--;
 									break;
 								}
 							}
@@ -407,14 +483,20 @@ function grow() {
 								org.cells.splice(j, 1);
 								org.count--;
 								j--;
-								for (let k = 0; k < game.info.count; k++) {
-									if (game.board.list[k].player == game.abilities[i].player) {
-										game.board.list[k].kills++;
+								if (org.count == 0) {
+									if (game.abilities[i].player != org.player) { // Cannot gain kill for suicide
+										for (let k = 0; k < game.info.count; k++) {
+											if (game.board.list[k].player == game.abilities[i].player) { // Find Killer
+												game.board.list[k].kills++;
+												orderBoard(game.board.list);
+												socket.emit('Board', game.board);
+												break;
+											}
+										}
 									}
 								}
 								break;
 							}
-							// Break causes cells to die one at a time (not default) (more complicated to implement here)
 						}
 					}
 				}
@@ -435,9 +517,16 @@ function grow() {
 								org.cells.splice(k, 1);
 								org.count--;
 								k--;
-								for (let l = 0; l < game.info.count; l++) {
-									if (game.board.list[l].player == abilities[i].player) {
-										game.board.list[l].kills++;
+								if (org.count == 0) {
+									if (game.abilities[i].player != org.player) { // Cannot gain kill for suicide
+										for (let l = 0; l < game.info.count; l++) {
+											if (game.board.list[l].player == game.abilities[i].player) { // Find killer
+												game.board.list[l].kills++;
+												orderBoard(game.board.list);
+												socket.emit('Board', game.board);
+												break;
+											}
+										}
 									}
 								}
 								// break; // Break causes cells to die one at a time (not default)
@@ -464,9 +553,16 @@ function grow() {
 							org.cells.splice(j, 1); // Kill cell
 							org.count--;
 							j--;
-							for (let k = 0; k < game.info.count; k++) {
-								if (game.board.list[k].player == abilities[i].player) {
-									game.board.list[k].kills++;
+							if (org.count == 0) {
+								if (game.abilities[i].player != org.player) { // Cannot gain kill for suicide
+									for (let k = 0; k < game.info.count; k++) {
+										if (game.board.list[k].player == game.abilities[i].player) { // Find killer
+											game.board.list[k].kills++;
+											orderBoard(game.board.list);
+											socket.emit('Board', game.board);
+											break;
+										}
+									}
 								}
 							}
 							// break; // Break causes cells to die one at a time (not default)
@@ -617,9 +713,11 @@ function gameOver() {
 	}
 	socket.emit('Ability', ability);
 	socket.emit('Dead');
-	for (let i = 0; i < game.info.count; i++) {
+	for (let i = 0; i < game.board.list.length; i++) {
 		if (game.board.list[i].player == socket.id) { // Find player in leaderboard
 			game.board.list[i].deaths++; // Add 1 to deaths counter
+			orderBoard(game.board.list);
+			socket.emit('Board', game.board);
 		}
 	}
 	alert('Press \'R\' to Respawn');
@@ -645,77 +743,99 @@ function keyPressed() {
 	// 	org.off.x = org.pos.x - center.x;
 	// 	org.off.y = org.pos.y - center.y;
 	// }
-	switch (keyCode) {
-		case 82: // R
-			if (state == 'spectate' && org.alive == false) {
-				socket.emit('Spectator Spawned', game);
-				spawn();
-			}
-			break;
-		case ABILITYKEY1: // X by default
-			if (state == 'game' && org.alive == true) {
-				if (ability.extend.activated == true && ability.extend.can == true) {
-					extend(org.player); // Extend self
-				} else if (ability.compress.activated == true && ability.compress.can == true) {
-					shoot(0, 1);
-					// for (let i = 0; i < game.info.count; i++) {
-					// 	if (org.target == game.players[i]) { // Find targeted org
-					// 		compress(org.target); // Compress targetec org
-					// 		break;
-					// 	}
-					// }
-				}
-				// if (ability.speed.activated == true) { (Not updated)
-				// 	speed(org.player);
-				// } else if (ability.slow.activated == true) {
-				// 	slow(org.target);
+	if (keyCode == ABILITYKEY1) { // X by default
+		if (state == 'game' && org.alive == true) {
+			if (ability.extend.activated == true && ability.extend.can == true) {
+				extend(org.player); // Extend self
+			} else if (ability.compress.activated == true && ability.compress.can == true) {
+				shoot(0, 1);
+				// for (let i = 0; i < game.info.count; i++) {
+				// 	if (org.target == game.players[i]) { // Find targeted org
+				// 		compress(org.target); // Compress targetec org
+				// 		break;
+				// 	}
 				// }
 			}
-			break;
-		case ABILITYKEY2: // C by default
-			if (state == 'game' && org.alive == true) {
-				if (ability.immortality.activated == true && ability.immortality.can == true) {
-					immortality(org.player); // Immortalize self
-				} else if (ability.stunt.activated == true && ability.stunt.can == true) {
-					shoot(1, 1);
-					// for (let i = 0; i < game.info.count; i++) {
-					// 	if (org.target == game.players[i]) { // Find targeted org
-					// 		stunt(org.target); // Stunt targeted org
-					// 		break;
-					// 	}
-					// }
-				}
-				break;
-			}
-		case ABILITYKEY3: // V by default
-			if (state == 'game' && org.alive == true) {
-				// if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
-				// 	stimulate(org.player); // Stimulate self
-				// } else if (ability.poison.activated == true && ability.poison.can == true) {
-				// 	shoot(2, 1);
-				// 	// for (let i = 0; i < game.info.count; i++) {
-				// 	// 	if (org.target == game.players[i]) { // Find targeted org
-				// 	// 		poison(org.target); // Poison targeted org
-				// 	// 		break;
-				// 	// 	}
-				// 	// }
+			// if (ability.speed.activated == true) { (Not updated)
+			// 	speed(org.player);
+			// } else if (ability.slow.activated == true) {
+			// 	slow(org.target);
+			// }
+		}
+	} else if (keyCode == ABILITYKEY2) { // C by default
+		if (state == 'game' && org.alive == true) {
+			if (ability.immortality.activated == true && ability.immortality.can == true) {
+				immortality(org.player); // Immortalize self
+			} else if (ability.stunt.activated == true && ability.stunt.can == true) {
+				shoot(1, 1);
+				// for (let i = 0; i < game.info.count; i++) {
+				// 	if (org.target == game.players[i]) { // Find targeted org
+				// 		stunt(org.target); // Stunt targeted org
+				// 		break;
+				// 	}
 				// }
-				if (ability.neutralize.activated == true && ability.neutralize.can == true) {
-					neutralize(org.player);
-				} else if (ability.toxin.activated == true && ability.toxin.can == true) {
-					toxin(org.player);
-				}
-				break;
 			}
-		case ABILITYKEY4: // SPACE by default
-			if (state == 'game' && org.alive == true) {
-				if (ability.spore.value == false && ability.secrete.value == false) {
-					spore();
-				} else if (ability.spore.value == true && ability.secrete.value == false) {
-					secrete();
-				}
-				break;
+		}
+	} else if (keyCode == ABILITYKEY3) { // V by default
+		if (state == 'game' && org.alive == true) {
+			// if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
+			// 	stimulate(org.player); // Stimulate self
+			// } else if (ability.poison.activated == true && ability.poison.can == true) {
+			// 	shoot(2, 1);
+			// 	// for (let i = 0; i < game.info.count; i++) {
+			// 	// 	if (org.target == game.players[i]) { // Find targeted org
+			// 	// 		poison(org.target); // Poison targeted org
+			// 	// 		break;
+			// 	// 	}
+			// 	// }
+			// }
+			if (ability.neutralize.activated == true && ability.neutralize.can == true) {
+				neutralize(org.player);
+			} else if (ability.toxin.activated == true && ability.toxin.can == true) {
+				toxin(org.player);
 			}
+		}
+	} else if (keyCode == ABILITYKEY4) { // SPACE by default
+		if (state == 'game' && org.alive == true) {
+			if (ability.spore.value == false && ability.secrete.value == false) {
+				spore();
+			} else if (ability.spore.value == true && ability.secrete.value == false) {
+				secrete();
+			}
+		}
+	}
+	// Hard numbers are separate from variable codes in case of duo
+	if (keyCode == 82) { // R
+		if (state == 'spectate' && org.alive == false) {
+			socket.emit('Spectator Spawned', game);
+			spawn();
+		}
+	} else if (keyCode == 32) { // SPACE
+		if (state == 'chooseAbilities') {
+			let pick = [ false, false, false ];
+			for (let i = 0; i < 3; i++) {
+				for (let j = 0; j < 2; j++) {
+					for (let k in ability) {
+						if (ability[k].i == i) {
+							if (ability[k].j == j && ability[k].activated == true) {
+								pick[i] = true;
+								break;
+							}
+						}
+					}
+					if (pick[i] == true) { // If i dual ability already picked
+						break;
+					}
+				}
+			}
+			if (pick.indexOf(false) == -1) {
+				if (org.count == 0) {
+					org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+					org.count++;
+				}
+				grow(); // Begin growth
+			}
+		}
 	}
 }
 
@@ -747,11 +867,29 @@ function mouseClicked() {
 			}
 			chooseAbilities();
 			if (mouseX >= center.x - width / 9 / 2 && mouseX <= center.x + width / 9 / 2 && mouseY >= height * 8 / 9 - height / 20 / 2 && mouseY <= height * 8 / 9 + height / 20 / 2) { // If clicked spawn box
-				if (org.count == 0) {
-					org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-					org.count++;
+				let pick = [ false, false, false ];
+				for (let i = 0; i < 3; i++) {
+					for (let j = 0; j < 2; j++) {
+						for (let k in ability) {
+							if (ability[k].i == i) {
+								if (ability[k].j == j && ability[k].activated == true) {
+									pick[i] = true;
+									break;
+								}
+							}
+						}
+						if (pick[i] == true) { // If i dual ability already picked
+							break;
+						}
+					}
 				}
-				grow(); // Begin growth
+				if (pick.indexOf(false) == -1) {
+					if (org.count == 0) {
+						org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+						org.count++;
+					}
+					grow(); // Begin growth
+				}
 			}
 		} else if (state == 'game') {
 			{ // Targeting

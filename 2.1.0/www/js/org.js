@@ -1,5 +1,12 @@
 var Org = function(playeR) {
 	this.player = playeR;
+	{ // this.name
+		for (let i = 0; i < game.board.list.length; i++) {
+			if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
+				this.name = game.board.list[i].name;
+			}
+		}
+	}
 	this.cells = [];
 	this.count = 0;
 	this.x = function() { // The average of all cell x values 

@@ -28,7 +28,7 @@
 	> ADDED app.json
 	> ADDED .profile
 	> IMPROVED world border width (smaller)
-	> FIXED	npm initialization
+	> FIXED npm initialization
 	> FIXED server browser row coloration
 
 ## 2.0.0
@@ -60,5 +60,13 @@
 	> BALANCED ability cooldowns
 
 ## 2.1.0
+	> ADDED leaderboard
+	> ADDED kill/death counters
+	> ADDED screen names
+	> ADDED screen name label when targeting
+	> ADDED more org colors
+	> ADDED space bar spawn in ability choosing menu
 	> REMOVED dots
-	> FIXED index crash bug
+	> FIXED spawn without picking three abilities
+	> FIXED index death/crash bug
+	> FIXED render layering bug

@@ -82,6 +82,14 @@ function newConnection(sockeT) {
 		}
 		// Leave Current Game
 		for (let i = 0; i < games.length; i++) {
+			for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
+				if (games[i].board.list[j].player == sockeT.id) { // Find player in leaderboard
+					games[i].board.list.splice(j, 1); // Remove player from leaderboard
+					j--;
+					io.sockets.emit('Games', games);
+					break;
+				}
+			}
 			for (let j = 0; j < games[i].players.length; j++) { // Search Players
 				if (games[i].players[j] == sockeT.id) { // Find Player
 					sockeT.leave(games[i].info.name); // Leave 'Game' Room
@@ -203,23 +211,10 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server Leaderboard
-	sockeT.on('Board', function(lisT) {
-		let done = false;
+	sockeT.on('Board', function(boarD) {
 		for (let i = 0; i < games.length; i++) {
-			for (let j = 0; j < lisT.length; j++) {
-				for (let k = 0; k < games[i].info.count; k++) {
-					if (lisT[j].player == games[i].players[k]) { // If any of the lisT players are contained in the games[i] players array
-						games[i].board.list = lisT; // Update server leaderboard list
-						io.sockets.emit('Games', games);
-						done = true;
-						break;
-					}
-				}
-				if (done == true) {
-					break;
-				}
-			}
-			if (done == true) {
+			if (games[i].info.host == boarD.host) { // Find board's game
+				games[i].board.list = boarD.list; // Update server leaderboard list
 				break;
 			}
 		}

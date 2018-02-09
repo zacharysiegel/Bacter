@@ -54,10 +54,27 @@
 		Rendering - Circle around org
 			X Circle around each cell
 		No shoot
-	? Cloak
+	? Cloak:
 		Temporarily become invisible to opponents
 			- Usage of abilities denied while stealthed
 			- OR Usage of an ability disables cloak
+
+## Game Modes (Coming Soon):
+	Deathmatch Classic
+		Boast the most kills and the least deaths (Constant-Action Brawl)
+		Leaderboard tracks kills, deaths, and k:d
+	Team Deathmatch
+		Players are sorted into teams
+		Players cannot harm teammates
+		Leaderboard tracks team kills, team deaths, team k:d, kills, deaths, and k:d
+	Survivor
+		Last man standing wins
+		What's done is done: Cannot respawn until game is completed
+		Leaderboard tracks wins, kills, and deaths
+	Compact (Survivor Sub-Mode)
+		Akin to a battle royale game, the borders of the world slowly creep into the center until a lone survivor claims victory
+		What's done is done: Cannot respawn until game is completed
+		Leaderboard tracks wins, kills, and deaths
 
 ## Bugs/Fixes:
 
@@ -66,32 +83,48 @@
 		✔ Remove ability.index
 		✔ Remove org.index
 		✔ Fix Index Bug
-		Add Leaderboard
-			Add screen names
-			Add screen name labels to orgs
-		? Increase grow frames 100 --> 50
+		✔ Add Leaderboard
+		✔ Add more org colors
+		✔ Add screen name labels to target org
+		✔ Add space bar spawn to chooseAbilities()
+		✔ Add cannot spawn without picking 3 abilities
+		✔ Fix toxin renders over secretions
+		✔ Change leaderboard only shows top ten
+	2.2.0
 		Add substance to the world (background)
 			Decoration
 				? Grid
 				? Dots
 			Pickups that lower cooldowns
+			Pickups that increase radius
 		Add 'pause' overlay menu
 			Add 'Leave Game' option
 			Add Settings menu
+			Add Controls menu
 			ESC key
-		? Add timers to red/green abilty markers
-		Balance secretion radii on shoot and spore
-		? Org border
-		? Host does not play
-			Centralized hit detections and such
+		? Increase grow frames 100 --> 50
+		Add Game Modes
+			Deathmatch Classic
+			Team Deathmatch
+			Survivor
+			Compact
+		Add New Game Settings Menu
+			Enter game name
+			Dimensions
+				Must be square
+			Game mode
+				Display game mode in browser
+				Team colors (if applicable)
+		Add Join Game Settings Menu
+			Enter screen name
+			Choose Color
+			Choose Team (if applicable)
+	3.0.0
 		Add music
 		Add SFX
-		Add targeting info UI
-		Add screen names which display on org in game
-			Setting to turn off 'show names'
-		? Do not automatically join game after creation
-			? Countdown before join game
-	3.0.0
+		? Host does not play
+			Centralized hit detections and such
+		? Org border
 		Graphical overhaul
 			World border
 				If substance, can remove
