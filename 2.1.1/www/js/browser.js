@@ -8,10 +8,11 @@ function renderBrowser() {
 	// Browser
 	// let body = document.getElementsByTagName('body')[0];
 	let browserBody = document.getElementById('browserBody');
-	for (let i = 0; i < browserBody.children.length; i++) {
+	while (browserBody.children.length) {
 		browserBody.deleteRow(-1);
 	}
 	for (let i = 0; i < games.length; i++) {
+		console.log('ROW');
 		let row = browserBody.insertRow(-1);
 		row.style.height = '20px';
 		let name = row.insertCell(0);
@@ -21,6 +22,7 @@ function renderBrowser() {
 		for (let j = 0; j < games[i].board.list.length; j++) { // Search board.list
 			if (games[i].info.host == games[i].board.list[j].player) { // Find player who is host
 				host.innerHTML = games[i].board.list[j].name;
+				break;
 			}
 		}
 		host.style.width = '150px';
