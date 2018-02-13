@@ -607,7 +607,7 @@ function grow() {
 			if (org.alive == false) { // Organism is dead
 				gameOver();
 			}
-		}, 100);
+		}, 80);
 	}
 }
 
