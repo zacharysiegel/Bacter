@@ -28,7 +28,7 @@ const cos45 = 0.70710678118;
 
 // Specifications
 const CELLWIDTH = 6; // 6 Default
-const MOVESPEED = 2.4; // 2 Default
+const MOVESPEED = 2; // 2 Default
 const SPECTATESPEED = 4; // 4 Default (Twice MOVESPEED)
 const WORLDWIDTH = 800; // 800 Default
 
