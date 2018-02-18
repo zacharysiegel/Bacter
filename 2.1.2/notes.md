@@ -79,7 +79,7 @@
 ## Bugs/Fixes:
 
 ## To-Do:
-	2.2.0 - Menus and Settings
+	2.2.0 - Menus and Settings		
 		Add 'pause' overlay menu
 			Add 'Leave Game' option
 			Add Settings menu
@@ -88,7 +88,10 @@
 		Add New Game Settings Menu
 			Enter game name
 			Dimensions
-				Must be square
+				Square or Circle (Circle in 2.3.0)
+				Width/Height or Diameter (Circle in 2.3.0)
+				Player cap reccomendations
+			Optional player cap
 			Game modes (Coming soon in 2.3.0)
 				Display game mode in browser
 				Team colors (if applicable)
@@ -97,6 +100,7 @@
 			Choose Color
 			Choose Team (if applicable)
 	2.3.0 - Game Modes
+		Circular World Border option
 		Add Game Modes
 			Deathmatch Classic
 			Team Deathmatch

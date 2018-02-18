@@ -79,4 +79,5 @@
 	FIXED cannot spawn over opponent org
 	FIXED leaderboard cover end of long name
 
-## 2.2.0
+## 2.1.2
+	ADDED popunder advertising
