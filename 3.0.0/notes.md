@@ -77,49 +77,8 @@
 		Leaderboard tracks wins, kills, and deaths
 
 ## To-Do:
-	2.2.0 - Menus and Settings
-		✔ Re-render browser instead of reload
-			✔ Back button
-			✔ Game Ended
-		✔ Add leader column to browser
-		✔ Add player cap column to browser
-		✔ Add New Game Settings Menu
-			✔ Enter game name
-			✔ Square Dimensions
-			✔ Player cap
-			✔ World Color (Black or White)
-			✔ Leaderboard Length
-			✔ Placeholders show default - Apply value if left blank
-		✔ Remove password column from browser
-		✔ Add Join Game Settings Menu
-			✔ Screen name
-			✔ Password
-			✔ Choose Color
-			✔ Choose Abilities
-			✔ Grid Texture
-		✔ Add Spectate Menu
-			✔ Screen name
-			✔ Password
-		✔ Permissed array in server passwords
-		✔ Change all 'name' references to title
-		✔ Change stunt to freeze
-		✔ Add Respawn Menu
-			✔ Choose Color
-				✔ Default color in list is current org color
-			✔ Choose Abilities
-			✔ Grid Texture
-		✔ Remove chooseAbilities() screen
-		✔ Improve skill tooltip aesthetics on white
-		✔ Improve kill tracking to last hit rather than finishing blow
-		✔ Add new set of org colors for white world
-		✔ Cannot spawn on toxin, secretion, or shoot secretion
-		✔ Change browser from update games on every change to periodic interval to re-render browser
-		✔ Add pause menu
-			✔ Add 'Leave Game' option
-		✔ Screen name labels on orgs
-			✔ Option to turn off in pause menu
 	3.0.0 - Game Modes
-		Circular World option
+		Circular World option (Elliptical?)
 			Add to new game settings
 		Circular cells option
 			Add to join game settings and pause
@@ -142,6 +101,7 @@
 				? Dots
 			Pickups that lower cooldowns
 			Pickups that increase radius
+		Allow non-square rectangular dimensions
 		Add controls customization
 		windowResized() functionality in-game
 		GitHub versioning improvement
