@@ -11,8 +11,7 @@
 	ADDED denial of movement over world border
 	ADDED server browser information
 	ADDED cannot spawn over opponent org
-	IMPROVED frame rate
-	IMPROVED aesthetics
+	CHANGED frame rate (increased)
 	FIXED chooseAbilities() translation issue
 	BALANCED ability durations and cooldowns
 
@@ -27,7 +26,7 @@
 	ADDED Procfile
 	ADDED app.json
 	ADDED .profile
-	IMPROVED world border width (smaller)
+	CHANGED world border width (smaller)
 	FIXED npm initialization
 	FIXED server browser row coloration
 
@@ -46,10 +45,10 @@
 	CHANGED poison mechanic (accelerated death --> decelerated birth)
 	CHANGED cell width (7px --> 6px);
 	CHANGED movement speed (2.5px/frame --> 2px/frame)
-	IMPROVED spore frame rate
-	IMPROVED secrete timer animation
-	IMPROVED org aesthetics
-	IMPROVED browser aesthetics
+	CHANGED spore frame rate (increased)
+	CHANGED secrete timer animation
+	CHANGED org aesthetics (stroke on cells to fill gaps)
+	CHANGED browser aesthetics
 	FIXED spore lag issue
 	FIXED join/spectate click mousedown script
 	FIXED browser row bug
@@ -81,3 +80,49 @@
 
 ## 2.1.2
 	ADDED popunder advertising
+
+## 2.2.0
+	ADDED game creation options menu
+	ADDED join game options menu
+	ADDED spectate game options menu
+	ADDED respawn options menu
+	ADDED pause options menus
+	ADDED world size customization
+	ADDED world color customization
+	ADDED player cap customization
+	ADDED leaderboard length customization
+	ADDED player color customization
+	ADDED player grid texture customization
+	ADDED ability selection to join and respawn menus
+	ADDED leave game option
+	ADDED player name labels
+	ADDED player name label toggle option
+	ADDED leader column to browser
+	ADDED player cap column to browser
+	ADDED peacock color option to white world
+	ADDED burnt color option to white world
+	ADDED forest color option to white world
+	REMOVED ability selection screen
+	REMOVED password entry column from browser
+	REMOVED display of spectators in leaderboard
+	REMOVED turquoise color
+	REMOVED kiwi color
+	CHANGED 'Screen Name' to 'Player' in leaderboard head
+	CHANGED stunt ability name to 'freeze' (no mechanical change)
+	CHANGED game 'name' to 'title'
+	CHANGED header height (36px --> 32px)
+	CHANGED password protection security (more secure)
+	CHANGED browser re-rendering (no reload)
+	CHANGED browser updating method
+	CHANGED browser aesthetics
+	CHANGED skill tooltip and timer aesthetics
+	FIXED browser event listener stacking
+	FIXED spawn over toxin and secretions
+	FIXED non-removal of passwords on server after game close
+	FIXED premature showing of game in browser
+	FIXED game closure recurrance issue
+	FIXED spore color initialization issue
+	FIXED death crossover issue
+	BALANCED extend time (4000ms --> 4500ms)
+	BALANCED compress time (3000ms --> 3500ms)
+	BALANCED immortality cooldown (4000ms --> 3500ms)
