@@ -181,6 +181,10 @@ var menus = {
 					ok = false;
 					alert('Square dimensions must be at least 200 x 200 px');
 				}
+				if (parseFloat(width) != parseFloat(height)) {
+					ok = false;
+					alert('Dimensions must be square');
+				}
 			}
 			{ // Player Cap
 				let playerCapInput = document.getElementById('Player Cap Input');
