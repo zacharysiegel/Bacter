@@ -52,7 +52,13 @@ function setup() {
 
 function windowResized() {
 	var button;
-	if (state == 'createMenu') {
+	if (state == 'game' || state == 'spectate') {
+		cnv = createCanvas(window.innerWidth, window.innerHeight); // Replace canvas with new canvas of new dimensions
+		center.x = width / 2;
+		center.y = height / 2;
+		org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
+		org.off.y = org.pos.y - center.y;
+	} else if (state == 'createMenu') {
 		button = document.getElementById('createButton');
 		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
 	} else if (state == 'joinMenu') {

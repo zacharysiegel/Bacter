@@ -223,16 +223,16 @@ function renderUI() {
 		rect(center.x - 150 + i * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
 		let letter;
 		if (i == 0) {
-			letter = ABILITYLETTER1;
+			letter = ABILITYKEY1;
 		} else if (i == 1) {
-			letter = ABILITYLETTER2;
+			letter = ABILITYKEY2;
 		} else if (i == 2) {
-			letter = ABILITYLETTER3;
+			letter = ABILITYKEY3;
 		} else if (i == 3) {
-			if (ABILITYLETTER4 == ' ') {
+			if (ABILITYKEY4 == ' ') {
 				letter = '_';
 			} else {
-				letter = ABILITYLETTER4;
+				letter = ABILITYKEY4;
 			}
 		}
 		fill(0);
@@ -755,7 +755,7 @@ function gameOver() {
 			break;
 		}
 	}
-	alert('Press \'' + RESPAWNLETTER + '\' to Respawn');
+	alert('Press \'' + RESPAWNKEY + '\' to Respawn');
 }
 
 function keyPressed() {
@@ -772,7 +772,7 @@ function keyPressed() {
 	// 	org.off.x = org.pos.x - center.x;
 	// 	org.off.y = org.pos.y - center.y;
 	// }
-	if (keyCode == ABILITYKEY1) { // X by default
+	if (keyCode == ABILITYCODE1) { // X by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.extend.activated == true && ability.extend.can == true) {
 				extend(org.player); // Extend self
@@ -791,7 +791,7 @@ function keyPressed() {
 			// 	slow(org.target);
 			// }
 		}
-	} else if (keyCode == ABILITYKEY2) { // C by default
+	} else if (keyCode == ABILITYCODE2) { // C by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.immortality.activated == true && ability.immortality.can == true) {
 				immortality(org.player); // Immortalize self
@@ -805,7 +805,7 @@ function keyPressed() {
 				// }
 			}
 		}
-	} else if (keyCode == ABILITYKEY3) { // V by default
+	} else if (keyCode == ABILITYCODE3) { // V by default
 		if (state == 'game' && org.alive == true) {
 			// if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
 			// 	stimulate(org.player); // Stimulate self
@@ -824,7 +824,7 @@ function keyPressed() {
 				toxin(org.player);
 			}
 		}
-	} else if (keyCode == ABILITYKEY4) { // SPACE by default
+	} else if (keyCode == ABILITYCODE4) { // SPACE by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.spore.value == false && ability.secrete.value == false) {
 				spore();
@@ -832,7 +832,7 @@ function keyPressed() {
 				secrete();
 			}
 		}
-	} else if (keyCode == RESPAWNKEY) { // R by default
+	} else if (keyCode == RESPAWNCODE) { // R by default
 		if (state == 'spectate' && org.alive == false) {
 			if (game.players.length < game.info.cap) {
 				socket.emit('Spectator Left', game);
@@ -840,6 +840,12 @@ function keyPressed() {
 			} else {
 				alert('Game is at maximum player capacity');
 			}
+		}
+	} else if (keyCode == PAUSECODE) { // ESC by default
+		if (state == 'game') {
+			renderMenu('pauseGame', game);
+		} else if (state == 'spectate') {
+			renderMenu('pauseSpectate', game);
 		}
 	}
 	// Hard numbers are separate from variable codes in case of overlap
@@ -880,12 +886,6 @@ function keyPressed() {
 			menus.respawn.submit(game);
 		} else if (state == 'pauseMenu') {
 			menus.pause.submit(game);
-		}
-	} else if (keyCode == 27) { // ESC
-		if (state == 'game') {
-			renderMenu('pauseGame', game);
-		} else if (state == 'spectate') {
-			renderMenu('pauseSpectate', game);
 		}
 	}
 }

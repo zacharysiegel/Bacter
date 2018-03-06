@@ -76,8 +76,15 @@
 		What's done is done: Cannot respawn until game is completed
 		Leaderboard tracks wins, kills, and deaths
 
+## Bugs/Fixes:
+	Leaderboard flicker on new spectator bug
+		Spectator has not yet been added to spectators array
+
 ## To-Do:
 	3.0.0 - Game Modes
+		✔ GitHub versioning improvement
+		✔ Menu buttons cursor is pointer
+		✔ windowResized() functionality in-game
 		Circular World option (Elliptical?)
 			Add to new game settings
 		Circular cells option
@@ -102,10 +109,10 @@
 			Pickups that lower cooldowns
 			Pickups that increase radius
 		Allow non-square rectangular dimensions
-		Add controls customization
-		windowResized() functionality in-game
-		GitHub versioning improvement
-		Leaderboard flicker on new spectator bug
+		Add controls settings menu
+			Ability keys	
+			Respawn key
+			Pause key
 	3.1.0 - Visual Enhancement
 		Customize menu alerts
 		Customize death alert

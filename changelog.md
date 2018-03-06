@@ -126,3 +126,7 @@
 	BALANCED extend time (4000ms --> 4500ms)
 	BALANCED compress time (3000ms --> 3500ms)
 	BALANCED immortality cooldown (4000ms --> 3500ms)
+
+## 3.0.0
+	ADDED window resizing functionality when in game
+	CHANGED menu buttons' cursors to pointer

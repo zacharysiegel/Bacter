@@ -1045,8 +1045,9 @@ function renderMenu(typE, datA) {
 					} else if (menus[type].values[i] == 'button') {
 						let buttonInput = document.createElement('button');
 						cell.appendChild(buttonInput);
-						buttonInput.type = 'button';
 						buttonInput.id = menus[type].options[i] + ' Input';
+						buttonInput.type = 'button';
+						buttonInput.style.cursor = 'pointer';
 						buttonInput.style.position = 'relative';
 						buttonInput.style.top = '2px';
 						buttonInput.style.width = 45 + 'px';
@@ -1110,6 +1111,7 @@ function renderMenu(typE, datA) {
 		content.appendChild(button);
 		button.id = type + 'Button';
 		button.type = 'button';
+		button.style.cursor = 'pointer';
 		button.style.width = menus.button.width + 'px';
 		button.style.height = menus.button.height + 'px';
 		button.style.position = 'relative';
