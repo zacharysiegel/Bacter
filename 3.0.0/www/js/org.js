@@ -1,7 +1,8 @@
 var Org = function(datA) {
 	this.player = datA.player;
 	this.color = datA.color;
-	this.gridded = datA.gridded;
+	this.skin = datA.skin;
+	this.team = datA.team;
 	{ // this.name
 		for (let i = 0; i < game.board.list.length; i++) {
 			if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
@@ -27,48 +28,57 @@ var Org = function(datA) {
 		let average = sum / this.count;
 		return average;
 	};
-	do {
-		this.pos = { // Position is the target's location in the world
-			x: floor(random(0, game.world.width)), 
-			y: floor(random(0, game.world.height))
-		};
-		var rePos = false;
-		for (let i = 0; i < game.info.count; i++) { // Org Overlap
-			for (let j = 0; j < game.orgs[i].count; j++) {
-				if (game.orgs[i].cells[j].x - game.orgs[i].cells[j].width <= this.pos.x && game.orgs[i].cells[j].x + game.orgs[i].cells[j].width >= this.pos.x && game.orgs[i].cells[j].y - game.orgs[i].cells[j].height <= this.pos.y && game.orgs[i].cells[j].y + game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
+	if (datA.pos != undefined) {
+		this.pos = datA.pos;
+	} else {
+		do {
+			this.pos = { // Position is the target's location in the world
+				x: floor(random(game.world.x, game.world.x + game.world.width)), 
+				y: floor(random(game.world.x, game.world.x + game.world.height))
+			};
+			var rePos = false;
+			if (game.world.type == 'ellipse') {
+				if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
 					rePos = true;
-					break;
 				}
 			}
-			if (rePos == true) { break; }
-			let abilitY = game.abilities[i];
-			if (abilitY.secrete.value == true) { // Spore Secretions Overlap
-				for (let j = 0; j < abilitY.spore.count; j++) {
-					let cell = abilitY.spore.spores[j];
-					if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= abilitY.secrete.radius) {
+			for (let i = 0; i < game.info.count; i++) { // Org Overlap
+				for (let j = 0; j < game.orgs[i].count; j++) {
+					if (game.orgs[i].cells[j].x - game.orgs[i].cells[j].width <= this.pos.x && game.orgs[i].cells[j].x + game.orgs[i].cells[j].width >= this.pos.x && game.orgs[i].cells[j].y - game.orgs[i].cells[j].height <= this.pos.y && game.orgs[i].cells[j].y + game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
 						rePos = true;
 						break;
 					}
 				}
-			}
-			for (let j = 0; j < 3; j++) { // Shoot Secretions Overlap
-				if (abilitY.shoot.secrete[j].value == true) {
-					let cell = abilitY.shoot.spore[j];
-					let sec = abilitY.shoot.secrete[j];
-					if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= sec.radius) {
-						rePos = true;
-						break;
+				if (rePos == true) { break; }
+				let abilitY = game.abilities[i];
+				if (abilitY.secrete.value == true) { // Spore Secretions Overlap
+					for (let j = 0; j < abilitY.spore.count; j++) {
+						let cell = abilitY.spore.spores[j];
+						if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= abilitY.secrete.radius) {
+							rePos = true;
+							break;
+						}
 					}
 				}
-			}
-			if (abilitY.toxin.value == true) { // Toxin Overlap
-				if (sqrt(sq(this.pos.x - abilitY.toxin.x) + sq(this.pos.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
-					rePos = true;
+				for (let j = 0; j < 3; j++) { // Shoot Secretions Overlap
+					if (abilitY.shoot.secrete[j].value == true) {
+						let cell = abilitY.shoot.spore[j];
+						let sec = abilitY.shoot.secrete[j];
+						if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= sec.radius) {
+							rePos = true;
+							break;
+						}
+					}
 				}
+				if (abilitY.toxin.value == true) { // Toxin Overlap
+					if (sqrt(sq(this.pos.x - abilitY.toxin.x) + sq(this.pos.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
+						rePos = true;
+					}
+				}
+				if (rePos == true) { break; }
 			}
-			if (rePos == true) { break; }
-		}
-	} while (rePos == true);
+		} while (rePos == true);
+	}
 	this.off = { // Offset is the difference between pos and center
 		x: this.pos.x - center.x, 
 		y: this.pos.y - center.y

@@ -4,8 +4,12 @@ var game = {
 	players: [], 
 	info: {
 		host: undefined, 
-		title: undefined
+		title: undefined, 
+		count: undefined, 
+		cap: undefined, 
+		mode: undefined
 	}, 
+	teams: [], 
 	board: {
 		host: undefined, 
 		list: [
@@ -14,12 +18,13 @@ var game = {
 			// 	name: undefined, // Screen name of player
 			// 	kills: undefined, // Kills as defined by number of enemy cells killed
 			// 	deaths: undefined, // Deaths as defined by number of org deaths
-			// 	ratio: undefined // Ratio of kills to deaths
+			// 	ratio: undefined, // Ratio of kills to deaths
+			// 	score: undefined // Number of round wins (srv or inf), flag captures (ctf), time score (kth)
 			// }
 		], 
 		count: undefined, 
 		show: undefined, // Maximum number of players shown in leaderboard (Top __)
-		x: undefined, // width - (nameWidth + killWidth + deathWidth) / 2 - marginRight
+		x: undefined, // width - (nameWidth + oneWidth + twoWidth) / 2 - marginRight
 		y: undefined, // marginTop
 		marginRight: 15, 
 		marginTop: 15, 
@@ -32,9 +37,9 @@ var game = {
 			color: { r: 0, g: 0, b: 0 }
 		}, 
 		nameWidth: 170, 
-		killWidth: 46, 
-		deathWidth: 46, 
-		ratioWidth: 46, 
+		oneWidth: 46, 
+		twoWidth: 46, 
+		threeWidth: 46, 
 		rowHeight: 22, 
 		tableWeight: 1, 
 		headWeight: 1, 
@@ -58,15 +63,15 @@ var game = {
 		grid: {
 			width: 100
 		}, 
-		dots: {
-			r: {
-				min: .5, 
-				max: 2
-			}, 
-			prob: .2, 
-			array: [], 
-			count: 0
-		}
+		// dots: {
+		// 	r: {
+		// 		min: .5, 
+		// 		max: 2
+		// 	}, 
+		// 	prob: .2, 
+		// 	array: [], 
+		// 	count: 0
+		// }
 	}, 
 	orgs: [], 
 	abilities: []
@@ -102,9 +107,9 @@ function initialize(gamE, datA) {
 	textAlign(LEFT);
 
 	if (datA.spectate != true) { // Field can be left undefined
-		spawn({ color: datA.color, gridded: datA.gridded });
+		spawn({ color: datA.color, skin: datA.skin, team: datA.team });
 	} else if (datA.spectate == true) {
-		spectate({ color: datA.color, gridded: datA.gridded });
+		spectate({ color: datA.color, skin: datA.skin, team: datA.team });
 	}
 }
 
@@ -112,15 +117,24 @@ function createGame(datA) {
 	game.info = {
 		host: socket.id, 
 		title: datA.title, 
+		protected: undefined, 
 		count: 0, 
-		cap: datA.cap
+		cap: datA.cap, 
+		mode: datA.mode, 
+		teamCount: datA.teamCount
 	};
+	if (datA.password == '' || datA.password == undefined || datA.password == null || datA.password !== datA.password) {
+		game.info.protected = false;
+	} else {
+		game.info.protected = true;
+	}
 	game.world.host = game.info.host;
+	game.world.type = datA.type;
 	game.world.width = datA.width;
 	game.world.height = datA.height;
 	game.world.x = 0;
 	game.world.y = 0;
-	game.world.color = datA.color.toLowerCase();
+	game.world.color = datA.color;
 	{
 		for (let i in worldColors) {
 			if (i == game.world.color) {
@@ -129,6 +143,7 @@ function createGame(datA) {
 			}
 		}
 	}
+	game.world.backdrop = { r: 70, g: 70, b: 70 };
 	game.world.border.weight = 1;
 	{
 		if (game.world.color == 'black') {
@@ -141,23 +156,41 @@ function createGame(datA) {
 	game.spectators = [];
 	game.orgs = [];
 	game.abilities = [];
-	for (let i = 0; i < game.world.width; i++) {
-		if (random() < game.world.dots.prob) { // About every five pixels, draw dot
-			let dot = {
-				i: game.world.dots.array.length, 
-				r: random(game.world.dots.r.min, game.world.dots.r.max), 
-				x: i, 
-				y: random(0, game.world.height)
-			};
-			game.world.dots.array.push(dot);
-		}
-	}
-	game.world.dots.count = game.world.dots.array.length;
+	// for (let i = 0; i < game.world.width; i++) {
+	// 	if (random() < game.world.dots.prob) { // About every five pixels, draw dot
+	// 		let dot = {
+	// 			i: game.world.dots.array.length, 
+	// 			r: random(game.world.dots.r.min, game.world.dots.r.max), 
+	// 			x: i, 
+	// 			y: random(0, game.world.height)
+	// 		};
+	// 		game.world.dots.array.push(dot);
+	// 	}
+	// }
+	// game.world.dots.count = game.world.dots.array.length;
 	game.board.host = game.info.host;
 	game.board.list = [];
-	game.board.show = datA.show;
+	{
+		game.teams = [];
+		if (game.info.mode == 'skm' || game.info.mode == 'ctf') {
+			for (let i = 0; i < game.info.teamCount; i++) {
+				game.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+			}
+		} else if (game.info.mode == 'inf') {
+			for (let i = 0; i < 2; i++) { // Only can be two teams in infection (healthy/infected)
+				game.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+			}
+		}
+	}
+	{
+		if (game.teams.length != 0) { // If is a team game
+			game.board.show = game.teams.length;
+		} else {
+			game.board.show = datA.show;
+		}
+	}
 	socket.emit('Game Created', game);
-	if (datA.password != '') {
+	if (game.info.protected == true) {
 		socket.emit('Password Created', { pass: datA.password, info: game.info });
 	}
 	renderMenu('join', game);

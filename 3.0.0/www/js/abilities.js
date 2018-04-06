@@ -143,24 +143,24 @@ var ability = {
 	}, 
 	spore: {
 		value: false, 
-		activated: true, 
+		activated: false, 
 		i: 3, 
 		j: 0, 
 		interval: undefined, 
 		speed: 6, 
 		spores: [], 
 		count: 0, 
-		can: true, 
+		can: false, 
 		timeout: undefined, 
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 2200, 
+		time: 2000, 
 		cooldown: 7500 // 7500 default
 	}, 
 	secrete: {
 		value: false, 
-		activated: true, 
+		activated: false, 
 		i: 3, 
 		j: 1, 
 		color: { r: undefined, g: undefined, b: undefined }, 
@@ -193,6 +193,20 @@ var ability = {
 		start: [ undefined, undefined, undefined ], 
 		end: [ undefined, undefined, undefined ], 
 		time: 2000, 
+		cooling: [ false, false, false ], 
+		cooldown: [ 2000, 2000, 2000 ]
+	}, 
+	tag: {
+		value: false, 
+		activated: false, 
+		i: 0, 
+		j: 1, 
+		can: false, 
+		timeout: undefined, 
+		start: undefined, 
+		end: undefined, 
+		time: 0, 
+		cooldown: 5000
 	}
 };
 
@@ -300,26 +314,27 @@ function shoot(I, J) {
 		ability.shoot.timeout[I] = setTimeout(function() {
 			if (ability.shoot.value[I] == true && ability.shoot.secrete[I].value == false) {
 				ability.shoot.value[I] = false;
-				ability.shoot.can[I] = true;
 				ability.shoot.spore[I] = undefined;
+				ability.shoot.cooling[I] = true;
+				ability.shoot.end[I] = new Date();
 				ability.shoot.secrete[I].end = new Date();
 				socket.emit('Ability', ability);
 			}
 		}, ability.shoot.time);
 
 	} else if (ability.shoot.value[I] == true) { // If currently shooting (secrete)
+		ability.shoot.end[I] = new Date();
 		ability.shoot.value[I] = false;
 		ability.shoot.secrete[I].radius = CELLWIDTH / cos45 * 2.9 / 2; // Not predefined (Half secrete)
 		ability.shoot.secrete[I].hit = false;
 		ability.shoot.secrete[I].time = 800; // Not predefined (Same as secrete)
-		ability.shoot.end[I] = new Date();
 		clearTimeout(ability.shoot.timeout[I]);
 		ability.shoot.secrete[I].start = new Date();
 		ability.shoot.secrete[I].color = org.color;
 
 		// Hit (Apply Ability) (Hit detection on local machine)
 		for (let i = 0; i < game.info.count; i++) {
-			if (game.orgs[i].player == socket.id) {
+			if (game.orgs[i].player == socket.id || game.orgs[i].team == org.team && typeof team == 'string') { // Do not apply ability to self or teammate
 				continue;
 			}
 			for (let j = 0; j < game.orgs[i].count; j++) {
@@ -341,8 +356,8 @@ function shoot(I, J) {
 			ability.shoot.secrete[I].end = new Date();
 			{ // Copy of 'shoot' timeout
 				ability.shoot.value[I] = false;
-				ability.shoot.can[I] = true;
 				ability.shoot.spore[I] = undefined;
+				ability.shoot.cooling[I] = true;
 				ability.shoot.end[I] = new Date();
 			}
 			clearTimeout(ability.shoot.timeout[I]);
@@ -355,29 +370,58 @@ function shoot(I, J) {
 function use(I, J, playeR) {
 	if (I == 0) {
 		if (J == 0) {
-			extend(playeR);
+			if (ability.extend.activated == true) {
+				extend(playeR);
+			}
 		} else if (J == 1) {
-			compress(playeR);
+			if (ability.compress.activated == true) {
+				compress(playeR);
+			} else if (ability.tag.activated == true) {
+				tag(playeR);
+			}
 		}
 	} else if (I == 1) {
 		if (J == 0) {
-			immortality(playeR);
+			if (ability.immortality.activated == true) {
+				immortality(playeR);
+			}
 		} else if (J == 1) {
-			freeze(playeR);
+			if (ability.freeze.activated == true) {
+				freeze(playeR);
+			}
 		}
 	} else if (I == 2) {
 		if (J == 0) {
-			neutralize(playeR);
+			if (ability.neutralize.activated == true) {
+				neutralize(playeR);
+			}
 		} else if (J == 1) {
-			toxin(playeR);
+			if (ability.toxin.activated == true) {
+				toxin(playeR);
+			}
 		}
 	} else if (I == 3) {
 		if (J == 0) {
-			spore();
+			if (ability.spore.activated == true) {
+				spore(playeR);
+			}
 		} else if (J == 1) {
-			secrete();
+			if (ability.secrete.activated == true) {
+				secrete(playeR);
+			}
 		}
 	}
+}
+
+function tag(playeR) {
+	socket.emit('Tag', playeR);
+	ability.tag.can = false;
+	ability.tag.start = new Date();
+	socket.emit('Ability', ability);
+	setTimeout(function() {
+		ability.tag.end = new Date();
+		ability.tag.cooling = true;
+	}, ability.tag.time);
 }
 
 function extend(playeR) {
@@ -520,7 +564,15 @@ function renderSpores(abilitY) {
 			let cell = abilitY.spore.spores[i];
 			fill(cell.color.r, cell.color.g, cell.color.b);
 			noStroke();
-			rect(cell.x, cell.y, cell.width, cell.height);
+			for (let j = 0; j < game.info.count; j++) {
+				if (game.orgs[j].player == abilitY.player) {
+					if (game.orgs[j].skin == 'circles') {
+						ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
+					} else {
+						rect(cell.x, cell.y, cell.width, cell.height);
+					}
+				}
+			}
 		}
 	}
 	for (let i = 0; i < 3; i++) {
@@ -528,7 +580,15 @@ function renderSpores(abilitY) {
 			let cell = abilitY.shoot.spore[i];
 			fill(cell.color.r, cell.color.g, cell.color.b);
 			noStroke();
-			rect(cell.x, cell.y, cell.width * .8, cell.height * .8); // .8 (default) size of spore (so as to differentiate between the two)
+			for (let j = 0; j < game.info.count; j++) {
+				if (game.orgs[j].player == abilitY.player) {
+					if (game.orgs[j].skin == 'circles') {
+						ellipse(cell.x, cell.y, cell.width / 2 * .8, cell.height / 2 * .8); // .8 (default) size of spore (so as to differentiate between the two)
+					} else {
+						rect(cell.x, cell.y, cell.width * .8, cell.height * .8);
+					}
+				}
+			}
 		}
 	}
 }
@@ -575,13 +635,26 @@ function renderToxin(abilitY) {
 	}
 }
 
-function cooldown(abilitY) {
-	if (abilitY.cooling == true) { // If abilitY is cooling down
-		let current = new Date(); // Get current time
-		if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
-			abilitY.can = true; // Re-enable abilitY
-			abilitY.cooling = false;
-			socket.emit('Ability', ability); // Update server
+function cooldown(abilitY) { // abilitY is ability.xxxxx, not (games[i].)ability
+	if (typeof abilitY.value != 'object') { // If is not shoot (typeof [] == 'object')
+		if (abilitY.cooling == true) { // If abilitY is cooling down
+			let current = new Date(); // Get current time
+			if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
+				abilitY.can = true; // Re-enable abilitY
+				abilitY.cooling = false;
+				socket.emit('Ability', ability); // Update server
+			}
+		}
+	} else { // If is shoot
+		for (let i = 0; i < abilitY.value.length; i++) {
+			if (abilitY.cooling[i] == true) { // If abilitY is cooling down
+				let current = new Date(); // Get current time
+				if (current - abilitY.end[i] >= abilitY.cooldown[i]) { // If cooldown has passed
+					abilitY.can[i] = true; // Re-enable abilitY
+					abilitY.cooling[i] = false;
+					socket.emit('Ability', ability); // Update server
+				}
+			}
 		}
 	}
 }

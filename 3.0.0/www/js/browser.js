@@ -38,11 +38,16 @@ function renderBrowser(datA) {
 		host.colSpan = '1';
 		host.id = 'host';
 		host.innerHTML = 'Host';
-		let leader = document.createElement('th');
-		headRow.appendChild(leader);
-		leader.colSpan = '1';
-		leader.id = 'leader';
-		leader.innerHTML = 'Leader';
+		// let leader = document.createElement('th');
+		// headRow.appendChild(leader);
+		// leader.colSpan = '1';
+		// leader.id = 'leader';
+		// leader.innerHTML = 'Leader';
+		let mode = document.createElement('th');
+		headRow.appendChild(mode);
+		mode.colSpan = '1';
+		mode.id = 'mode';
+		mode.innerHTML = 'Mode';
 		let players = document.createElement('th');
 		headRow.appendChild(players);
 		players.colSpan = '1';
@@ -132,8 +137,8 @@ function renderBrowser(datA) {
 			if (hosted == false) { // If host is not in board list, clear
 				clear = true;
 			}
-			if (games[i].board.list[0].name != Tbody.children[i].children[2].innerHTML) { // Discrepancy in listed leader
-				Tbody.children[i].children[2].innerHTML = games[i].board.list[0].name;
+			if (modes[games[i].info.mode] != Tbody.children[i].children[2].innerHTML) { // Discrepancy in listed leader
+				Tbody.children[i].children[2].innerHTML = modes[games[i].info.mode];
 			}
 			if (games[i].players.length.toString() != Tbody.children[i].children[3].innerHTML) { // Discrepancy in listed player count
 				Tbody.children[i].children[3].innerHTML = games[i].players.length;
@@ -171,10 +176,14 @@ function renderBrowser(datA) {
 			}
 			host.style.width = '150px';
 			host.style.textAlign = 'center';
-			let leader = row.insertCell(-1);
-			leader.innerHTML = games[i].board.list[0].name;
-			leader.style.width = '150px';
-			leader.style.textAlign = 'center';
+			// let leader = row.insertCell(-1);
+			// leader.innerHTML = games[i].board.list[0].name;
+			// leader.style.width = '150px';
+			// leader.style.textAlign = 'center';
+			let mode = row.insertCell(-1);
+			mode.innerHTML = modes[games[i].info.mode];
+			mode.style.width = '150px';
+			mode.style.textAlign = 'center';
 			let players = row.insertCell(-1);
 			players.innerHTML = games[i].players.length;
 			// players.style.width = '40px';

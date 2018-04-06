@@ -28,6 +28,14 @@ var io = socketio(server);
 // Send Static Data
 app.use(express.static('./www'));
 
+// Game Config Data (Must be exactly as found in config.js)
+const teamColors = [
+	'red', 
+	'blue', 
+	'green', 
+	'pink'
+];
+
 // Start
 var connections = 0;
 io.sockets.on('connection', newConnection);
@@ -50,7 +58,6 @@ var intervals = [];
 
 console.log('Running...');
 console.log('');
-console.log('Connections: ' + connections);
 
 //////////////////////////////////////////////////////////////
 
@@ -58,8 +65,7 @@ console.log('Connections: ' + connections);
 function newConnection(sockeT) {
 	// Connect
 	connections++;
-	console.log('Client connected: ' + sockeT.id); // Server Message
-	console.log('Connections: ' + connections);
+	console.log('Client connected: ' + sockeT.id + ' (' + connections + ')'); // Server Message
 
 	sockeT.join('Lobby'); // Join 'Lobby' Room
 	sockeT.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
@@ -67,12 +73,11 @@ function newConnection(sockeT) {
 	// Disconnect
 	sockeT.on('disconnect', function() {
 		connections--;
-		console.log('Client disconnected: ' + sockeT.id); // Server Message
-		console.log('Connections: ' + connections);
+		console.log('Client disconnected: ' + sockeT.id + ' (' + connections + ')'); // Server Message
 
 		// End Hosted Game
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == sockeT.id) {
+			if (games[i].info.host == sockeT.id) { // If player is host
 				io.to(games[i].info.title).emit('Game Ended', games[i]); // Remove Players From Hosted Game
 				for (let j = 0; j < games[i].players.length; j++) {
 					for (let k = 0; k < io.sockets.sockets.length; k++) {
@@ -92,7 +97,7 @@ function newConnection(sockeT) {
 				for (let j = 0; j < passwords.length; j++) {
 					if (passwords[j].title == games[i].info.title) {
 						passwords.splice(j, 1);
-						j--;
+						j--; // Unnecessary when break proceeds
 						break;
 					}
 				}
@@ -101,36 +106,38 @@ function newConnection(sockeT) {
 				intervals.splice(i, 1);
 				i--;
 				break; // Break can be removed to remove multiple games if player is host of multiple games by some bug
-			}
-		}
-		// Leave Current Game
-		for (let i = 0; i < games.length; i++) {
-			for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-				if (games[i].board.list[j].player == sockeT.id) { // Find player in leaderboard
-					games[i].board.list.splice(j, 1); // Remove player from leaderboard
-					j--;
-					break;
+			} else { // If player is not host
+				for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
+					if (games[i].board.list[j].player == sockeT.id) { // Find player in leaderboard
+						games[i].board.list.splice(j, 1); // Remove player from leaderboard
+						j--;
+						break;
+					}
 				}
-			}
-			for (let j = 0; j < games[i].players.length; j++) { // Search Players
-				if (games[i].players[j] == sockeT.id) { // Find Player
-					sockeT.leave(games[i].info.title); // Leave 'Game' Room
-					games[i].players.splice(j, 1); // Remove Player
-					games[i].orgs.splice(j, 1); // Remove Player Org
-					games[i].abilities.splice(j, 1); // Remove Player Abilities
-					j--;
-					games[i].info.count = games[i].orgs.length;
-					console.log('                                               Player Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
-					break;
+				for (let j = 0; j < games[i].players.length; j++) { // Search Players
+					if (games[i].players[j] == sockeT.id) { // Find Player
+						sockeT.leave(games[i].info.title); // Leave 'Game' Room
+						if (games[i].teams.length != 0) { // If is a team game
+							let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
+							team.splice(team.indexOf(sockeT.id), 1); // Remove player from team
+						}
+						games[i].players.splice(j, 1); // Remove Player
+						games[i].orgs.splice(j, 1); // Remove Player Org
+						games[i].abilities.splice(j, 1); // Remove Player Abilities
+						games[i].info.count = games[i].orgs.length;
+						j--;
+						console.log('                                               Player Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						break;
+					}
 				}
-			}
-			for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
-				if (games[i].spectators[j] == sockeT.id) { // Find Spectator
-					sockeT.leave(games[i].info.title);
-					games[i].spectators.splice(j, 1);
-					j--;
-					console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
-					break;
+				for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
+					if (games[i].spectators[j] == sockeT.id) { // Find Spectator
+						sockeT.leave(games[i].info.title);
+						games[i].spectators.splice(j, 1);
+						j--;
+						console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						break;
+					}
 				}
 			}
 		}
@@ -145,23 +152,23 @@ function newConnection(sockeT) {
 	sockeT.on('Leave Game', function(gamE) {
 		if (gamE.info.host == sockeT.id) { // If player is host
 			io.to(gamE.info.title).emit('Game Ended', gamE); // Copied from 'Game Ended'
-			for (let i = 0; i < gamE.players.length; i++) {
+			for (let i = 0; i < gamE.players.length; i++) { // If player
 				for (let j = 0; j < io.sockets.sockets.length; j++) {
 					if (gamE.players[i] == io.sockets.sockets[j].id) {
-						io.sockets.sockets[j].leave(gamE.info.title);
+						io.sockets.sockets[j].leave(gamE.info.title); // Leave server room
 					}
 				}
 			}
-			for (let i = 0; i < gamE.spectators.length; i++) {
+			for (let i = 0; i < gamE.spectators.length; i++) { // If spectator
 				for (let j = 0; j < io.sockets.sockets.length; j++) {
 					if (gamE.spectators[i] == io.sockets.sockets[j].id) {
-						io.sockets.sockets[j].leave(gamE.info.title);
+						io.sockets.sockets[j].leave(gamE.info.title); // Leave server room
 					}
 				}
 			}
 			for (let i = 0; i < passwords.length; i++) {
 				if (passwords[i].title == gamE.info.title) {
-					passwords.splice(i, 1);
+					passwords.splice(i, 1); // Remove game from passwords array
 					i--;
 					break;
 				}
@@ -171,7 +178,7 @@ function newConnection(sockeT) {
 				if (games[i].info.host == gamE.info.host) {
 					games.splice(i, 1); // Delete Game
 					clearInterval(intervals[i]); // Clear Game Interval
-					intervals.splice(i, 1);
+					intervals.splice(i, 1); // Remove game interval from intervals array
 					i--;
 					break;
 				}
@@ -188,11 +195,15 @@ function newConnection(sockeT) {
 				for (let j = 0; j < games[i].players.length; j++) { // Search Players
 					if (games[i].players[j] == sockeT.id) { // Find Player
 						sockeT.leave(games[i].info.title); // Leave 'Game' Room
+						if (games[i].teams.length != 0) { // If is a team game
+							let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
+							team.splice(team.indexOf(sockeT.id), 1); // Remove player from team
+						}
 						games[i].players.splice(j, 1); // Remove Player
 						games[i].orgs.splice(j, 1); // Remove Player Org
 						games[i].abilities.splice(j, 1); // Remove Player Abilities
-						j--;
 						games[i].info.count = games[i].orgs.length;
+						j--;
 						console.log('                                               Player Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
 						break;
 					}
@@ -265,7 +276,7 @@ function newConnection(sockeT) {
 		}
 	});
 
-	// Check if player is permissed entry into game
+	// Check if player is permitted entry into game
 	sockeT.on('Check Permission', function(datA) {
 		let granted = false;
 		let hasPassword = false;
@@ -392,14 +403,31 @@ function newConnection(sockeT) {
 	// Update Server World
 	sockeT.on('World', function(worlD) {
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == worlD.host) { // Find game
+			if (games[i].info.host == worlD.host) { // Identify game
 				games[i].world = worlD;
 				break;
 			}
 		}
 	});
 
+	// Update Server Teams
+	sockeT.on('Teams', function(datA) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == datA.host) { // Identify game
+				games[i].teams = datA.teams;
+			}
+		}
+	});
+
 	{ // Abilities
+		sockeT.on('Tag', function(playeR) {
+			if (playeR == sockeT.id) {
+				sockeT.emit('Tag');
+			} else {
+				sockeT.to(playeR).emit('Tag');
+			}
+		});
+
 		sockeT.on('Extend', function(playeR) {
 			if (playeR == sockeT.id) {
 				sockeT.emit('Extend');

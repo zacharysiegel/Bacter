@@ -1,11 +1,18 @@
 var socket;
 var passwordConfirmed;
 function connectSocket() {
-	socket = io.connect('24.55.26.67'); // Local Server
-	// socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
+	if (DEV == true) {
+		socket = io.connect('localhost'); // Local server (Development only)
+	} else {
+		if (HEROKU == true) {
+			socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
+		} else {
+			socket = io.connect('24.55.26.67'); // Local Server
+		}
+	}
 
 	gamesInterval = setInterval(function() {
-		if (state != 'game') {
+		if (state != 'game' && state != 'spectate') {
 			socket.emit('Games Request');
 		}
 	}, 250);
@@ -15,6 +22,10 @@ function connectSocket() {
 		connections = datA.connections;
 		if (state == 'browser') {
 			renderBrowser('games');
+		} else if (state == 'joinMenu') {
+			menus.join.editLists();
+		} else if (state == 'respawnMenu') {
+			menus.respawn.editLists();
 		}
 	});
 
@@ -91,25 +102,30 @@ function connectSocket() {
 	});
 
 	socket.on('Spectate', function() {
-		spectate({ color: org.color, gridded: org.gridded });
+		spectate({ color: org.color, gridded: org.gridded, pos: org.pos, skin: org.skin, team: org.team });
 	});
 
 	{ // Abilities
+		socket.on('Tag', function() {
+			ability.tag.value = true;
+			clearTimeout(ability.tag.timeout);
+			socket.emit('Ability', ability);
+			if (game.info.mode == '') {
+				ability.tag.timeout = setTimeout(function() {
+					ability.tag.value = false;
+					socket.emit('Ability', ability);
+				}, ability.tag.time);
+			}
+		});
+
 		socket.on('Extend', function() {
 			ability.extend.value = true;
 			clearTimeout(ability.extend.timeout);
-			org.coefficient = -25.5;
-			org.range = 70;
 			ability.extend.start = new Date();
 			socket.emit('Ability', ability);
 			ability.extend.timeout = setTimeout(function() { // End ability
 				ability.extend.value = false;
 				ability.extend.end = new Date();
-				org.coefficient = -27.5;
-				org.range += 10; // So as to cancel out compress
-				if (org.range > 50) {
-					org.range = 50; // Extend does not stack
-				}
 				ability.extend.cooling = true;
 				socket.emit('Ability', ability);
 			}, ability.extend.time);
@@ -118,16 +134,9 @@ function connectSocket() {
 		socket.on('Compress', function() {
 			ability.compress.value = true;
 			clearTimeout(ability.compress.timeout);
-			org.coefficient = -31.5;
-			org.range -= 10; // So as to cancel out extend
-			if (org.range < 30) {
-				org.range = 30; // Compress does not stack
-			}
 			socket.emit('Ability', ability);
 			ability.compress.timeout = setTimeout(function() {
 				ability.compress.value = false;
-				org.coefficient = -27.5;
-				org.range = 50;
 				socket.emit('Ability', ability);
 			}, ability.compress.time);
 		});

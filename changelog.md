@@ -1,6 +1,6 @@
 # BACTER Change Log
 
-	NOTE: Logs before version 1.1.2 are likely incomplete and/or flawed
+	NOTE: Logs before version 1.1.2 are incomplete or inaccurate
 
 ## 1.0.0
 	Initial Build
@@ -128,5 +128,24 @@
 	BALANCED immortality cooldown (4000ms --> 3500ms)
 
 ## 3.0.0
+	ADDED skirmish game mode
+	ADDED game mode column to browser
+	ADDED tag ability (ctf + inf)
+	ADDED rectangular world option
+	ADDED elliptical world option
+	ADDED circles skin
+	ADDED menu responsivity (restructure depending on selections)
 	ADDED window resizing functionality when in game
+	ADDED name label character limit (20)
+	REMOVED world border movement block
+	REMOVED leader column from browser
 	CHANGED menu buttons' cursors to pointer
+	CHANGED lake color (lighter)
+	CHANGED pink color name to petal
+	CHANGED skin selection style in menus
+	CHANGED name label positioning function (square approx. --> circle approx.)
+	FIXED spectate random positioning after death
+	FIXED extend and compress non-cancelation
+	FIXED closed game spectate attempt bug
+	FIXED rare rapid growth bug
+	FIXED game closure menu bug

@@ -1,7 +1,7 @@
 var org;
 function spawn(datA) {
 	state = 'spawn';
-	org = new Org({ player: socket.id, color: datA.color, gridded: datA.gridded });
+	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team });
 	ability.player = socket.id;
 	socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 };
@@ -9,49 +9,66 @@ function spawn(datA) {
 function spectate(datA) {
 	socket.emit('Spectator Joined', game);
 	state = 'spectate';
-	org = new Org({ player: socket.id, color: datA.color, gridded: datA.gridded });
+	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos });
 }
 
 function renderWorld() {
 	// Background
-	background(game.world.background.r, game.world.background.g, game.world.background.b);
+	background(game.world.backdrop.r, game.world.backdrop.g, game.world.backdrop.b);
 	
 	// Border
-	noFill() 
+	if (game.info.mode == 'srv' && socket.id == game.info.host) { // If srv mode; If player is host of game
+		if (game.world.width > 200 && game.world.height > 200) { // If both dimensions are greater than minimum
+			game.world.width -= SHRINKRATE;
+			game.world.height -= SHRINKRATE;
+			game.world.x += SHRINKRATE / 2; // World shrinks to center
+			game.world.y += SHRINKRATE / 2;
+			socket.emit('World', game.world);
+		}
+	}
+	fill(game.world.background.r, game.world.background.g, game.world.background.b);
 	stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
 	strokeWeight(game.world.border.weight);
-	rect(game.world.width / 2, game.world.height / 2, game.world.width, game.world.height); // World border box
-
-	// Dots
-	fill(random(150, 220));
-	noStroke();
-	for (let i = 0; i < game.world.dots.count; i++) {
-		let dot = game.world.dots.array[i];
-		// ellipse(dot.x, dot.y, dot.r);
+	if (game.world.type == 'rectangle') {
+		rect(game.world.x + game.world.width / 2, game.world.y + game.world.height / 2, game.world.width, game.world.height); // World border
+	} else if (game.world.type == 'ellipse') {
+		ellipse(game.world.x + game.world.width / 2, game.world.y + game.world.height / 2, game.world.width / 2, game.world.height / 2); // World border
 	}
 
+	// Dots
+	// fill(random(150, 220));
+	// noStroke();
+	// for (let i = 0; i < game.world.dots.count; i++) {
+	// 	let dot = game.world.dots.array[i];
+	// 	ellipse(dot.x, dot.y, dot.r);
+	// }
+
 	// Grid
-	// for (let i = 0; i < game.world.height / game.world.grid.width; i++) {
-	// 	line(0, i * game.world.grid.width + (game.world.height % game.world.grid.width / 2), game.world.width, i * game.world.grid.width + (game.world.height % game.world.grid.width / 2));
+	// for (let i = 0; i < game.world.height / game.world.grid.width; i++) { // Same color as border so is adaptable to variable world colors
+	// 	line(game.world.x, game.world.y + i * game.world.grid.width + (game.world.height % game.world.grid.width / 2), game.world.x + game.world.width, game.world.y + i * game.world.grid.width + (game.world.height % game.world.grid.width / 2));
 	// }
 	// for (let i = 0; i < game.world.width / game.world.grid.width; i++) {
-	// 	line(i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), 0, i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.height);
+	// 	line(game.world.x + i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.y, game.world.x + i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.y + game.world.height);
 	// }
 }
 
 function renderOrgs() {
 	for (let i = 0; i < game.info.count; i++) {
 		for (let j = 0; j < game.orgs[i].count; j++) {
+			let cell = game.orgs[i].cells[j];
 			fill(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b);
-			if (game.orgs[i].gridded == true) {
+			if (game.orgs[i].skin == 'grid') {
 				stroke(40, 40, 40); // Draw constant grid (natural grid is variable)
 				strokeWeight(.25);
-			} else if (game.orgs[i].gridded == false) {
+				rect(cell.x, cell.y, cell.width, cell.height);
+			} else if (game.orgs[i].skin == 'circles') {
+				noStroke();
+				ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
+			} else if (game.orgs[i].skin == 'none') {
 				stroke(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b); // Stroke over natural grid
 				strokeWeight(1);
+				rect(cell.x, cell.y, cell.width, cell.height);
 			}
-			let celL = game.orgs[i].cells[j];
-			rect(celL.x, celL.y, celL.width, celL.height);
 		}
 	}
 }
@@ -60,76 +77,281 @@ function renderLeaderboard() {
 	// Leaderboard
 	translate(org.off.x, org.off.y); // Settings for entire board
 	rectMode(CORNER);
-	game.board.x = width - (game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.ratioWidth) - game.board.marginRight;
 	game.board.y = game.board.marginTop;
 	noFill();
 	stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 	strokeWeight(game.board.tableWeight);
 	textSize(game.board.text.size);
 	textFont(game.board.text.font);
-	fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
-	strokeWeight(game.board.headWeight);
-	rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
-	rect(game.board.x + game.board.nameWidth, game.board.y, game.board.killWidth, game.board.rowHeight); // Kills Header
-	rect(game.board.x + game.board.nameWidth + game.board.killWidth, game.board.y, game.board.deathWidth, game.board.rowHeight); // Deaths Header
-	rect(game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth, game.board.y, game.board.ratioWidth, game.board.rowHeight); // Ratios Header
-	fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
-	noStroke();
-	text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-	text('Kills', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-	text('Deaths', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-	text('K:D', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-	game.board.count = min(game.board.show, game.board.list.length);
+	if (game.info.mode == 'ffa') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Kills Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y, game.board.twoWidth, game.board.rowHeight); // Deaths Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.y, game.board.threeWidth, game.board.rowHeight); // Ratios Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Kills', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Deaths', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('K:D', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = min(game.board.show, game.board.list.length);
+	} else if (game.info.mode == 'skm') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Team Color Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Team Kills Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y, game.board.twoWidth, game.board.rowHeight); // Team Deaths Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.y, game.board.threeWidth, game.board.rowHeight); // Team Ratio Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Team', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Kills', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Deaths', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('K:D', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = game.teams.length;
+	} else if (game.info.mode == 'srv') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y, game.board.twoWidth, game.board.rowHeight); // Kills Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Wins', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Kills', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = min(game.board.show, game.board.list.length);
+	} else if (game.info.mode == 'ctf') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Team Color Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Captures Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Team', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Score', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = game.teams.length;
+	} else if (game.info.mode == 'inf') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Wins', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = min(game.board.show, game.board.list.length);
+	} else if (game.info.mode == 'kth') {
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		strokeWeight(game.board.headWeight);
+		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
+		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
+		noStroke();
+		text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Score', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		game.board.count = min(game.board.show, game.board.list.length);
+	}
 	var a = 0;
 	for (let i = 0; i < game.board.count; i++) { // Body
-		var spectator = false;
-		for (let j = 0; j < game.spectators.length; j++) {
-			if (game.board.list[i].player == game.spectators[j]) {
-				spectator = true;
-				break;
+		if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team mode
+			var spectator = false;
+			for (let j = 0; j < game.spectators.length; j++) {
+				if (game.board.list[i].player == game.spectators[j]) {
+					spectator = true;
+					break;
+				}
 			}
-		}
-		if (spectator == true) {
-			if (i < game.board.count) {
-				if (game.board.count < game.info.count) {
-					game.board.count++; // Extend leaderboard length to include the next player
-					i++; // Do not render leaderboard status if player is a spectator
-				} else {
-					continue;
+			if (spectator == true) {
+				if (i < game.board.count) {
+					if (game.board.count < game.info.count) {
+						game.board.count++; // Extend leaderboard length to include the next player
+						i++; // Do not render leaderboard status if player is a spectator
+					} else {
+						continue;
+					}
 				}
 			}
 		}
 		// Cell Boxes
-		fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
-		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
-		strokeWeight(game.board.cellWeight);
-		rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
-		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
-		noStroke();
-		if (game.board.list[i].player == socket.id) {
-			textFont(game.board.text.boldFont);
-		} else {
-			textFont(game.board.text.font);
-		}
-		text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
-		fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
-		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
-		strokeWeight(game.board.cellWeight);
-		rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.killWidth, game.board.rowHeight); // Kills Body
-		rect(game.board.x + game.board.nameWidth + game.board.killWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.deathWidth, game.board.rowHeight); // Deaths Body
-		rect(game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.ratioWidth, game.board.rowHeight); // Ratios Body
-		// Text
-		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
-		noStroke();
-		text(game.board.list[i].kills, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
-		text(game.board.list[i].deaths, game.board.x + game.board.nameWidth + game.board.killWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
-		game.board.list[i].ratio = game.board.list[i].kills / game.board.list[i].deaths;
-		if (game.board.list[i].ratio == Infinity) { // n / 0, n != 0 (Divide by Zero)
-			text('∞', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
-		} else if (game.board.list[i].kills == 0 && game.board.list[i].deaths == 0) { // 0 / 0 (Indeterminate Form) (Ratio is NaN)
-			text('0', game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
-		} else { // n / m, m != 0 (Rational Number)
-			text(round(game.board.list[i].ratio * 100) / 100, game.board.x + game.board.nameWidth + game.board.killWidth + game.board.deathWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+		if (game.info.mode == 'ffa') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.board.list[i].player == socket.id) {
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Kills Body
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.twoWidth, game.board.rowHeight); // Deaths Body
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.threeWidth, game.board.rowHeight); // Ratios Body
+			// Text
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			text(game.board.list[i].kills, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].deaths, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			game.board.list[i].ratio = game.board.list[i].kills / game.board.list[i].deaths;
+			if (game.board.list[i].ratio == Infinity) { // n / 0, n != 0 (Divide by Zero)
+				text('∞', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			} else if (game.board.list[i].kills == 0 && game.board.list[i].deaths == 0) { // 0 / 0 (Indeterminate Form) (Ratio is NaN)
+				text('0', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			} else { // n / m, m != 0 (Rational Number)
+				text(round(game.board.list[i].ratio * 100) / 100, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			}
+		} else if (game.info.mode == 'skm') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Team Color Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.teams[i].indexOf(org.player) != -1) { // If player is on given team
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name is above so it renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Team Kills Body
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.twoWidth, game.board.rowHeight); // Team Deaths Body
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.threeWidth, game.board.rowHeight); // Team Ratios Body
+			// Text
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			var teamKills = 0;
+			var teamDeaths = 0;
+			for (let j = 0; j < game.teams[i].length; j++) {
+				for (let k = 0; k < game.board.list.length; k++) {
+					if (game.teams[i][j] == game.board.list[k].player) {
+						teamKills += game.board.list[k].kills;
+						teamDeaths += game.board.list[k].deaths;
+						break;
+					}
+				}
+			}
+			var teamRatio = teamKills / teamDeaths;
+			text(teamKills, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(teamDeaths, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			if (teamRatio == Infinity) { // n / 0, n != 0 (Divide by Zero)
+				text('∞', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			} else if (teamKills == 0 && teamDeaths == 0) { // 0 / 0 (Indeterminate Form) (Ratio is NaN)
+				text('0', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			} else { // n / m, m != 0 (Rational Number)
+				text(round(teamRatio * 100) / 100, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
+			}
+		} else if (game.info.mode == 'srv') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.board.list[i].player == socket.id) {
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Kills Body
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.twoWidth, game.board.rowHeight); // Deaths Body
+			// Text
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].kills, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+		} else if (game.info.mode == 'ctf') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Team Color Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.teams[i].indexOf(org.player) != -1) { // If player is on given team
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name is above so it renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Team Kills Body
+			// Text
+			var captures = 0;
+			for (let j = 0; j < game.teams[i].length; j++) {
+				for (let k = 0; k < game.board.list.length; k++) {
+					if (game.teams[i][j] == game.board.list[k].player) {
+						captures += game.board.list[k].score;
+						break;
+					}
+				}
+			}
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			text(captures, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+		} else if (game.info.mode == 'inf') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.board.list[i].player == socket.id) {
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Kills Body
+			// Text
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+		} else if (game.info.mode == 'kth') {
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			if (game.board.list[i].player == socket.id) {
+				textFont(game.board.text.boldFont);
+			} else {
+				textFont(game.board.text.font);
+			}
+			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
+			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
+			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
+			strokeWeight(game.board.cellWeight);
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Kills Body
+			// Text
+			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
+			noStroke();
+			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 		}
 		a++;
 	}
@@ -176,7 +398,7 @@ function renderUI() {
 	}
 
 	// Screen Name Labels
-	if (LABELS == true) {
+	if (Labels == true) {
 		fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
 		noStroke();
 		textFont('Helvetica');
@@ -200,39 +422,147 @@ function renderUI() {
 						let average = sum / game.orgs[i].count;
 						return average;
 					};
-					text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(game.orgs[i].count) * CELLWIDTH + 6); // 6 is buffer
+					if (game.board.list[j].name.length <= 30) {
+						text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(CELLWIDTH) * game.orgs[i].count / PI) + 2 * CELLWIDTH + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+					} else {
+						text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(CELLWIDTH) * game.orgs[i].count / PI) + 2 * CELLWIDTH + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+					}
 				}
 			}
 		}
 	}
 
 	// Ability Cooldowns
-	for (let i in ability) {
+	for (let i in ability) { // Regular Cooldowns
 		if (ability[i].cooling == true) {
 			cooldown(ability[i]);
+		}
+	}
+	for (let i = 0; i < ability.shoot.value.length; i++) { // Shoot Cooldown
+		if (ability.shoot.cooling[i] == true) {
+			cooldown(ability.shoot);
+			break;
 		}
 	}
 
 	// Ability Tooltips
 	translate(org.off.x, org.off.y);
-	var current = new Date();
-	for (let i = 0; i < 4; i++) {
+	var current = new Date(); // Set current time
+	if (ability.tag.activated == false) {
+		for (let i = 0; i < 4; i++) {
+			fill(215);
+			stroke(0);
+			strokeWeight(1);
+			rect(center.x - 150 + i * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+			let letter;
+			if (i == 0) {
+				letter = Controls.ability1.key;
+			} else if (i == 1) {
+				letter = Controls.ability2.key;
+			} else if (i == 2) {
+				letter = Controls.ability3.key;
+			} else if (i == 3) {
+				if (Controls.ability4.key == ' ') {
+					letter = '_';
+				} else {
+					letter = Controls.ability4.key;
+				}
+			}
+			fill(0);
+			noStroke();
+			textSize(14);
+			textFont('Consolas');
+			textStyle(BOLD);
+			text(letter, center.x - 150 + i * 100 - textWidth(letter) / 2, height  * 9 / 10 + 30 + 13);
+			fill(0);
+			stroke(0);
+			strokeWeight(1);
+			ellipse(center.x - 150 + i * 100, height * 9 / 10, 30); // Background ellipse
+			for (let j in ability) {
+				if (ability[j].i == i) { // Find corresponding ability set to tooltip
+					if (ability[j].activated == true) { // Find corresponding activated ability to tooltip
+						if (j == 'spore' && ability.secrete.value == true) {
+							continue; // Do not draw spore
+						}
+						if (j == 'secrete' && ability.secrete.value == false) {
+							continue; // Do not draw secrete
+						}
+						fill(215);
+						noStroke();
+						if (ability[j].j == 0) { // If defensive ability (or spore)
+							// Ability
+							if (ability[j].value == true) { // If during ability
+								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+							} else if (ability[j].value == false && ability[j].can == false) { // If during cooldown
+								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+							} else if (ability[j].value == false && ability[j].can == true) {
+								ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+							}
+						} else if (ability[j].j == 1) { // If offensive ability (or secrete)
+							if (ability[j].i < 3) { // If one of first three abilities
+								noStroke();
+								// Ability
+								if (ability[j].can == true) { // Idle
+									ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+								} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
+									arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+								} else if (ability[j].can == false && current - ability[j].start > ability[j].time) { // If during cooldown
+									arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+								}
+								// Shoot
+								if (j != 'toxin') { // No shoot for Toxin
+									stroke(0);
+									if (ability.shoot.value[i] == false && ability.shoot.can[i] == true) { // Idle
+										ellipse(center.x - 150 + i * 100 - 41, height * 9 / 10, 8);
+									} else if (ability.shoot.value[i] == true && ability.shoot.can[i] == false) { // If is shooting
+										arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[i]) / ability.shoot.time * 360); // Ability timeout timer
+									} else if (ability.shoot.secrete[i].value == true) { // If is secreting
+										arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360) - ((current - ability.shoot.secrete[i].start) / ability.secrete.time * (360 - (ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360))); // Secretion timer
+									} else if (current - ability.shoot.secrete[i].end < ability.shoot.cooldown[i]) {
+										arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + ((current - ability.shoot.secrete[i].end) / ability.shoot.cooldown[i] * 360)); // Shoot cooldown timer (if no hit)
+									}
+								}
+							} else if (ability[j].i == 3) { // Secrete
+								if (ability[j].can == true) { // Idle
+									ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
+								} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
+									arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360) - (current - ability[j].start) / ability[j].time * (360 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360))); // Ability cooldown timer
+								}
+							}
+						}
+						itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + i * 100, height * 9 / 10);
+					}
+					if (ability[j].value == true && ability[j].i < 3) { // Ability Activated Tooltip (Not for spore/secrete)
+						if (ability[j].j == 0 || ability[j].i == 3) { // If defensive ability (+ secrete)
+							fill(66, 244, 176); // Green
+							noStroke();
+							ellipse(center.x - 150 + i * 100 - 9, height * 9 / 10 - 37, 5, 5);
+						} else if (ability[j].j == 1 && ability[j].i != 3) { // If offensive ability (No secrete)
+							fill(255, 141, 135); // Red
+							noStroke();
+							ellipse(center.x - 150 + i * 100 + 9, height * 9 / 10 - 37, 5, 5);
+						}
+					}
+				}
+			}
+		}
+	} else if (ability.tag.activated == true) {
 		fill(215);
 		stroke(0);
 		strokeWeight(1);
-		rect(center.x - 150 + i * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+		rect(center.x, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
 		let letter;
-		if (i == 0) {
-			letter = ABILITYKEY1;
-		} else if (i == 1) {
-			letter = ABILITYKEY2;
-		} else if (i == 2) {
-			letter = ABILITYKEY3;
-		} else if (i == 3) {
-			if (ABILITYKEY4 == ' ') {
+		if (ability.tag.i == 0) {
+			letter = Controls.ability1.key;
+		} else if (ability.tag.i == 1) {
+			letter = Controls.ability2.key;
+		} else if (ability.tag.i == 2) {
+			letter = Controls.ability3.key;
+		} else if (ability.tag.i == 3) {
+			if (Controls.ability4.key == ' ') {
 				letter = '_';
 			} else {
-				letter = ABILITYKEY4;
+				letter = Controls.ability4.key;
 			}
 		}
 		fill(0);
@@ -240,126 +570,65 @@ function renderUI() {
 		textSize(14);
 		textFont('Consolas');
 		textStyle(BOLD);
-		text(letter, center.x - 150 + i * 100 - textWidth(letter) / 2, height  * 9 / 10 + 30 + 13);
+		text(letter, center.x - textWidth(letter) / 2, height  * 9 / 10 + 30 + 13); // Letter text
+		// Ability Circles
 		fill(0);
 		stroke(0);
 		strokeWeight(1);
-		ellipse(center.x - 150 + i * 100, height * 9 / 10, 30); // Background ellipse
-		for (let j in ability) {
-			if (ability[j].i == i) { // Find corresponding ability set to tooltip
-				if (ability[j].activated == true) { // Find corresponding activated ability to tooltip
-					if (j == 'spore' && ability.secrete.value == true) {
-						continue; // Do not draw spore
-					}
-					if (j == 'secrete' && ability.secrete.value == false) {
-						continue; // Do not draw secrete
-					}
-					fill(215);
-					noStroke();
-					if (ability[j].j == 0) { // If defensive ability (or spore)
-						// Ability
-						if (ability[j].value == true) { // If during ability
-							arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-						} else if (ability[j].value == false && ability[j].can == false) { // If during cooldown
-							arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
-						} else if (ability[j].value == false && ability[j].can == true) {
-							ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-						}
-					} else if (ability[j].j == 1) { // If offensive ability (or secrete)
-						if (ability[j].i < 3) { // If one of first three abilities
-							noStroke();
-							// Ability
-							if (ability[j].can == true) { // Idle
-								ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-							} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
-								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-							} else if (ability[j].can == false && current - ability[j].start > ability[j].time) { // If during cooldown
-								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
-							}
-							// Shoot
-							if (j != 'toxin') { // No shoot for Toxin
-								stroke(0);
-								if (ability.shoot.value[i] == false && ability.shoot.can[i] == true) { // Idle
-									ellipse(center.x - 150 + i * 100 - 41, height * 9 / 10, 8);
-								} else if (ability.shoot.value[i] == true && ability.shoot.can[i] == false) { // Timeout
-									arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[i]) / ability.shoot.time * 360); // Ability timeout timer
-								} else if (ability.shoot.secrete[i].value == true) { // Secrete
-									arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360) + (current - ability.shoot.secrete[i].start) / ability.shoot.secrete[i].time * ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360)); // Ability cooldown timer
-								}
-							}
-						} else if (ability[j].i == 3) { // Secrete
-							if (ability[j].can == true) { // Idle
-								ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-							} else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
-								arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360) - (current - ability[j].start) / ability[j].time * (360 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360))); // Ability cooldown timer
-							}
-						}
-					}
-					itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + i * 100, height * 9 / 10);
-				}
-				if (ability[j].value == true && ability[j].i < 3) { // Ability Activated Tooltip (Not for spore/secrete)
-					if (ability[j].j == 0 || ability[j].i == 3) { // If defensive ability (+ secrete)
-						fill(66, 244, 176); // Green
-						noStroke();
-						ellipse(center.x - 150 + i * 100 - 9, height * 9 / 10 - 37, 5, 5);
-					} else if (ability[j].j == 1 && ability[j].i != 3) { // If offensive ability (No secrete)
-						fill(255, 141, 135); // Red
-						noStroke();
-						ellipse(center.x - 150 + i * 100 + 9, height * 9 / 10 - 37, 5, 5);
-					}
-				}
-			}
+		ellipse(center.x, height * 9 / 10, 30); // Background ellipse
+		fill(215);
+		noStroke();
+		if (ability.tag.can == true) { // Idle
+			ellipse(center.x, height * 9 / 10, 29);
+		} else if (ability.tag.can == false && current - ability.tag.start <= ability.tag.time) { // If during ability
+			arc(center.x, height * 9 / 10, 29, 29, -90, -90 - (current - ability.tag.start) / ability.tag.time * 360); // Ability timeout timer
+		} else if (ability.tag.can == false && current - ability.tag.start > ability.tag.time) { // If during cooldown
+			arc(center.x, height * 9 / 10, 29, 29, -90, -90 + (current - ability.tag.end) / ability.tag.cooldown * 360); // Ability cooldown timer
+		}
+		itemize(items.tag, 1, { r: 0, g: 0, b: 0 }, center.x, height * 9 / 10);
+		// Shoot
+		fill(215);
+		stroke(0);
+		if (ability.shoot.value[ability.tag.i] == false && ability.shoot.can[ability.tag.i] == true) { // Idle
+			ellipse(center.x - 41, height * 9 / 10, 8);
+		} else if (ability.shoot.value[ability.tag.i] == true && ability.shoot.can[ability.tag.i] == false) { // If is shooting
+			arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360); // Ability timeout timer
+		} else if (ability.shoot.secrete[ability.tag.i].value == true) { // If is secreting
+			arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360) - ((current - ability.shoot.secrete[ability.tag.i].start) / ability.secrete.time * (360 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360))); // Secretion timer
+		} else if (current - ability.shoot.secrete[ability.tag.i].end < ability.shoot.cooldown[ability.tag.i]) {
+			arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 + ((current - ability.shoot.secrete[ability.tag.i].end) / ability.shoot.cooldown[ability.tag.i] * 360)); // Shoot cooldown timer (if no hit)
+		}
+		if (ability.tag.value == true) { // Ability Activated Tooltip (only green for tag)
+			fill(66, 244, 176); // Green
+			noStroke();
+			ellipse(center.x - 9, height * 9 / 10 - 37, 5, 5);
 		}
 	}
 	translate(-org.off.x, -org.off.y);
 }
 
 function move() {
-	if (keyIsDown(65) || keyIsDown(37) || keyIsDown(87) || keyIsDown(38) || keyIsDown(68) || keyIsDown(39) || keyIsDown(83) || keyIsDown(40)) { // If a directional key
-		if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(87) || keyIsDown(38))) { // Left + Up
-			if (org.pos.x - org.speed > 0) { // Stay inside world
-				org.pos.x -= org.speed * cos45;
-			}
-			if (org.pos.y - org.speed > 0) {
-				org.pos.y -= org.speed * cos45;
-			}
-		} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(87) || keyIsDown(38))) { // Right + Up
-			if (org.pos.x + org.speed < game.world.width) {
-				org.pos.x += org.speed * cos45;
-			}
-			if (org.pos.y - org.speed > 0) {
-				org.pos.y -= org.speed * cos45;
-			}
-		} else if ((keyIsDown(68) || keyIsDown(39)) && (keyIsDown(83) || keyIsDown(40))) { // Right + Down
-			if (org.pos.x + org.speed < game.world.width) {
-				org.pos.x += org.speed * cos45;
-			}
-			if (org.pos.y + org.speed < game.world.height) {
-				org.pos.y += org.speed * cos45;
-			}
-		} else if ((keyIsDown(65) || keyIsDown(37)) && (keyIsDown(83) || keyIsDown(40))) { // Left + Down
-			if (org.pos.x - org.speed > 0) {
-				org.pos.x -= org.speed * cos45;
-			}
-			if (org.pos.y + org.speed < game.world.height) {
-				org.pos.y += org.speed * cos45;
-			}
-		} else if (keyIsDown(65) || keyIsDown(37)) { // A or LEFT_ARROW
-			if (org.pos.x - org.speed > 0) { // Stay inside world
-				org.pos.x -= org.speed; // Move the position org.speed pixels in the indicated direction
-			}
-		} else if (keyIsDown(87) || keyIsDown(38)) { // W or UP_ARROW
-			if (org.pos.y - org.speed > 0) {
-				org.pos.y -= org.speed;
-			}
-		} else if (keyIsDown(68) || keyIsDown(39)) { // D or RIGHT_ARROW
-			if (org.pos.x + org.speed < game.world.width) {
-				org.pos.x += org.speed;
-			}
-		} else if (keyIsDown(83) || keyIsDown(40)) { // S or DOWN_ARROW
-			if (org.pos.y + org.speed < game.world.height) {
-				org.pos.y += org.speed;
-			}
+	if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) { // If a directional key
+		if ((keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) && (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code))) { // Left + Up
+			org.pos.x -= org.speed * cos45;
+			org.pos.y -= org.speed * cos45;
+		} else if ((keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) && (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code))) { // Right + Up
+			org.pos.x += org.speed * cos45;
+			org.pos.y -= org.speed * cos45;
+		} else if ((keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) && (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code))) { // Right + Down
+			org.pos.x += org.speed * cos45;
+			org.pos.y += org.speed * cos45;
+		} else if ((keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) && (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code))) { // Left + Down
+			org.pos.x -= org.speed * cos45;
+			org.pos.y += org.speed * cos45;
+		} else if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) { // A or LEFT_ARROW
+			org.pos.x -= org.speed;
+		} else if (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code)) { // W or UP_ARROW
+			org.pos.y -= org.speed;
+		} else if (keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) { // D or RIGHT_ARROW
+			org.pos.x += org.speed;
+		} else if (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) { // S or DOWN_ARROW
+			org.pos.y += org.speed;
 		}
 		org.off.x = org.pos.x - center.x;
 		org.off.y = org.pos.y - center.y;
@@ -370,6 +639,7 @@ function grow() {
 	state = 'game';
 	if (org.alive == false) {
 		org.alive = true;
+		clearInterval(org.interval);
 		org.interval = setInterval(function() {
 			var regions = getRegionInfo(org);
 			// Birth
@@ -382,10 +652,34 @@ function grow() {
 					// }
 				for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
 					// Don't birth new cell outside world boundary
-					if (regions.adjacent[i].x - CELLWIDTH / 2 <= 0 || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= 0 || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.height) { // If new cell would be outside world boundary
-						continue;
+					if (game.world.type == 'rectangle') {
+						if (regions.adjacent[i].x - CELLWIDTH / 2 <= game.world.x || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.x + game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= game.world.x || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.y + game.world.height) { // If new cell would be outside world boundary
+							continue;
+						}
+					} else if (game.world.type == 'ellipse') {
+						let a = game.world.width / 2;
+						let b = game.world.height / 2;
+						let x = (regions.adjacent[i].x - CELLWIDTH / 2) - a;
+						let y = (regions.adjacent[i].y - CELLWIDTH / 2) - b;
+						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-left corner is outside ellipse
+							continue;
+						}
+						x = (regions.adjacent[i].x + CELLWIDTH / 2) - a;
+						y = (regions.adjacent[i].y - CELLWIDTH / 2) - b;
+						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-right corner is outside ellipse
+							continue;
+						}
+						x = (regions.adjacent[i].x + CELLWIDTH / 2) - a;
+						y = (regions.adjacent[i].y + CELLWIDTH / 2) - b;
+						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-right corner is outside ellipse
+							continue;
+						}
+						x = (regions.adjacent[i].x - CELLWIDTH / 2) - a;
+						y = (regions.adjacent[i].y + CELLWIDTH / 2) - b;
+						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-left corner is outside ellipse
+							continue;
+						}
 					}
-
 					// Don't birth new cell on top of an opponent org
 					var overlap = false;
 					for (let j = 0; j < game.info.count; j++) {
@@ -411,8 +705,17 @@ function grow() {
 					if (overlap == true) {
 						continue;
 					}
-
 					// Birth new cell accordingly
+					if (ability.compress.value ^ ability.extend.value == 0) { // compress.value XOR extend.value
+						org.coefficient = -27.5;
+						org.range = RANGE;
+					} else if (ability.compress.value == true) {
+						org.coefficient = -31.5;
+						org.range = RANGE - 10;
+					} else if (ability.extend.value == true) {
+						org.coefficient = -25.5;
+						org.range = RANGE + 20;
+					}
 					let chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[i].x - org.pos.x) + sq(regions.adjacent[i].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
 					if (random(0, 100) <= chance) {
 						var repeat = false;
@@ -438,6 +741,7 @@ function grow() {
 			if (ability.freeze.value == false) { // If org is not Frozen (cannot birth or die naturally)
 				if (ability.immortality.value == false) { // If org is not Immortal
 					for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
+						let chance = org.coefficient * Math.log(-regions.exposed[i].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
 						if (regions.exposed[i].d(org) > org.range) { // If exposed cell is outside maximum radius
 							for (let j = 0; j < org.count; j++) {
 								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) { // Find exposed cell within org cells array
@@ -450,8 +754,19 @@ function grow() {
 								}
 							}
 							continue;
-						} else if (regions.exposed[i].x < 0 || regions.exposed[i].x > game.world.width || regions.exposed[i].y < 0 || regions.exposed[i].y > game.world.height) {
-							for (let j = 0; j < org.ocunt; j++) {
+						} else if (game.world.type == 'rectangle' && (regions.exposed[i].x < game.world.x || regions.exposed[i].x > game.world.x + game.world.width || regions.exposed[i].y < game.world.y || regions.exposed[i].y > game.world.y + game.world.height)) { // If cell is outside rectangular world
+							for (let j = 0; j < org.count; j++) {
+								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) {
+									org.cells.splice(j, 1);
+									org.count--;
+									regions.exposed.splice(i, 1);
+									i--;
+									j--;
+									break;
+								}
+							}
+						} else if (game.world.type == 'ellipse' && sq(regions.exposed[i].x - game.world.width / 2) / sq(game.world.width / 2) + sq(regions.exposed[i].y - game.world.width / 2) / sq(game.world.height / 2) > 1) { // If outside elliptical world
+							for (let j = 0; j < org.count; j++) {
 								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) {
 									org.cells.splice(j, 1);
 									org.count--;
@@ -462,7 +777,6 @@ function grow() {
 								}
 							}
 						}
-						let chance = org.coefficient * Math.log(-regions.exposed[i].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
 						if (random(0, 100) <= chance) {
 							for (let j = 0; j < org.count; j++) {
 								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) {
@@ -528,6 +842,9 @@ function grow() {
 
 			// Abilities
 			for (let i = 0; i < game.info.count; i++) {
+				if ((game.orgs[i].team == org.team && typeof team == 'string') && game.orgs[i].player != socket.id) { // If is friendly org but not own org
+					continue; // No friendly fire but can hurt self
+				}
 				if (game.abilities[i].secrete.value == true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
 					for (let j = 0; j < org.count; j++) {
 						for (let k = 0; k < game.abilities[i].spore.count; k++) {
@@ -610,8 +927,8 @@ function grow() {
 			// 			let doT = {
 			// 				i: dot.i, 
 			// 				r: random(game.world.dots.r.min, game.world.dots.r.max), 
-			// 				x: random(0, game.world.width), 
-			// 				y: random(0, game.world.height)
+			// 				x: random(0, game.world.x + game.world.width), 
+			// 				y: random(0, game.world.y + game.world.height)
 			// 			};
 			// 			game.world.dots.array.splice(dot.i, 1, doT); // Replace eaten dot with new random doT
 			// 			socket.emit('World', game.world);
@@ -638,10 +955,10 @@ function grow() {
 				org.alive = false;
 			}
 			socket.emit('Org', org);
-			if (org.alive == false) { // Organism is dead
+			if (org.alive == false) { // If organism is dead
 				gameOver();
 			}
-		}, 80);
+		}, 70);
 	}
 }
 
@@ -755,7 +1072,7 @@ function gameOver() {
 			break;
 		}
 	}
-	alert('Press \'' + RESPAWNKEY + '\' to Respawn');
+	alert('Press \'' + Controls.respawn.key + '\' to Respawn');
 }
 
 function keyPressed() {
@@ -772,7 +1089,7 @@ function keyPressed() {
 	// 	org.off.x = org.pos.x - center.x;
 	// 	org.off.y = org.pos.y - center.y;
 	// }
-	if (keyCode == ABILITYCODE1) { // X by default
+	if (keyCode == Controls.ability1.code) { // X by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.extend.activated == true && ability.extend.can == true) {
 				extend(org.player); // Extend self
@@ -780,10 +1097,12 @@ function keyPressed() {
 				shoot(0, 1);
 				// for (let i = 0; i < game.info.count; i++) {
 				// 	if (org.target == game.players[i]) { // Find targeted org
-				// 		compress(org.target); // Compress targetec org
+				// 		compress(org.target); // Compress targeted org
 				// 		break;
 				// 	}
 				// }
+			} else if (ability.tag.activated == true && ability.tag.can == true) {
+				shoot(0, 1);
 			}
 			// if (ability.speed.activated == true) { (Not updated)
 			// 	speed(org.player);
@@ -791,7 +1110,7 @@ function keyPressed() {
 			// 	slow(org.target);
 			// }
 		}
-	} else if (keyCode == ABILITYCODE2) { // C by default
+	} else if (keyCode == Controls.ability2.code) { // C by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.immortality.activated == true && ability.immortality.can == true) {
 				immortality(org.player); // Immortalize self
@@ -805,7 +1124,7 @@ function keyPressed() {
 				// }
 			}
 		}
-	} else if (keyCode == ABILITYCODE3) { // V by default
+	} else if (keyCode == Controls.ability3.code) { // V by default
 		if (state == 'game' && org.alive == true) {
 			// if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
 			// 	stimulate(org.player); // Stimulate self
@@ -824,7 +1143,7 @@ function keyPressed() {
 				toxin(org.player);
 			}
 		}
-	} else if (keyCode == ABILITYCODE4) { // SPACE by default
+	} else if (keyCode == Controls.ability4.code) { // SPACE by default
 		if (state == 'game' && org.alive == true) {
 			if (ability.spore.value == false && ability.secrete.value == false) {
 				spore();
@@ -832,7 +1151,7 @@ function keyPressed() {
 				secrete();
 			}
 		}
-	} else if (keyCode == RESPAWNCODE) { // R by default
+	} else if (keyCode == Controls.respawn.code) { // R by default
 		if (state == 'spectate' && org.alive == false) {
 			if (game.players.length < game.info.cap) {
 				socket.emit('Spectator Left', game);
@@ -841,14 +1160,18 @@ function keyPressed() {
 				alert('Game is at maximum player capacity');
 			}
 		}
-	} else if (keyCode == PAUSECODE) { // ESC by default
+	} else if (keyCode == Controls.pause.code) { // ESC by default
 		if (state == 'game') {
 			renderMenu('pauseGame', game);
 		} else if (state == 'spectate') {
 			renderMenu('pauseSpectate', game);
+		} else if (state == 'pauseGameMenu') {
+			menus.pauseGame.submit();
+		} else if (state == 'pauseSpectateMenu') {
+			menus.pauseSpectate.submit();
 		}
 	}
-	// Hard numbers are separate from variable codes in case of overlap
+	// Hard key codes are separate from variable codes in case of overlap
 	if (keyCode == 32) { // SPACE
 		// if (state == 'chooseAbilities') {
 		// 	let pick = [ false, false, false ];
