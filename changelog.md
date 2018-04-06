@@ -134,6 +134,7 @@
 	ADDED rectangular world option
 	ADDED elliptical world option
 	ADDED circles skin
+	ADDED game backdrop color
 	ADDED menu responsivity (restructure depending on selections)
 	ADDED window resizing functionality when in game
 	ADDED name label character limit (20)
@@ -149,3 +150,4 @@
 	FIXED closed game spectate attempt bug
 	FIXED rare rapid growth bug
 	FIXED game closure menu bug
+	BALANCED spore range (2200ms --> 1900ms)

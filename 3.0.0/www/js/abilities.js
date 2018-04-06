@@ -155,7 +155,7 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 2000, 
+		time: 1900, 
 		cooldown: 7500 // 7500 default
 	}, 
 	secrete: {
