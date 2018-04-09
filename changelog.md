@@ -131,23 +131,35 @@
 	ADDED skirmish game mode
 	ADDED game mode column to browser
 	ADDED tag ability (ctf + inf)
-	ADDED rectangular world option
-	ADDED elliptical world option
+	ADDED shoot cooldown
+	ADDED circular world option
 	ADDED circles skin
 	ADDED game backdrop color
+	ADDED messages and messages on/off setting
+	ADDED world, leaderboard, and message shadows
 	ADDED menu responsivity (restructure depending on selections)
 	ADDED window resizing functionality when in game
-	ADDED name label character limit (20)
+	ADDED maximum world dimensions
+	ADDED name label 20 character limit
+	REMOVED world color option
 	REMOVED world border movement block
-	REMOVED leader column from browser
+	REMOVED host browser column
+	REMOVED leader browser column
+	CHANGED respawn alert message
 	CHANGED menu buttons' cursors to pointer
 	CHANGED lake color (lighter)
 	CHANGED pink color name to petal
 	CHANGED skin selection style in menus
-	CHANGED name label positioning function (square approx. --> circle approx.)
+	CHANGED back button click-box
+	CHANGED title text alignment in browser (centered)
+	CHANGED name label positioning
 	FIXED spectate random positioning after death
+	FIXED respawn menu random positioning on back
 	FIXED extend and compress non-cancelation
 	FIXED closed game spectate attempt bug
-	FIXED rare rapid growth bug
+	FIXED occasional rapid growth bug
 	FIXED game closure menu bug
-	BALANCED spore range (2200ms --> 1900ms)
+	BALANCED spore range (2200ms --> 1700ms)
+	BALANCED neutralize uptime (4000ms --> 3500ms)
+	BALANCED neutralize cooldown (6000ms --> 6500ms)
+	BALANCED spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)

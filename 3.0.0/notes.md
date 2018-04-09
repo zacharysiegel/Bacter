@@ -82,7 +82,7 @@
 			If spore is on friendly side, send to jail
 			Safe zone around flag protects carrier
 			If holding the flag, throws the flag
-		Leaderboard tracks captures
+		Leaderboard tracks captures and round wins
 	Infection (INF)
 		Players sorted into infected and healthy
 			One infected per eight healthy, round up
@@ -102,7 +102,7 @@
 			If player leaves region, he loses kingship
 				Closest player to center becomes new king
 			Score is 1 : 3 seconds as king
-		Leaderboard tracks score
+		Leaderboard tracks score and round wins
 	? Freeze Tag (FZT)
 		Use tag ability with freeze item art and similar 
 	? Territories (TRT)
@@ -121,11 +121,6 @@
 		✔ Circular name label positioning
 		✔ Allow rectangular world
 		✔ Elliptical world option
-			✔ Add to new game settings
-			✔ Draw
-			✔ Deflect movement
-			✔ Block cell spawn
-			✔ Block org spawn
 		✔ Begin spectating at location of death
 		✔ Circular cells skin
 		✔ Shoot cooldown
@@ -133,6 +128,23 @@
 		✔ Improve controls config variables
 		✔ Remove world border movement block
 		✔ Reduce movement speed so standard movement cannot suicide
+		✔ Extend + Compress = 0
+		✔ Color outside of world
+		✔ Remove world border movement block
+		✔ Change respawn alert to in-game tip
+		✔ Added tips setting
+		✔ Leaderboard, messages, and world shadows
+		✔ Balancing
+			✔ Lengthen neutralize cooldown
+			✔ Shorten neutralize uptime
+			✔ Spores shoot from center of mass rather than crosshair (nerf on immortality combo)
+			✔ Reduce spore range
+		✔ Back button entire footer
+		✔ Remove white world option
+		✔ Remove non-square dimensions
+		✔ Set maximum dimensions
+		✔ Center titles in browser
+		✔ Remove host column in browser
 		Add Game Modes
 			✔ Add to new game settings
 				X Team colors (if applicable)
@@ -143,6 +155,10 @@
 					✔ Auto-assign (square button in row below team list that disables team list when selected)
 				✔ Team length update
 			✔ Pause and respawn menus
+			Round system
+				✔ Player minimum
+				✔ Staging period before round start
+				✔ Respawn all players when round begins
 			Gameplay features
 				✔ Add tag ability
 					✔ Item art
@@ -151,35 +167,29 @@
 					✔ No friendly fire
 					✔ Team leaderboard
 				SRV
-					Round system
-						Last man standing wins
-						Cannot respawn until round is over
-						Staging period before game start
-					World shrink
-					✔ Can move outside world, but will die
+					Last man standing wins
+					✔ Cannot respawn until round is over
+					✔ World shrink
 				CTF
-					✔ No friendly fire
-					✔ Tag
 					Round system
-					Team leaderboard
-				INF
 					✔ No friendly fire
 					✔ Tag
-					Boost
+					Spawn on team side
+					Color team sides
+					Flag placement
+				INF
 					Round system
 						Randomize teams each round
+					✔ No friendly fire
+					✔ Tag
+					Boost ability
 				KTH
-					Capture point
+					Round system
 					Score counting - time
-		Balancing
-			Lengthen neutralize cooldown (nerf to avoid stale repetition)
-			Spores shoot from center of mass rather than crosshair (nerf on immortality combo)
-			✔ Extend + Compress = 0
-			Reduce spore range
+					Hill placement
 		Polygon skin
 			Random number of vertices
 			Random radians between using perlin noise
-		Color outside of world
 	4.0.0
 		Title Screen
 			Canvas background with 3/4 bot orgs

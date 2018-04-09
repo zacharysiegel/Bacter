@@ -60,21 +60,21 @@ function windowResized() {
 		org.off.y = org.pos.y - center.y;
 	} else if (state == 'createMenu') {
 		button = document.getElementById('createButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	} else if (state == 'joinMenu') {
 		button = document.getElementById('joinButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	} else if (state == 'spectateMenu') {
 		button = document.getElementById('spectateButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	} else if (state == 'respawnMenu') {
 		button = document.getElementById('respawnButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	} else if (state == 'pauseGameMenu') {
 		button = document.getElementById('pauseGameButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	} else if (state == 'pauseSpectateMenu') {
 		button = document.getElementById('pauseSpectateButton');
-		button.style.left = (window.innerWidth - parseFloat(button.style.width)) / 2 + 'px';
+		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	}
 }

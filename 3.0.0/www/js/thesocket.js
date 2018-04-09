@@ -1,5 +1,5 @@
 var socket;
-var passwordConfirmed;
+var gamesInterval;
 function connectSocket() {
 	if (DEV == true) {
 		socket = io.connect('localhost'); // Local server (Development only)
@@ -38,6 +38,19 @@ function connectSocket() {
 		// chooseAbilities();
 	});
 
+	socket.on('Round Start', function() {
+		die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
+		spawn({ color: org.color, skin: org.skin, team: org.team, spectate: false }); // Respawn all players on round start
+		org.cells[0] = new Cell(org.pos.x, org.pos.y, org);
+		org.count++;
+		grow();
+		org.spawn = false;
+	});
+
+	socket.on('Round End', function() {
+		org.spawn = true; // Allow spawn until next round starts
+	});
+
 	socket.on('Game', function(gamE) {
 		game = gamE;
 		if (ability.spore.value == true) {
@@ -49,48 +62,50 @@ function connectSocket() {
 			}
 		}
 		if (state == 'game') {
-			translate(-org.off.x, -org.off.y);
-
-			renderWorld();
-			for (let i = 0; i < game.info.count; i++) {
-				renderToxin(game.abilities[i]);
+			{
+				translate(-org.off.x, -org.off.y);
+				renderWorld();
+				for (let i = 0; i < game.info.count; i++) {
+					renderToxin(game.abilities[i]);
+				}
+				for (let i = 0; i < game.info.count; i++) {
+					renderSecretions(game.abilities[i]);
+				}
+				for (let i = 0; i < game.info.count; i++) {
+					renderNeutralize(game.abilities[i]);
+				}
+				renderOrgs();
+				for (let i = 0; i < game.info.count; i++) {
+					renderSpores(game.abilities[i]);
+				}
+				renderUI();
+				renderLeaderboard();
+				translate(org.off.x, org.off.y);
 			}
-			for (let i = 0; i < game.info.count; i++) {
-				renderSecretions(game.abilities[i]);
-			}
-			for (let i = 0; i < game.info.count; i++) {
-				renderNeutralize(game.abilities[i]);
-			}
-			renderOrgs();
-			for (let i = 0; i < game.info.count; i++) {
-				renderSpores(game.abilities[i]);
-			}
-			renderUI();
-			renderLeaderboard();
+			renderMessages();
 			move(); // Move goes at the end so player does not render his movements before others
-
-			translate(org.off.x, org.off.y);
 		} else if (state == 'spectate') {
-			translate(-org.off.x, -org.off.y);
-
-			renderWorld();
-			for (let i = 0; i < game.info.count; i++) {
-				renderToxin(game.abilities[i]);
+			{
+				translate(-org.off.x, -org.off.y);
+				renderWorld();
+				for (let i = 0; i < game.info.count; i++) {
+					renderToxin(game.abilities[i]);
+				}
+				for (let i = 0; i < game.info.count; i++) {
+					renderSecretions(game.abilities[i]);
+				}
+				for (let i = 0; i < game.info.count; i++) {
+					renderNeutralize(game.abilities[i]);
+				}
+				renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
+				for (let i = 0; i < game.info.count; i++) {
+					renderSpores(game.abilities[i]);
+				}
+				renderLeaderboard();
+				translate(org.off.x, org.off.y);
 			}
-			for (let i = 0; i < game.info.count; i++) {
-				renderSecretions(game.abilities[i]);
-			}
-			for (let i = 0; i < game.info.count; i++) {
-				renderNeutralize(game.abilities[i]);
-			}
-			renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
-			for (let i = 0; i < game.info.count; i++) {
-				renderSpores(game.abilities[i]);
-			}
-			renderLeaderboard();
-			move();
-
-			translate(org.off.x, org.off.y);
+			renderMessages();
+			move(); // Move is after messages so everything has same offset
 		}
 	});
 

@@ -3,6 +3,16 @@ var Org = function(datA) {
 	this.color = datA.color;
 	this.skin = datA.skin;
 	this.team = datA.team;
+	if (datA.spectate == true) {
+		this.speed = _spectatespeed; // Faster movement when spectating
+	} else {
+		this.speed = _movespeed; // Speed of position movement
+	}
+	if (game.info.mode == 'srv' && game.rounds.waiting == false) {
+		this.spawn = false;
+	} else {
+		this.spawn = true; // Allowance to spawn
+	}
 	{ // this.name
 		for (let i = 0; i < game.board.list.length; i++) {
 			if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
@@ -33,8 +43,8 @@ var Org = function(datA) {
 	} else {
 		do {
 			this.pos = { // Position is the target's location in the world
-				x: floor(random(game.world.x, game.world.x + game.world.width)), 
-				y: floor(random(game.world.x, game.world.x + game.world.height))
+				x: floor(random(game.world.x + 50, game.world.x + game.world.width - 50)), // +- 50 acts as buffer
+				y: floor(random(game.world.x + 50, game.world.x + game.world.height - 50))
 			};
 			var rePos = false;
 			if (game.world.type == 'ellipse') {
@@ -93,16 +103,11 @@ var Org = function(datA) {
 		right: this.pos.x, 
 		top: this.pos.y, 
 		bottom: this.pos.y, 
-		buffer: CELLWIDTH / 2, 
+		buffer: _cellwidth / 2, 
 		color: this.color
 	};
 	this.coefficient = -27.5;
 	this.range = 50;
-	if (state == 'spectate') {
-		this.speed = SPECTATESPEED; // Faster movement when spectating
-	} else {
-		this.speed = MOVESPEED; // Speed of position movement
-	}
 	this.alive = false;
 	this.hit = undefined;
 	this.count = this.cells.length;
@@ -111,8 +116,8 @@ var Org = function(datA) {
 
 var Cell = function(X, Y, orG) {
 	this.player = orG.player;
-	this.width = CELLWIDTH; // or 3x3
-	this.height = CELLWIDTH;
+	this.width = _cellwidth; // or 3x3
+	this.height = _cellwidth;
 	this.x = X;
 	this.y = Y;
 	{ // this.color

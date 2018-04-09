@@ -4,7 +4,7 @@ const HEROKU = false;
 // Repertoires
 const worldColors = {
 	black:            { r: 0,     g: 0,    b: 0   }, 
-	white:            { r: 240,   g: 240,  b: 240 }, 
+	white:            { r: 230,   g: 230,  b: 230 }, 
 	blue:             { r: 247,   g: 250,  b: 255 }
 };
 const orgColors = {
@@ -67,21 +67,20 @@ const teamColorDef = {
 const cos45 = 0.70710678118;
 
 // Defaults
-const RANGE = 50;
-const CELLWIDTH = 6;
-const MOVESPEED = 1.8;
-const SPECTATESPEED = 4;
-const WORLDWIDTH = 800;
-const WORLDHEIGHT = 800;
-const PLAYERCAP = 10;
-const BOARDLENGTH = 10;
-const TEAMCOUNT = 2;
-const SHRINKRATE = .1;
+const _range = 50;
+const _cellwidth = 6;
+const _movespeed = 1.7;
+const _spectatespeed = 2.5;
+const _worldwidth = 800;
+const _worldheight = 800;
+const _playercap = 10;
+const _playermin = 4;
+const _boardlength = 10;
+const _teamcount = 2;
 
 // Settings
 var Labels = true;
-
-// Controls
+var Messages = true;
 var Controls = {
 	left1: {
 		key: 'A', 

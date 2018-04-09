@@ -120,8 +120,8 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 4000, 
-		cooldown: 6000
+		time: 3500, 
+		cooldown: 6500
 	}, 
 	toxin: {
 		value: false, 
@@ -155,7 +155,7 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		cooling: false, 
-		time: 1900, 
+		time: 1700, 
 		cooldown: 7500 // 7500 default
 	}, 
 	secrete: {
@@ -164,7 +164,7 @@ var ability = {
 		i: 3, 
 		j: 1, 
 		color: { r: undefined, g: undefined, b: undefined }, 
-		radius: CELLWIDTH / cos45 * 2.9, 
+		radius: _cellwidth / cos45 * 2.9, 
 		can: false, 
 		timeout: undefined, 
 		start: undefined, 
@@ -178,7 +178,7 @@ var ability = {
 			// { // Sets values on use
 			// 	value: false, 
 			// 	color: undefined, 
-			// 	radius: CELLWIDTH / cos45 * 2.7 / 2, // Half 'secrete'
+			// 	radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
 			// 	hit: false, 
 			// 	timeout: undefined, 
 			// 	start: undefined, 
@@ -325,7 +325,7 @@ function shoot(I, J) {
 	} else if (ability.shoot.value[I] == true) { // If currently shooting (secrete)
 		ability.shoot.end[I] = new Date();
 		ability.shoot.value[I] = false;
-		ability.shoot.secrete[I].radius = CELLWIDTH / cos45 * 2.9 / 2; // Not predefined (Half secrete)
+		ability.shoot.secrete[I].radius = _cellwidth / cos45 * 2.9 / 2; // Not predefined (Half secrete)
 		ability.shoot.secrete[I].hit = false;
 		ability.shoot.secrete[I].time = 800; // Not predefined (Same as secrete)
 		clearTimeout(ability.shoot.timeout[I]);

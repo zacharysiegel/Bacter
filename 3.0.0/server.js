@@ -8,6 +8,9 @@ Node.js Version: 9.4.0
 socket.emit('ID', data) // Emit to specific client
 socket.broadcast.emit('ID', data); // Emit to all other clients
 io.sockets.emit('ID', data); // Emit to all clients
+socket.to('ROOM').emit('ID', data); // Emit to all clients in a room except sender
+io.in('ROOM').emit('ID', data); // Emit to all clients in a room (including sender)
+socket.to('SOCKET.ID').emit('ID', data); // Emit to only specific client
 
 socket.on('ID', function(parameter) {});
 
@@ -366,6 +369,35 @@ function newConnection(sockeT) {
 		}
 	});
 
+	// Round Start
+	sockeT.on('Round Start', function(datA) { // datA is game.info
+		io.in(datA.title).emit('Round Start');
+		if (datA.mode == 'srv') { // If is survival mode
+			shrinkIntervals.push(setInterval(function() {
+				for (let i = 0; i < games.length; i++) {
+					if (games[i].info.host == datA.host) { // Identify game
+						if (games[i].world.width > 200 && games[i].world.height > 200) { // If both dimensions are greater than minimum
+							games[i].world.width -= _shrinkrate;
+							games[i].world.height -= _shrinkrate;
+							games[i].world.x += _shrinkrate / 2; // World shrinks to center
+							games[i].world.y += _shrinkrate / 2;
+						}
+					}
+				}
+			}, 40)); // Same frequency as game interval
+		}
+	});
+
+	// Update Server Rounds
+	sockeT.on('Rounds', function(roundS) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == roundS.host) { // Identify game
+				games[i].rounds = roundS;
+				break;
+			}
+		}
+	});
+
 	// Update Server Leaderboard
 	sockeT.on('Board', function(boarD) {
 		for (let i = 0; i < games.length; i++) {
@@ -510,7 +542,7 @@ function newConnection(sockeT) {
 	}
 
 	// Dead
-	sockeT.on('Dead', function() {
+	sockeT.on('Dead', function(spectatE) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].players.indexOf(sockeT.id) != -1) {
 				for (let j = 0; j < games[i].players.length; j++) { // Remove Player
@@ -529,7 +561,9 @@ function newConnection(sockeT) {
 					if (games[i].orgs[j].player == sockeT.id) {
 						games[i].orgs.splice(j, 1); // Remove Org
 						games[i].info.count = games[i].orgs.length;
-						sockeT.emit('Spectate'); // Dead player becomes spectator
+						if (spectatE == true) {
+							sockeT.emit('Spectate'); // Dead player becomes spectator
+						}
 						break;
 					}
 				}
@@ -538,3 +572,7 @@ function newConnection(sockeT) {
 		}
 	});
 }
+
+// Game Data
+const _shrinkrate = .2;
+var shrinkIntervals = [];

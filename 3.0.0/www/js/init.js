@@ -10,6 +10,13 @@ var game = {
 		mode: undefined
 	}, 
 	teams: [], 
+	rounds: {
+		host: undefined, // Identification purposes
+		util: false, // If game utilizes rounds
+		waiting: true, 
+		min: undefined, // Min players
+		winner: undefined
+	}, 
 	board: {
 		host: undefined, 
 		list: [
@@ -19,7 +26,8 @@ var game = {
 			// 	kills: undefined, // Kills as defined by number of enemy cells killed
 			// 	deaths: undefined, // Deaths as defined by number of org deaths
 			// 	ratio: undefined, // Ratio of kills to deaths
-			// 	score: undefined // Number of round wins (srv or inf), flag captures (ctf), time score (kth)
+			// 	score: undefined, // Flag captures (ctf), time score (kth)
+			// 	wins: undefined // Round wins (srv, ctf, inf, kth)
 			// }
 		], 
 		count: undefined, 
@@ -27,7 +35,7 @@ var game = {
 		x: undefined, // width - (nameWidth + oneWidth + twoWidth) / 2 - marginRight
 		y: undefined, // marginTop
 		marginRight: 15, 
-		marginTop: 15, 
+		marginTop: 13, 
 		text: {
 			marginLeft: 5, 
 			marginTop: 15, 
@@ -56,6 +64,7 @@ var game = {
 		y: undefined, 
 		color: undefined, 
 		background: undefined, 
+		interval: undefined, 
 		border: {
 			color: undefined, 
 			weight: 1
@@ -156,7 +165,7 @@ function createGame(datA) {
 	game.spectators = [];
 	game.orgs = [];
 	game.abilities = [];
-	// for (let i = 0; i < game.world.width; i++) {
+	// for (let i = 0; i < game.world.width; i++) { // Dots
 	// 	if (random() < game.world.dots.prob) { // About every five pixels, draw dot
 	// 		let dot = {
 	// 			i: game.world.dots.array.length, 
@@ -170,7 +179,7 @@ function createGame(datA) {
 	// game.world.dots.count = game.world.dots.array.length;
 	game.board.host = game.info.host;
 	game.board.list = [];
-	{
+	{ // Teams
 		game.teams = [];
 		if (game.info.mode == 'skm' || game.info.mode == 'ctf') {
 			for (let i = 0; i < game.info.teamCount; i++) {
@@ -182,11 +191,19 @@ function createGame(datA) {
 			}
 		}
 	}
-	{
+	{ // Leaderboard Length
 		if (game.teams.length != 0) { // If is a team game
 			game.board.show = game.teams.length;
 		} else {
 			game.board.show = datA.show;
+		}
+	}
+	{ // Rounds
+		if (game.info.mode == 'srv' || game.info.mode == 'ctf' || game.info.mode == 'inf' || game.info.mode == 'kth') {
+			game.rounds.util = true;
+			game.rounds.host = game.info.host;
+			game.rounds.min = datA.min;
+			game.rounds.waiting = true;
 		}
 	}
 	socket.emit('Game Created', game);

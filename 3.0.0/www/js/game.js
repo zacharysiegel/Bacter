@@ -1,7 +1,7 @@
 var org;
 function spawn(datA) {
 	state = 'spawn';
-	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team });
+	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, spectate: false });
 	ability.player = socket.id;
 	socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 };
@@ -9,23 +9,120 @@ function spawn(datA) {
 function spectate(datA) {
 	socket.emit('Spectator Joined', game);
 	state = 'spectate';
-	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos });
+	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true });
 }
 
 function renderWorld() {
 	// Background
 	background(game.world.backdrop.r, game.world.backdrop.g, game.world.backdrop.b);
-	
-	// Border
-	if (game.info.mode == 'srv' && socket.id == game.info.host) { // If srv mode; If player is host of game
-		if (game.world.width > 200 && game.world.height > 200) { // If both dimensions are greater than minimum
-			game.world.width -= SHRINKRATE;
-			game.world.height -= SHRINKRATE;
-			game.world.x += SHRINKRATE / 2; // World shrinks to center
-			game.world.y += SHRINKRATE / 2;
-			socket.emit('World', game.world);
+
+	// Shadows
+	fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+	noStroke();
+	{ // World
+		if (game.world.type == 'rectangle') { // World
+			rect(game.world.x + game.world.width / 2 + 7, game.world.y + game.world.height / 2 + 6, game.world.width, game.world.height);
+		} else if (game.world.type == 'ellipse') {
+			ellipse(game.world.x + game.world.width / 2 + 5, game.world.y + game.world.height / 2 + 4, game.world.width / 2, game.world.height / 2);
 		}
 	}
+	{ // Leaderboard
+		translate(org.off.x, org.off.y); // Shadows in renderWorld() so it will render behind world
+		rectMode(CORNER);
+		game.board.y = game.board.marginTop; // Leaderboard Head
+		if (game.info.mode == 'ffa') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+			game.board.count = min(game.board.show, game.board.list.length);
+		} else if (game.info.mode == 'skm') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+			game.board.count = game.teams.length;
+		} else if (game.info.mode == 'srv') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			game.board.count = min(game.board.show, game.board.list.length);
+		} else if (game.info.mode == 'ctf') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			game.board.count = game.teams.length;
+		} else if (game.info.mode == 'inf') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+			game.board.count = min(game.board.show, game.board.list.length);
+		} else if (game.info.mode == 'kth') {
+			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			game.board.count = min(game.board.show, game.board.list.length);
+		}
+		var a = 0;
+		for (let i = 0; i < game.board.count; i++) { // Leaderboard Body
+			if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team mode
+				var spectator = false;
+				for (let j = 0; j < game.spectators.length; j++) {
+					if (game.board.list[i].player == game.spectators[j]) {
+						spectator = true;
+						break;
+					}
+				}
+				if (spectator == true) {
+					if (i < game.board.count) {
+						if (game.board.count < game.info.count) {
+							game.board.count++; // Extend leaderboard length to include the next player
+							i++; // Do not render leaderboard status if player is a spectator
+						} else {
+							continue;
+						}
+					}
+				}
+			}
+			if (game.info.mode == 'ffa') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+			} else if (game.info.mode == 'skm') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+			} else if (game.info.mode == 'srv') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			} else if (game.info.mode == 'ctf') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			} else if (game.info.mode == 'inf') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+			} else if (game.info.mode == 'kth') {
+				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			}
+			a++;
+		}
+		translate(-org.off.x, -org.off.y);
+		rectMode(CENTER);
+	}
+	{ // Messages
+		translate(org.off.x, org.off.y);
+		if (Messages == true) {
+
+			textFont('Helvetica');
+			textStyle(NORMAL);
+			let message;
+			if (org.alive == true) {
+				if (game.rounds.waiting == true && game.rounds.util == true) { // Round Waiting
+					if (game.rounds.min - game.info.count == 1) {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+					} else {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+					}
+					rect(5 + 25 + textWidth(message) / 2, 4 + 25, 25 + textWidth(message), 26);
+				}
+			} else if (org.alive == false) { // Spawn
+				if (org.spawn != true) {
+					message = 'Wait for the round to complete';
+				} else {
+					message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
+				}
+				rect(5 + 25 + textWidth(message) / 2, 4 + 25, 25 + textWidth(message), 26);
+			}
+		}
+		translate(-org.off.x, -org.off.y);
+	}
+
+	// World
 	fill(game.world.background.r, game.world.background.g, game.world.background.b);
 	stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
 	strokeWeight(game.world.border.weight);
@@ -83,9 +180,11 @@ function renderLeaderboard() {
 	strokeWeight(game.board.tableWeight);
 	textSize(game.board.text.size);
 	textFont(game.board.text.font);
+	textStyle(BOLD);
 	if (game.info.mode == 'ffa') {
 		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
 		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Kills Header
@@ -101,6 +200,7 @@ function renderLeaderboard() {
 	} else if (game.info.mode == 'skm') {
 		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Team Color Header
 		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Team Kills Header
@@ -116,6 +216,7 @@ function renderLeaderboard() {
 	} else if (game.info.mode == 'srv') {
 		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
 		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
@@ -127,19 +228,23 @@ function renderLeaderboard() {
 		text('Kills', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
 		game.board.count = min(game.board.show, game.board.list.length);
 	} else if (game.info.mode == 'ctf') {
-		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Team Color Header
-		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Captures Header
+		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Captures Header
 		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
 		noStroke();
 		text('Team', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-		text('Score', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Wins', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Score', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
 		game.board.count = game.teams.length;
 	} else if (game.info.mode == 'inf') {
 		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
 		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
@@ -149,15 +254,18 @@ function renderLeaderboard() {
 		text('Wins', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
 		game.board.count = min(game.board.show, game.board.list.length);
 	} else if (game.info.mode == 'kth') {
-		game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+		game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
 		fill(game.board.headColor.r, game.board.headColor.g, game.board.headColor.b); // Header
+		stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 		strokeWeight(game.board.headWeight);
 		rect(game.board.x, game.board.y, game.board.nameWidth, game.board.rowHeight); // Names Header
 		rect(game.board.x + game.board.nameWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Wins Header
+		rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y, game.board.oneWidth, game.board.rowHeight); // Score Header
 		fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b); // Header Text
 		noStroke();
 		text('Player', game.board.x + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
-		text('Score', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Wins', game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
+		text('Score', game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + game.board.text.marginTop);
 		game.board.count = min(game.board.show, game.board.list.length);
 	}
 	var a = 0;
@@ -191,8 +299,10 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.board.list[i].player == socket.id) {
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
@@ -215,6 +325,9 @@ function renderLeaderboard() {
 				text(round(game.board.list[i].ratio * 100) / 100, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
 			}
 		} else if (game.info.mode == 'skm') {
+			// fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+			// noStroke();
+			// rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
@@ -223,8 +336,10 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.teams[i].indexOf(org.player) != -1) { // If player is on given team
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name is above so it renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
@@ -258,6 +373,9 @@ function renderLeaderboard() {
 				text(round(teamRatio * 100) / 100, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // K:D Ratio (Rounded to two decimal places)
 			}
 		} else if (game.info.mode == 'srv') {
+			// fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+			// noStroke();
+			// rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
@@ -266,8 +384,10 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.board.list[i].player == socket.id) {
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
@@ -278,9 +398,12 @@ function renderLeaderboard() {
 			// Text
 			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
 			noStroke();
-			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].wins, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 			text(game.board.list[i].kills, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 		} else if (game.info.mode == 'ctf') {
+			// fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+			// noStroke();
+			// rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
@@ -289,15 +412,32 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.teams[i].indexOf(org.player) != -1) { // If player is on given team
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name is above so it renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
-			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Team Kills Body
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Team Kills
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.twoWidth, game.board.rowHeight); // Round Wins
 			// Text
+			var wins = 0;
+			let done = false;
+			for (let j = 0; j < game.teams[i].length; j++) {
+				for (let k = 0; k < game.board.list.length; k++) {
+					if (game.teams[i][j] == game.board.list[k].player) { // Find player in board list
+						wins = game.board.list[k].wins; // Team wins saved to each player; Copy wins from one player to represent the team
+						done = true;
+						break;
+					}
+				}
+				if (done == true) {
+					break;
+				}
+			}
 			var captures = 0;
 			for (let j = 0; j < game.teams[i].length; j++) {
 				for (let k = 0; k < game.board.list.length; k++) {
@@ -309,8 +449,12 @@ function renderLeaderboard() {
 			}
 			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
 			noStroke();
-			text(captures, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(wins, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(captures, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 		} else if (game.info.mode == 'inf') {
+			// fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+			// noStroke();
+			// rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
@@ -319,8 +463,10 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.board.list[i].player == socket.id) {
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
@@ -330,8 +476,11 @@ function renderLeaderboard() {
 			// Text
 			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
 			noStroke();
-			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].wins, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 		} else if (game.info.mode == 'kth') {
+			// fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+			// noStroke();
+			// rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b);
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
@@ -340,18 +489,22 @@ function renderLeaderboard() {
 			noStroke();
 			if (game.board.list[i].player == socket.id) {
 				textFont(game.board.text.boldFont);
+				textStyle(BOLD);
 			} else {
 				textFont(game.board.text.font);
+				textStyle(NORMAL);
 			}
 			text(game.board.list[i].name, game.board.x + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop); // Screen name renders under kills box
 			fill(game.board.cellColor.r, game.board.cellColor.g, game.board.cellColor.b); // Body
 			stroke(game.board.stroke.r, game.board.stroke.g, game.board.stroke.b);
 			strokeWeight(game.board.cellWeight);
-			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Kills Body
+			rect(game.board.x + game.board.nameWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.oneWidth, game.board.rowHeight); // Score
+			rect(game.board.x + game.board.nameWidth + game.board.oneWidth, game.board.y + (a + 1) * game.board.rowHeight, game.board.twoWidth, game.board.rowHeight); // Wins
 			// Text
 			fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
 			noStroke();
-			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].wins, game.board.x + game.board.nameWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
+			text(game.board.list[i].score, game.board.x + game.board.nameWidth + game.board.oneWidth + game.board.text.marginLeft, game.board.y + (a + 1) * game.board.rowHeight + game.board.text.marginTop);
 		}
 		a++;
 	}
@@ -402,6 +555,11 @@ function renderUI() {
 		fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
 		noStroke();
 		textFont('Helvetica');
+		if (game.world.color == 'black') {
+			textStyle(NORMAL);
+		} else if (game.world.color == 'white') {
+			textStyle(BOLD);
+		}
 		textSize(10);
 		for (let i = 0; i < game.info.count; i++) {
 			for (let j = 0; j < game.board.list.length; j++) {
@@ -423,9 +581,9 @@ function renderUI() {
 						return average;
 					};
 					if (game.board.list[j].name.length <= 30) {
-						text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(CELLWIDTH) * game.orgs[i].count / PI) + 2 * CELLWIDTH + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+						text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
 					} else {
-						text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(CELLWIDTH) * game.orgs[i].count / PI) + 2 * CELLWIDTH + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+						text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
 					}
 				}
 			}
@@ -607,6 +765,43 @@ function renderUI() {
 	translate(-org.off.x, -org.off.y);
 }
 
+function renderMessages() {
+	if (Messages == true) {
+		let message;
+		if (org.alive == true) {
+			if (game.rounds.waiting == true && game.rounds.util == true) {
+				if (game.rounds.min - game.info.count == 1) {
+					message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+				} else {
+					message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+				}
+			}
+		} else if (org.alive == false) {
+			if (org.spawn != true) {
+				message = 'Wait for the round to complete';
+			} else {
+				message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
+			}
+		}
+		if (message != undefined) {
+			fill(game.world.background.r, game.world.background.g, game.world.background.b);
+			stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
+			strokeWeight(1);
+			textFont('Helvetica');
+			textSize(14);
+			if (game.world.color == 'black') {
+				textStyle(NORMAL);
+			} else if (game.world.color == 'white') {
+				textStyle(BOLD);
+			}
+			rect(25 + textWidth(message) / 2, 25, 25 + textWidth(message), 26);
+			fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
+			noStroke();
+			text(message, 25, 30);
+		}
+	}
+}
+
 function move() {
 	if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) { // If a directional key
 		if ((keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) && (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code))) { // Left + Up
@@ -641,8 +836,19 @@ function grow() {
 		org.alive = true;
 		clearInterval(org.interval);
 		org.interval = setInterval(function() {
-			var regions = getRegionInfo(org);
+			// Rounds
+			if (socket.id == game.info.host) { // Only if player is host
+				if (game.rounds.waiting == true) {
+					if (game.info.count >= game.rounds.min) {
+						game.rounds.waiting = false;
+						socket.emit('Rounds', game.rounds);
+						socket.emit('Round Start', game.info);
+					}
+				}
+			}
+
 			// Birth
+			var regions = getRegionInfo(org);
 			if (ability.freeze.value == false) { // If org is not Frozen (cannot birth or die naturally)
 				// for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
 					// if (ability.poison.value == true) {
@@ -653,29 +859,29 @@ function grow() {
 				for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
 					// Don't birth new cell outside world boundary
 					if (game.world.type == 'rectangle') {
-						if (regions.adjacent[i].x - CELLWIDTH / 2 <= game.world.x || regions.adjacent[i].x + CELLWIDTH / 2 >= game.world.x + game.world.width || regions.adjacent[i].y - CELLWIDTH / 2 <= game.world.x || regions.adjacent[i].y + CELLWIDTH / 2 >= game.world.y + game.world.height) { // If new cell would be outside world boundary
+						if (regions.adjacent[i].x - _cellwidth / 2 <= game.world.x || regions.adjacent[i].x + _cellwidth / 2 >= game.world.x + game.world.width || regions.adjacent[i].y - _cellwidth / 2 <= game.world.x || regions.adjacent[i].y + _cellwidth / 2 >= game.world.y + game.world.height) { // If new cell would be outside world boundary
 							continue;
 						}
 					} else if (game.world.type == 'ellipse') {
 						let a = game.world.width / 2;
 						let b = game.world.height / 2;
-						let x = (regions.adjacent[i].x - CELLWIDTH / 2) - a;
-						let y = (regions.adjacent[i].y - CELLWIDTH / 2) - b;
+						let x = (regions.adjacent[i].x - _cellwidth / 2) - a;
+						let y = (regions.adjacent[i].y - _cellwidth / 2) - b;
 						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-left corner is outside ellipse
 							continue;
 						}
-						x = (regions.adjacent[i].x + CELLWIDTH / 2) - a;
-						y = (regions.adjacent[i].y - CELLWIDTH / 2) - b;
+						x = (regions.adjacent[i].x + _cellwidth / 2) - a;
+						y = (regions.adjacent[i].y - _cellwidth / 2) - b;
 						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-right corner is outside ellipse
 							continue;
 						}
-						x = (regions.adjacent[i].x + CELLWIDTH / 2) - a;
-						y = (regions.adjacent[i].y + CELLWIDTH / 2) - b;
+						x = (regions.adjacent[i].x + _cellwidth / 2) - a;
+						y = (regions.adjacent[i].y + _cellwidth / 2) - b;
 						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-right corner is outside ellipse
 							continue;
 						}
-						x = (regions.adjacent[i].x - CELLWIDTH / 2) - a;
-						y = (regions.adjacent[i].y + CELLWIDTH / 2) - b;
+						x = (regions.adjacent[i].x - _cellwidth / 2) - a;
+						y = (regions.adjacent[i].y + _cellwidth / 2) - b;
 						if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-left corner is outside ellipse
 							continue;
 						}
@@ -687,16 +893,16 @@ function grow() {
 							continue;
 						}
 						for (let k = 0; k < game.orgs[j].count; k++) {
-							if (regions.adjacent[i].x + CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x + CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If right side collides
-								if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
+							if (regions.adjacent[i].x + _cellwidth / 2 >= game.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[i].x + _cellwidth / 2 <= game.orgs[j].cells[k].x + _cellwidth / 2) { // If right side collides
+								if (regions.adjacent[i].y + _cellwidth / 2 >= game.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y + _cellwidth / 2 <= game.orgs[j].cells[k].y + _cellwidth / 2) { // If bottom side collides
 									overlap = true;
-								} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
+								} else if (regions.adjacent[i].y - _cellwidth / 2 >= game.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y - _cellwidth / 2 <= game.orgs[j].cells[k].y + _cellwidth / 2) { // If top side collides
 									overlap = true;
 								}
-							} else if (regions.adjacent[i].x - CELLWIDTH / 2 >= game.orgs[j].cells[k].x - CELLWIDTH / 2 && regions.adjacent[i].x - CELLWIDTH / 2 <= game.orgs[j].cells[k].x + CELLWIDTH / 2) { // If left side collides
-								if (regions.adjacent[i].y + CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y + CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If bottom side collides
+							} else if (regions.adjacent[i].x - _cellwidth / 2 >= game.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[i].x - _cellwidth / 2 <= game.orgs[j].cells[k].x + _cellwidth / 2) { // If left side collides
+								if (regions.adjacent[i].y + _cellwidth / 2 >= game.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y + _cellwidth / 2 <= game.orgs[j].cells[k].y + _cellwidth / 2) { // If bottom side collides
 									overlap = true;
-								} else if (regions.adjacent[i].y - CELLWIDTH / 2 >= game.orgs[j].cells[k].y - CELLWIDTH / 2 && regions.adjacent[i].y - CELLWIDTH / 2 <= game.orgs[j].cells[k].y + CELLWIDTH / 2) { // If top side collides
+								} else if (regions.adjacent[i].y - _cellwidth / 2 >= game.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y - _cellwidth / 2 <= game.orgs[j].cells[k].y + _cellwidth / 2) { // If top side collides
 									overlap = true;
 								}
 							}
@@ -708,13 +914,13 @@ function grow() {
 					// Birth new cell accordingly
 					if (ability.compress.value ^ ability.extend.value == 0) { // compress.value XOR extend.value
 						org.coefficient = -27.5;
-						org.range = RANGE;
+						org.range = _range;
 					} else if (ability.compress.value == true) {
 						org.coefficient = -31.5;
-						org.range = RANGE - 10;
+						org.range = _range - 10;
 					} else if (ability.extend.value == true) {
 						org.coefficient = -25.5;
-						org.range = RANGE + 20;
+						org.range = _range + 20;
 					}
 					let chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[i].x - org.pos.x) + sq(regions.adjacent[i].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
 					if (random(0, 100) <= chance) {
@@ -765,9 +971,9 @@ function grow() {
 									break;
 								}
 							}
-						} else if (game.world.type == 'ellipse' && sq(regions.exposed[i].x - game.world.width / 2) / sq(game.world.width / 2) + sq(regions.exposed[i].y - game.world.width / 2) / sq(game.world.height / 2) > 1) { // If outside elliptical world
+						} else if (game.world.type == 'ellipse' && sq(regions.exposed[i].x - game.world.x - game.world.width / 2) / sq(game.world.width / 2) + sq(regions.exposed[i].y - game.world.y - game.world.height / 2) / sq(game.world.height / 2) > 1) { // If outside elliptical world
 							for (let j = 0; j < org.count; j++) {
-								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) {
+								if (regions.exposed[i].x == org.cells[j].x && regions.exposed[i].y == org.cells[j].y) { // Identify cell
 									org.cells.splice(j, 1);
 									org.count--;
 									regions.exposed.splice(i, 1);
@@ -942,8 +1148,15 @@ function grow() {
 			// }
 
 			if (org.count == 0) {
+				for (let i = 0; i < game.board.list.length; i++) {
+					if (game.board.list[i].player == socket.id) { // Add death to leaderboard
+						game.board.list[i].deaths++; // Add 1 to deaths counter
+						orderBoard(game.board.list); // Sort the list by kills then deaths
+						socket.emit('Board', game.board); // Send updated board to server
+					}
+				}
 				if (org.hit != org.player) { // Cannot gain kill for suicide
-					for (let i = 0; i < game.info.count; i++) {
+					for (let i = 0; i < game.board.list.length; i++) {
 						if (game.board.list[i].player == org.hit) { // Find killer in leaderboard list
 							game.board.list[i].kills++;
 							orderBoard(game.board.list);
@@ -956,7 +1169,7 @@ function grow() {
 			}
 			socket.emit('Org', org);
 			if (org.alive == false) { // If organism is dead
-				gameOver();
+				die(true);
 			}
 		}, 70);
 	}
@@ -1042,8 +1255,8 @@ var getRegionInfo = function(orG) {
 	};
 };
 
-function gameOver() {
-	socket.emit('Dead');
+function die(spectatE) {
+	socket.emit('Dead', spectatE);
 	clearInterval(org.interval);
 	for (let i in ability) { // Reset Ability Cooldowns
 		if (ability[i].i != undefined) { // If is a usable ability
@@ -1064,15 +1277,7 @@ function gameOver() {
 		ability.shoot.start[i] = undefined;
 		ability.shoot.end[i] = undefined;
 	}
-	for (let i = 0; i < game.board.list.length; i++) {
-		if (game.board.list[i].player == socket.id) { // Find player in leaderboard
-			game.board.list[i].deaths++; // Add 1 to deaths counter
-			orderBoard(game.board.list); // Sort the list by kills then deaths
-			socket.emit('Board', game.board); // Send updated board to server
-			break;
-		}
-	}
-	alert('Press \'' + Controls.respawn.key + '\' to Respawn');
+	socket.emit('Ability', ability);
 }
 
 function keyPressed() {
@@ -1152,7 +1357,7 @@ function keyPressed() {
 			}
 		}
 	} else if (keyCode == Controls.respawn.code) { // R by default
-		if (state == 'spectate' && org.alive == false) {
+		if (state == 'spectate' && org.alive == false && org.spawn == true) {
 			if (game.players.length < game.info.cap) {
 				socket.emit('Spectator Left', game);
 				renderMenu('respawn', game);

@@ -33,11 +33,11 @@ function renderBrowser(datA) {
 		title.id = 'Title';
 		title.maxWidth = '500px';
 		title.innerHTML = 'Title';
-		let host = document.createElement('th');
-		headRow.appendChild(host);
-		host.colSpan = '1';
-		host.id = 'host';
-		host.innerHTML = 'Host';
+		// let host = document.createElement('th');
+		// headRow.appendChild(host);
+		// host.colSpan = '1';
+		// host.id = 'host';
+		// host.innerHTML = 'Host';
 		// let leader = document.createElement('th');
 		// headRow.appendChild(leader);
 		// leader.colSpan = '1';
@@ -127,9 +127,9 @@ function renderBrowser(datA) {
 			let hosted = false;
 			for (let j = 0; j < games[i].board.list.length; j++) {
 				if (games[i].board.list[j].player == games[i].info.host) { // Find host in leaderboard
-					if (Tbody.children[i].children[1].innerHTML != games[i].board.list[j].name) { // Discrepancy in host name
-						clear = true;
-					}
+					// if (Tbody.children[i].children[1].innerHTML != games[i].board.list[j].name) { // Discrepancy in host name
+					// 	clear = true;
+					// }
 					hosted = true;
 					break;
 				}
@@ -137,17 +137,17 @@ function renderBrowser(datA) {
 			if (hosted == false) { // If host is not in board list, clear
 				clear = true;
 			}
-			if (modes[games[i].info.mode] != Tbody.children[i].children[2].innerHTML) { // Discrepancy in listed leader
-				Tbody.children[i].children[2].innerHTML = modes[games[i].info.mode];
+			if (modes[games[i].info.mode] != Tbody.children[i].children[1].innerHTML) { // Discrepancy in listed leader
+				Tbody.children[i].children[1].innerHTML = modes[games[i].info.mode];
 			}
-			if (games[i].players.length.toString() != Tbody.children[i].children[3].innerHTML) { // Discrepancy in listed player count
-				Tbody.children[i].children[3].innerHTML = games[i].players.length;
+			if (games[i].players.length.toString() != Tbody.children[i].children[2].innerHTML) { // Discrepancy in listed player count
+				Tbody.children[i].children[2].innerHTML = games[i].players.length;
 			}
-			if (games[i].spectators.length.toString() != Tbody.children[i].children[4].innerHTML) { // Discrepancy in listed spectator count
-				Tbody.children[i].children[4].innerHTML = games[i].spectators.length;
+			if (games[i].spectators.length.toString() != Tbody.children[i].children[3].innerHTML) { // Discrepancy in listed spectator count
+				Tbody.children[i].children[3].innerHTML = games[i].spectators.length;
 			}
-			if (games[i].info.cap.toString() != Tbody.children[i].children[5].innerHTML) { // Discrepancy in listed player cap
-				Tbody.children[i].children[5].innerHTML = games[i].info.cap;
+			if (games[i].info.cap.toString() != Tbody.children[i].children[4].innerHTML) { // Discrepancy in listed player cap
+				Tbody.children[i].children[4].innerHTML = games[i].info.cap;
 			}
 			if (clear == true) {
 				discrepancy = true;
@@ -167,22 +167,23 @@ function renderBrowser(datA) {
 			let title = row.insertCell(-1);
 			title.innerHTML = games[i].info.title;
 			title.style.width = '500px';
-			let host = row.insertCell(-1);
-			for (let j = 0; j < games[i].board.list.length; j++) { // Search board.list
-				if (games[i].info.host == games[i].board.list[j].player) { // Find player who is host
-					host.innerHTML = games[i].board.list[j].name;
-					break;
-				}
-			}
-			host.style.width = '150px';
-			host.style.textAlign = 'center';
+			title.style.textAlign = 'center';
+			// let host = row.insertCell(-1);
+			// for (let j = 0; j < games[i].board.list.length; j++) { // Search board.list
+			// 	if (games[i].info.host == games[i].board.list[j].player) { // Find player who is host
+			// 		host.innerHTML = games[i].board.list[j].name;
+			// 		break;
+			// 	}
+			// }
+			// host.style.width = '150px';
+			// host.style.textAlign = 'center';
 			// let leader = row.insertCell(-1);
 			// leader.innerHTML = games[i].board.list[0].name;
 			// leader.style.width = '150px';
 			// leader.style.textAlign = 'center';
 			let mode = row.insertCell(-1);
 			mode.innerHTML = modes[games[i].info.mode];
-			mode.style.width = '150px';
+			mode.style.width = '250px';
 			mode.style.textAlign = 'center';
 			let players = row.insertCell(-1);
 			players.innerHTML = games[i].players.length;
