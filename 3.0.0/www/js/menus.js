@@ -85,7 +85,7 @@ var menus = {
 		}, 
 		options: [ 'Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Cap', 'Leaderboard Length', 'Game Mode' ], // Team count not included because ffa is default
 		values:  [ 'text',        'text',    'list',       'number',      'number',       'number',     'number',             'list'      ], 
-		units: [ undefined, undefined, 'px', 'px', undefined, undefined, undefined, undefined, undefined ], 
+		units:   [ undefined, undefined, 'px', 'px'], 
 		editNums: function() {
 			{ // World Width and Height
 				let widthInput = document.getElementById('World Width Input');
@@ -96,24 +96,28 @@ var menus = {
 				heightInput.min = 300;
 				widthInput.max = 8000000;
 				heightInput.max = 8000000;
+				let wmin = parseFloat(widthInput.min);
+				let wmax = parseFloat(widthInput.max);
+				let hmin = parseFloat(heightInput.min);
+				let hmax = parseFloat(heightInput.max);
 				widthInput.addEventListener('change', function() {
-					if (parseFloat(widthInput.value) < widthInput.min) {
-						widthInput.value = widthInput.min;
-					} else if (parseFloat(widthInput.value) > widthInput.max) {
-						widthInput.value = widthInput.max;
+					if (parseFloat(widthInput.value) < wmin) {
+						widthInput.value = wmax;
+					} else if (parseFloat(widthInput.value) > wmax) {
+						widthInput.value = wmax;
 					}
 					if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-						heightInput.value = widthInput.value;
+						heightInput.value = parseFloat(widthInput.value);
 					}
 				});
 				heightInput.addEventListener('change', function() {
-					if (parseFloat(heightInput.value) < heightInput.min) {
-						heightInput.value = heightInput.min;
-					} else if (parseFloat(heightInput.value) > heightInput.max) {
-						heightInput.value = heightInput.max;
+					if (parseFloat(heightInput.value) < hmin) {
+						heightInput.value = hmin;
+					} else if (parseFloat(heightInput.value) > hmax) {
+						heightInput.value = hmax;
 					}
 					if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-						widthInput.value = heightInput.value;
+						widthInput.value = parseFloat(heightInput.value);
 					}
 				});
 			}
@@ -122,19 +126,19 @@ var menus = {
 				playerCapInput.placeholder = _playercap;
 				playerCapInput.min = 2;
 				playerCapInput.addEventListener('change', function() {
-					if (parseFloat(playerCapInput.value) < playerCapInput.min) {
-						playerCapInput.value = playerCapInput.min;
+					if (parseFloat(playerCapInput.value) < parseFloat(playerCapInput.min)) {
+						playerCapInput.value = parseFloat(playerCapInput.min);
 					}
 				});
 			}
 			{ // Player Minimum
 				let pmInput = document.getElementById('Player Minimum Input');
 				if (pmInput != null) {
-					pmInput.placeholder = _playermin;
+					pmInput.placeholder = 4;
 					pmInput.min = 2;
 					pmInput.addEventListener('change', function() {
-						if (parseFloat(pmInput.value) < pmInput.min) {
-							pmInput.value = pmInput.min;
+						if (parseFloat(pmInput.value) < parseFloat(pmInput.min)) {
+							pmInput.value = parseFloat(pmInput.min);
 						}
 					});
 				}
@@ -146,13 +150,13 @@ var menus = {
 					boardLengthInput.min = 1;
 					boardLengthInput.max = 20;
 					boardLengthInput.addEventListener('change', function() {
-						if (parseFloat(boardLengthInput.value) < boardLengthInput.min) {
-							boardLengthInput.value = boardLengthInput.min;
-						} else if (parseFloat(boardLengthInput.value) > boardLengthInput.max) {
-							boardLengthInput.value = boardLengthInput.max;
+						if (parseFloat(boardLengthInput.value) < parseFloat(boardLengthInput.min)) {
+							boardLengthInput.value = parseFloat(boardLengthInput.min);
+						} else if (parseFloat(boardLengthInput.value) > parseFloat(boardLengthInput.max)) {
+							boardLengthInput.value = parseFloat(boardLengthInput.max);
 						}
 						if (parseFloat(boardLengthInput.value) % 1 != 0) { // If length is not an integer
-							boardLengthInput.value = floor(boardLengthInput.value);
+							boardLengthInput.value = floor(parseFloat(boardLengthInput.value));
 						}
 					});
 				}
@@ -164,13 +168,13 @@ var menus = {
 					tcInput.min = 2;
 					tcInput.max = teamColors.length; // = 4
 					tcInput.addEventListener('change', function() {
-						if (parseFloat(tcInput.value) < tcInput.min) {
-							tcInput.value = tcInput.min;
-						} else if (parseFloat(tcInput.value) > tcInput.max) {
-							tcInput.value = tcInput.max;
+						if (parseFloat(tcInput.value) < parseFloat(tcInput.min)) {
+							tcInput.value = parseFloat(tcInput.min);
+						} else if (parseFloat(tcInput.value) > parseFloat(tcInput.max)) {
+							tcInput.value = parseFloat(tcInput.max);
 						}
 						if (parseFloat(tcInput.value) % 1 != 0) { // If length is not an integer
-							tcInput.value = floor(tcInput.value);
+							tcInput.value = floor(parseFloat(tcInput.value));
 						}
 					});
 				}
@@ -471,20 +475,20 @@ var menus = {
 				}
 			}
 			{ // World Width and Height
-				let worldWidthInput = document.getElementById('World Width Input');
-				var width = parseFloat(worldWidthInput.value);
+				let widthInput = document.getElementById('World Width Input');
+				var width = parseFloat(widthInput.value);
 				if (width == '' || width == undefined || width == null || width !== width) { // width !== width tests for NaN
-					width = worldWidthInput.placeholder;
+					width = parseFloat(widthInput.placeholder);
 				}
-				let worldHeightInput = document.getElementById('World Height Input');
-				var height = parseFloat(worldHeightInput.value);
+				let heightInput = document.getElementById('World Height Input');
+				var height = parseFloat(heightInput.value);
 				if (height == '' || height == undefined || height == null || height !== height) {
-					height = worldHeightInput.placeholder;
+					height = parseFloat(heightInput.placeholder);
 				}
-				if (width < worldWidthInput.min || height < worldHeightInput.min) {
+				if (width < parseFloat(widthInput.min) || height < parseFloat(heightInput.min)) {
 					ok = false;
 					alert('Dimensions must be at least 300 x 300 px');
-				} else if (width > worldWidthInput.max || height > worldHeightInput.max) {
+				} else if (width > parseFloat(widthInput.max) || height > parseFloat(heightInput.max)) {
 					ok = false;
 					alert('Dimensions can be at most 8000000 x 8000000 px');
 				}
@@ -498,9 +502,9 @@ var menus = {
 				var cap = parseFloat(playerCapInput.value);
 				if (cap == '' || cap == undefined || cap == null || cap !== cap) {
 					cap = playerCapInput.placeholder;
-				} else if (cap < playerCapInput.min) {
+				} else if (cap < parseFloat(playerCapInput.min)) {
 					ok = false;
-					alert('Player cap must be at least ' + playerCapInput.min);
+					alert('Player cap must be at least ' + parseFloat(playerCapInput.min));
 				} else if (cap % 1 != 0) {
 					ok = false;
 					alert('Player cap must be a whole number');
@@ -512,9 +516,9 @@ var menus = {
 					var minimum = parseFloat(pmInput.value);
 					if (minimum == '' || minimum == undefined || minimum == null || minimum !== minimum) {
 						minimum = parseFloat(pmInput.placeholder);
-					} else if (minimum < pmInput.min) {
+					} else if (minimum < parseFloat(pmInput.min)) {
 						ok = false;
-						alert('Player minimum must be at least ' + pmInput.min);
+						alert('Player minimum must be at least ' + parseFloat(pmInput.min));
 					} else if (minimum % 1 != 0) {
 						ok = false;
 						alert('Player minimum must be a whole number');
@@ -526,13 +530,13 @@ var menus = {
 				if (boardLengthInput != null) {
 					var show = parseFloat(boardLengthInput.value);
 					if (show == '' || show == undefined || show == null || show !== show) {
-						show = boardLengthInput.placeholder;
-					} else if (show < boardLengthInput.min) {
+						show = parseFloat(boardLengthInput.placeholder);
+					} else if (show < parseFloat(boardLengthInput.min)) {
 						ok = false;
-						alert('Leaderboard length must be at least ' + boardLengthInput.min);
-					} else if (show > boardLengthInput.max) {
+						alert('Leaderboard length must be at least ' + parseFloat(boardLengthInput.min));
+					} else if (show > parseFloat(boardLengthInput.max)) {
 						ok = false;
-						alert('Leaderboard length can be at most ' + boardLengthInput.max);
+						alert('Leaderboard length can be at most ' + parseFloat(boardLengthInput.max));
 					} else if (show % 1 != 0) {
 						ok = false;
 						alert('Leaderboard length must be a whole number');
@@ -544,13 +548,13 @@ var menus = {
 				if (tcInput != null) {
 					var teamCount = parseFloat(tcInput.value);
 					if (teamCount == '' || teamCount == undefined || teamCount == null || teamCount !== teamCount) {
-						teamCount = tcInput.placeholder;
-					} else if (teamCount < tcInput.min) {
+						teamCount = parseFloat(tcInput.placeholder);
+					} else if (teamCount < parseFloat(tcInput.min)) {
 						ok = false;
-						alert('Team count must be at least ' + tcInput.min);
-					} else if (teamCount > tcInput.max) {
+						alert('Team count must be at least ' + parseFloat(tcInput.min));
+					} else if (teamCount > parseFloat(tcInput.max)) {
 						ok = false;
-						alert('Team count can be at most ' + tcInput.max);
+						alert('Team count can be at most ' + parseFloat(tcInput.max));
 					} else if (teamCount % 1 != 0) {
 						ok = false;
 						alert('Team count must be a whole number');
@@ -1415,10 +1419,14 @@ var menus = {
 						let indices = [];
 						let minimum = Infinity;
 						for (let i = 0 ; i < game.teams.length; i++) {
-							if (game.teams[i].length < minimum) { // If length is less than minimum
-								minimum = game.teams[i].length; // Set length as new minimum
+							let l = game.teams[i].length;
+							if (game.teams[i].indexOf(socket.id) != -1) { // If player is on given team
+								l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
+							}
+							if (l < minimum) { // If length is less than minimum
+								minimum = l; // Set length as new minimum
 								indices = [i]; // Clear indices and push i
-							} else if (game.teams[i].length == minimum) {
+							} else if (l == minimum) {
 								indices.push(i);
 							}
 						}

@@ -14,11 +14,15 @@ var game = {
 		host: undefined, // Identification purposes
 		util: false, // If game utilizes rounds
 		waiting: true, 
+		delayed: false, 
+		delaystart: undefined, 
+		delaytime: _delaytime, 
+		start: undefined, 
 		min: undefined, // Min players
 		winner: undefined
 	}, 
 	board: {
-		host: undefined, 
+		host: undefined, // Identification purposes
 		list: [
 			// {
 			// 	player: undefined, // ID of player

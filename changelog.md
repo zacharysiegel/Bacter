@@ -129,6 +129,7 @@
 
 ## 3.0.0
 	ADDED skirmish game mode
+	ADDED survival game mode
 	ADDED game mode column to browser
 	ADDED tag ability (ctf + inf)
 	ADDED shoot cooldown
@@ -154,6 +155,7 @@
 	CHANGED title text alignment in browser (centered)
 	CHANGED name label positioning
 	FIXED spectate random positioning after death
+	FIXED numerical operations issues in create game menu
 	FIXED respawn menu random positioning on back
 	FIXED extend and compress non-cancelation
 	FIXED closed game spectate attempt bug

@@ -2,13 +2,15 @@ var org;
 function spawn(datA) {
 	state = 'spawn';
 	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, spectate: false });
+	org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+	org.count++;
 	ability.player = socket.id;
 	socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 };
 
 function spectate(datA) {
-	socket.emit('Spectator Joined', game);
 	state = 'spectate';
+	socket.emit('Spectator Joined', game);
 	org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true });
 }
 
@@ -97,25 +99,43 @@ function renderWorld() {
 	{ // Messages
 		translate(org.off.x, org.off.y);
 		if (Messages == true) {
-
 			textFont('Helvetica');
 			textStyle(NORMAL);
 			let message;
 			if (org.alive == true) {
-				if (game.rounds.waiting == true && game.rounds.util == true) { // Round Waiting
-					if (game.rounds.min - game.info.count == 1) {
-						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
-					} else {
-						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+				if (game.rounds.util == true) {
+					if (game.rounds.waiting == true && game.rounds.delayed == false) {
+						if (game.rounds.min - game.info.count == 1) {
+							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+						} else {
+							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+						}
+					} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Delay at round start
+						message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+					} else if (game.rounds.waiting == false && game.rounds.delayed == true) { // Delay at round end
+						message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
 					}
-					rect(5 + 25 + textWidth(message) / 2, 4 + 25, 25 + textWidth(message), 26);
 				}
-			} else if (org.alive == false) { // Spawn
-				if (org.spawn != true) {
-					message = 'Wait for the round to complete';
+			} else if (org.alive == false) {
+				if (game.rounds.util == true) {
+					if (game.rounds.waiting == true && game.rounds.delayed == false) { // Waiting for more players to join, not counting down yet
+						if (game.rounds.min - game.info.count == 1) {
+							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+						} else {
+							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+						}
+					} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Enough players have joined, counting down
+						message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+					} else if (game.rounds.waiting == false && game.rounds.delayed == false) { // Round in progress
+						message = 'Wait for the round to complete';
+					} else if (game.rounds.waiting == false && game.rounds.delayed == true) {
+						message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+					}
 				} else {
 					message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
 				}
+			}
+			if (message != undefined) {
 				rect(5 + 25 + textWidth(message) / 2, 4 + 25, 25 + textWidth(message), 26);
 			}
 		}
@@ -514,9 +534,24 @@ function renderLeaderboard() {
 
 function orderBoard(lisT) {
 	lisT.sort(function(a, b) { // Sorts in descending order of K:D ratio
-		let N = b.kills - a.kills; // If a.kills is greater than b.kills, value will be negative, so will sort a before b
-		if (N == 0) {
-			N = a.deaths - b.deaths; // If b.deaths is greater than a.deaths, value will be positive, so will sort b before a
+		let N;
+		if (game.info.mode == 'ffa' || game.info.mode == 'skm') {
+			N = b.kills - a.kills; // If a.kills is greater than b.kills, value will be negative, so will sort a before b
+			if (N == 0) {
+				N = a.deaths - b.deaths; // If b.deaths is greater than a.deaths, value will be positive, so will sort b before a
+			}
+		} else if (game.info.mode == 'srv') {
+			N = b.kills - a.kills;
+			if (N == 0) {
+				N = b.wins - a.wins;
+			}
+		} else if (game.info.mode == 'ctf' || game.info.mode == 'kth') {
+			N = b.score - a.score;
+			if (N == 0) {
+				N = b.wins - a.wins;
+			}
+		} else if (game.info.mode == 'inf') {
+			N = b.wins - a.wins;
 		}
 		return N;
 	});
@@ -769,22 +804,40 @@ function renderMessages() {
 	if (Messages == true) {
 		let message;
 		if (org.alive == true) {
-			if (game.rounds.waiting == true && game.rounds.util == true) {
-				if (game.rounds.min - game.info.count == 1) {
-					message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
-				} else {
-					message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+			if (game.rounds.util == true) {
+				if (game.rounds.waiting == true && game.rounds.delayed == false) {
+					if (game.rounds.min - game.info.count == 1) {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+					} else {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+					}
+				} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Delay at round start
+					message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+				} else if (game.rounds.waiting == false && game.rounds.delayed == true) { // Delay at round end
+					message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
 				}
 			}
 		} else if (org.alive == false) {
-			if (org.spawn != true) {
-				message = 'Wait for the round to complete';
+			if (game.rounds.util == true) {
+				if (game.rounds.waiting == true && game.rounds.delayed == false) { // Waiting for more players to join, not counting down yet
+					if (game.rounds.min - game.info.count == 1) {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+					} else {
+						message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+					}
+				} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Enough players have joined, counting down
+					message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+				} else if (game.rounds.waiting == false && game.rounds.delayed == false) { // Round in progress
+					message = 'Wait for the round to complete';
+				} else if (game.rounds.waiting == false && game.rounds.delayed == true) {
+					message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+				}
 			} else {
 				message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
 			}
 		}
 		if (message != undefined) {
-			fill(game.world.background.r, game.world.background.g, game.world.background.b);
+			fill(game.world.background.r, game.world.background.g, game.world.background.b); // Message shadows are rendered in renderWorld()
 			stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
 			strokeWeight(1);
 			textFont('Helvetica');
@@ -837,12 +890,26 @@ function grow() {
 		clearInterval(org.interval);
 		org.interval = setInterval(function() {
 			// Rounds
-			if (socket.id == game.info.host) { // Only if player is host
-				if (game.rounds.waiting == true) {
-					if (game.info.count >= game.rounds.min) {
-						game.rounds.waiting = false;
-						socket.emit('Rounds', game.rounds);
-						socket.emit('Round Start', game.info);
+			var current = new Date();
+			if (game.rounds.util == true) {
+				if (game.info.host == socket.id) { // Only if player is host
+					if (game.rounds.waiting == true && game.rounds.delayed == false && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
+						socket.emit('Round Delay', game);
+						game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
+					} else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.delaytime - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
+						socket.emit('Force Spawn', game.info);
+					}
+				}
+				if (game.info.mode == 'srv') { // Survival End-Game
+					if (game.rounds.waiting == false && game.rounds.delayed == false && game.info.count == 1 && game.players[0] == socket.id) { // If during game and player is winner
+						for (let i = 0; i < game.board.list.length; i++) {
+							if (game.board.list[i].player == socket.id) {
+								socket.emit('Round End', game.info);
+								game.board.list[i].wins++;
+								orderBoard(game.board.list);
+								socket.emit('Board', game.board);
+							}
+						}
 					}
 				}
 			}
@@ -1147,6 +1214,7 @@ function grow() {
 			// 	}
 			// }
 
+			socket.emit('Org', org);
 			if (org.count == 0) {
 				for (let i = 0; i < game.board.list.length; i++) {
 					if (game.board.list[i].player == socket.id) { // Add death to leaderboard
@@ -1166,9 +1234,6 @@ function grow() {
 					}
 				}
 				org.alive = false;
-			}
-			socket.emit('Org', org);
-			if (org.alive == false) { // If organism is dead
 				die(true);
 			}
 		}, 70);
@@ -1259,13 +1324,15 @@ function die(spectatE) {
 	socket.emit('Dead', spectatE);
 	clearInterval(org.interval);
 	for (let i in ability) { // Reset Ability Cooldowns
-		if (ability[i].i != undefined) { // If is a usable ability
-			clearTimeout(ability[i].timeout);
-			ability[i].value = false;
-			ability[i].can = true;
-			ability[i].cooling = false;
-			ability[i].start = undefined;
-			ability[i].end = undefined;
+		if (typeof ability[i] == 'object') { // Avoid reference error
+			if (ability[i].activated != undefined && ability[i].activated == true) { // If is a usable ability
+				clearTimeout(ability[i].timeout);
+				ability[i].value = false;
+				ability[i].can = true;
+				ability[i].cooling = false;
+				ability[i].start = undefined;
+				ability[i].end = undefined;
+			}
 		}
 	}
 	for (let i = 0; i < 3; i++) { // Reset shoots
@@ -1359,7 +1426,7 @@ function keyPressed() {
 	} else if (keyCode == Controls.respawn.code) { // R by default
 		if (state == 'spectate' && org.alive == false && org.spawn == true) {
 			if (game.players.length < game.info.cap) {
-				socket.emit('Spectator Left', game);
+				socket.emit('Spectator Left', game.info);
 				renderMenu('respawn', game);
 			} else {
 				alert('Game is at maximum player capacity');

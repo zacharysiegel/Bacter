@@ -73,10 +73,11 @@ const _movespeed = 1.7;
 const _spectatespeed = 2.5;
 const _worldwidth = 800;
 const _worldheight = 800;
-const _playercap = 10;
+const _playercap = 16;
 const _playermin = 4;
 const _boardlength = 10;
 const _teamcount = 2;
+const _delaytime = 10000;
 
 // Settings
 var Labels = true;

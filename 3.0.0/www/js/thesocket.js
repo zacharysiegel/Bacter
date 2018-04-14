@@ -30,25 +30,23 @@ function connectSocket() {
 	});
 
 	socket.on('Enter', function() {
-		if (org.count == 0) {
-			org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-			org.count++;
-			grow(); // Begin growth
-		}
+		grow(); // Begin growth
 		// chooseAbilities();
 	});
 
-	socket.on('Round Start', function() {
+	socket.on('Force Spawn', function() {
 		die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
+		for (let i = 0; i < game.spectators.length; i++) {
+			if (game.spectators[i] == socket.id) { // If player is spectator
+				socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
+			}
+		}
+		if (state == 'pauseSpectateMenu') {
+			renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
+		}
 		spawn({ color: org.color, skin: org.skin, team: org.team, spectate: false }); // Respawn all players on round start
-		org.cells[0] = new Cell(org.pos.x, org.pos.y, org);
-		org.count++;
-		grow();
 		org.spawn = false;
-	});
-
-	socket.on('Round End', function() {
-		org.spawn = true; // Allow spawn until next round starts
+		org.ready = true; // org.ready ensures that org will only be forcibly respawned once
 	});
 
 	socket.on('Game', function(gamE) {

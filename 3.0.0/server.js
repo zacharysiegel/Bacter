@@ -65,22 +65,22 @@ console.log('');
 //////////////////////////////////////////////////////////////
 
 // New Connection
-function newConnection(sockeT) {
+function newConnection(socket) {
 	// Connect
 	connections++;
-	console.log('Client connected: ' + sockeT.id + ' (' + connections + ')'); // Server Message
+	console.log('Client connected: ' + socket.id + ' (' + connections + ')'); // Server Message
 
-	sockeT.join('Lobby'); // Join 'Lobby' Room
-	sockeT.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
+	socket.join('Lobby'); // Join 'Lobby' Room
+	socket.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
 
 	// Disconnect
-	sockeT.on('disconnect', function() {
+	socket.on('disconnect', function() {
 		connections--;
-		console.log('Client disconnected: ' + sockeT.id + ' (' + connections + ')'); // Server Message
+		console.log('Client disconnected: ' + socket.id + ' (' + connections + ')'); // Server Message
 
 		// End Hosted Game
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == sockeT.id) { // If player is host
+			if (games[i].info.host == socket.id) { // If player is host
 				io.to(games[i].info.title).emit('Game Ended', games[i]); // Remove Players From Hosted Game
 				for (let j = 0; j < games[i].players.length; j++) {
 					for (let k = 0; k < io.sockets.sockets.length; k++) {
@@ -111,34 +111,34 @@ function newConnection(sockeT) {
 				break; // Break can be removed to remove multiple games if player is host of multiple games by some bug
 			} else { // If player is not host
 				for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-					if (games[i].board.list[j].player == sockeT.id) { // Find player in leaderboard
+					if (games[i].board.list[j].player == socket.id) { // Find player in leaderboard
 						games[i].board.list.splice(j, 1); // Remove player from leaderboard
 						j--;
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].players.length; j++) { // Search Players
-					if (games[i].players[j] == sockeT.id) { // Find Player
-						sockeT.leave(games[i].info.title); // Leave 'Game' Room
+					if (games[i].players[j] == socket.id) { // Find Player
+						socket.leave(games[i].info.title); // Leave 'Game' Room
 						if (games[i].teams.length != 0) { // If is a team game
 							let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
-							team.splice(team.indexOf(sockeT.id), 1); // Remove player from team
+							team.splice(team.indexOf(socket.id), 1); // Remove player from team
 						}
 						games[i].players.splice(j, 1); // Remove Player
 						games[i].orgs.splice(j, 1); // Remove Player Org
 						games[i].abilities.splice(j, 1); // Remove Player Abilities
 						games[i].info.count = games[i].orgs.length;
 						j--;
-						console.log('                                               Player Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
-					if (games[i].spectators[j] == sockeT.id) { // Find Spectator
-						sockeT.leave(games[i].info.title);
+					if (games[i].spectators[j] == socket.id) { // Find Spectator
+						socket.leave(games[i].info.title);
 						games[i].spectators.splice(j, 1);
 						j--;
-						console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
 						break;
 					}
 				}
@@ -147,13 +147,13 @@ function newConnection(sockeT) {
 	});
 
 	// Games Update Request
-	sockeT.on('Games Request', function() {
-		sockeT.emit('Games', { games: games, connections: connections });
+	socket.on('Games Request', function() {
+		socket.emit('Games', { games: games, connections: connections });
 	});
 
 	// Leave Game
-	sockeT.on('Leave Game', function(gamE) {
-		if (gamE.info.host == sockeT.id) { // If player is host
+	socket.on('Leave Game', function(gamE) {
+		if (gamE.info.host == socket.id) { // If player is host
 			io.to(gamE.info.title).emit('Game Ended', gamE); // Copied from 'Game Ended'
 			for (let i = 0; i < gamE.players.length; i++) { // If player
 				for (let j = 0; j < io.sockets.sockets.length; j++) {
@@ -189,34 +189,34 @@ function newConnection(sockeT) {
 		} else {
 			for (let i = 0; i < games.length; i++) { // Copied from 'disconnect'
 				for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-					if (games[i].board.list[j].player == sockeT.id) { // Find player in leaderboard
+					if (games[i].board.list[j].player == socket.id) { // Find player in leaderboard
 						games[i].board.list.splice(j, 1); // Remove player from leaderboard
 						j--;
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].players.length; j++) { // Search Players
-					if (games[i].players[j] == sockeT.id) { // Find Player
-						sockeT.leave(games[i].info.title); // Leave 'Game' Room
+					if (games[i].players[j] == socket.id) { // Find Player
+						socket.leave(games[i].info.title); // Leave 'Game' Room
 						if (games[i].teams.length != 0) { // If is a team game
 							let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
-							team.splice(team.indexOf(sockeT.id), 1); // Remove player from team
+							team.splice(team.indexOf(socket.id), 1); // Remove player from team
 						}
 						games[i].players.splice(j, 1); // Remove Player
 						games[i].orgs.splice(j, 1); // Remove Player Org
 						games[i].abilities.splice(j, 1); // Remove Player Abilities
 						games[i].info.count = games[i].orgs.length;
 						j--;
-						console.log('                                               Player Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
-					if (games[i].spectators[j] == sockeT.id) { // Find Spectator
-						sockeT.leave(games[i].info.title);
+					if (games[i].spectators[j] == socket.id) { // Find Spectator
+						socket.leave(games[i].info.title);
 						games[i].spectators.splice(j, 1);
 						j--;
-						console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + sockeT.id + ')');
+						console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
 						break;
 					}
 				}
@@ -225,8 +225,8 @@ function newConnection(sockeT) {
 	});
 
 	// Game Ended
-	sockeT.on('Game Ended', function(gamE) {
-		if (gamE.info.host == sockeT.id) {
+	socket.on('Game Ended', function(gamE) {
+		if (gamE.info.host == socket.id) {
 			io.to(gamE.info.title).emit('Game Ended', gamE);
 			for (let i = 0; i < gamE.players.length; i++) {
 				for (let j = 0; j < io.sockets.sockets.length; j++) {
@@ -263,16 +263,16 @@ function newConnection(sockeT) {
 	});
 
 	// Create Password
-	sockeT.on('Password Created', function(datA) {
-		passwords.push({ pass: datA.pass, title: datA.info.title, permissed: [ sockeT.id ] });
+	socket.on('Password Created', function(datA) {
+		passwords.push({ pass: datA.pass, title: datA.info.title, permissed: [ socket.id ] });
 	});
 
 	// Verify Password on Join or Spectate
-	sockeT.on('Ask Permission', function(datA) {
+	socket.on('Ask Permission', function(datA) {
 		for (let i = 0; i < passwords.length; i++) {
 			if (datA.info.title == passwords[i].title) {
 				if (datA.pass == passwords[i].pass) {
-					passwords[i].permissed.push(sockeT.id);
+					passwords[i].permissed.push(socket.id);
 				}
 				break;
 			}
@@ -280,14 +280,14 @@ function newConnection(sockeT) {
 	});
 
 	// Check if player is permitted entry into game
-	sockeT.on('Check Permission', function(datA) {
+	socket.on('Check Permission', function(datA) {
 		let granted = false;
 		let hasPassword = false;
 		for (let i = 0; i < passwords.length; i++) {
 			if (passwords[i].title == datA.title) { // Identify game
 				hasPassword = true;
 				for (let j = 0; j < passwords[i].permissed.length; j++) {
-					if (passwords[i].permissed[j] == sockeT.id) {
+					if (passwords[i].permissed[j] == socket.id) {
 						granted = true;
 						break;
 					}
@@ -296,21 +296,21 @@ function newConnection(sockeT) {
 			}
 		}
 		if (hasPassword == false || granted == true) {
-			sockeT.emit('Permission Granted', datA);
+			socket.emit('Permission Granted', datA);
 		} else if (hasPassword == true && granted == false) {
-			sockeT.emit('Permission Denied', datA);
+			socket.emit('Permission Denied', datA);
 		}
 	});
 
 	// Game Creation
-	sockeT.on('Game Created', function(gamE) {
+	socket.on('Game Created', function(gamE) {
 		games.push(gamE);
-		sockeT.leave('Lobby'); // Leave 'Lobby' Room
-		sockeT.join(gamE.info.title); // Join 'Game' Room
+		socket.leave('Lobby'); // Leave 'Lobby' Room
+		socket.join(gamE.info.title); // Join 'Game' Room
 		console.log('                                               Game Created: ' + games[games.length - 1].info.title + ' (' + games[games.length - 1].info.host + ')');
 		intervals.push(setInterval(function() { // Send updated game to all players
 			for (let i = 0; i < games.length; i++) { // Game interval
-				if (games[i].info.host == sockeT.id) { // Find game of specific host
+				if (games[i].info.host == socket.id) { // Find game of specific host
 					games[i].info.count = games[i].players.length; // Calculate and update player count
 					io.to(games[i].info.title).emit('Game', games[i]); // Send updated game info to clients in game room
 					break;
@@ -320,46 +320,41 @@ function newConnection(sockeT) {
 	});
 
 	// Player Joined
-	sockeT.on('Player Joined', function(datA) {
+	socket.on('Player Joined', function(datA) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == datA.info.host) {
-				sockeT.leave('Lobby'); // Leave 'Lobby' Room
-				sockeT.join(datA.info.title); // Join 'Game' Room
-				games[i].players.push(sockeT.id);
+				socket.leave('Lobby'); // Leave 'Lobby' Room
+				socket.join(datA.info.title); // Join 'Game' Room
+				games[i].players.push(socket.id);
 				games[i].orgs.push(datA.org);
 				games[i].abilities.push(datA.ability);
 				games[i].info.count = games[i].orgs.length;
-				for (let j = 0; j < games[i].players.length; j++) {
-					if (games[i].players[j] == sockeT.id) {
-						sockeT.emit('Enter');
-						break;
-					}
-				}
-				console.log('                                               Player Joined: ' + games[i].info.title + ' (' + sockeT.id + ')');
+				socket.emit('Enter');
+				console.log('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
 				break;
 			}
 		}
 	});
 
 	// Spectator Joined
-	sockeT.on('Spectator Joined', function(gamE) {
+	socket.on('Spectator Joined', function(gamE) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == gamE.info.host) {
-				sockeT.leave('Lobby'); // Leave 'Lobby' Room
-				sockeT.join(gamE.info.title); // Join 'Game' Room
-				games[i].spectators.push(sockeT.id);
-				console.log('                                               Spectator Joined: ' + games[i].info.title + ' (' + sockeT.id + ')');
+				socket.leave('Lobby'); // Leave 'Lobby' Room
+				socket.join(gamE.info.title); // Join 'Game' Room
+				games[i].spectators.push(socket.id);
+				console.log('                                               Spectator Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
 				break;
 			}
 		}
 	});
 
 	// Spectator Left
-	sockeT.on('Spectator Left', function(gamE) {
+	socket.on('Spectator Left', function(datA) { // datA is game.info
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == gamE.info.host) {
+			if (games[i].info.host == datA.host) {
 				for (let j = 0; j < games[i].spectators.length; j++) {
-					if (games[i].spectators[j] == sockeT.id) {
+					if (games[i].spectators[j] == socket.id) {
 						games[i].spectators.splice(j, 1);
 						break;
 					}
@@ -369,27 +364,89 @@ function newConnection(sockeT) {
 		}
 	});
 
-	// Round Start
-	sockeT.on('Round Start', function(datA) { // datA is game.info
-		io.in(datA.title).emit('Round Start');
-		if (datA.mode == 'srv') { // If is survival mode
-			shrinkIntervals.push(setInterval(function() {
-				for (let i = 0; i < games.length; i++) {
-					if (games[i].info.host == datA.host) { // Identify game
-						if (games[i].world.width > 200 && games[i].world.height > 200) { // If both dimensions are greater than minimum
-							games[i].world.width -= _shrinkrate;
-							games[i].world.height -= _shrinkrate;
-							games[i].world.x += _shrinkrate / 2; // World shrinks to center
-							games[i].world.y += _shrinkrate / 2;
+	// Round End
+	socket.on('Round End', function(datA) { // datA is game.info
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == datA.host) { // Identify game
+				games[i].rounds.waiting = false;
+				games[i].rounds.delayed = true;
+				games[i].rounds.delaystart = (new Date()).valueOf();
+				break;
+			}
+		}
+		var delay = setTimeout(function() { // End of round delay
+			for (let i = 0; i < games.length; i++) {
+				if (games[i].info.host == datA.host) {
+					games[i].rounds.waiting = true;
+					games[i].rounds.delayed = false;
+					break;
+				}
+			}
+			io.in(datA.title).emit('Force Spawn');
+		}, _delaytime);
+		if (datA.mode == 'srv') {
+			for (let i = 0; i < shrinkIntervals.length; i++) { // Remove shrink interval
+				if (shrinkIntervals[i].host == datA.host) { // Identify shrink interval
+					clearInterval(shrinkIntervals[i].interval);
+					for (let i = 0; i < games.length; i++) {
+						if (games[i].info.host == datA.host) {
+							games[i].world.width = shrinkIntervals[i].world.width; // shrinkIntervals[i].world is preserved from 'Round Start'
+							games[i].world.height = shrinkIntervals[i].world.height; // Reset world width and height
 						}
 					}
+					shrinkIntervals.splice(i, 1);
+					break;
 				}
-			}, 40)); // Same frequency as game interval
+			}
 		}
 	});
 
+	// Round Delay
+	socket.on('Round Delay', function(gamE) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == gamE.info.host) { // Identify game
+				games[i].rounds.waiting = true;
+				games[i].rounds.delayed = true;
+				games[i].rounds.delaystart = (new Date()).valueOf();
+				break;
+			}
+		}
+		var delay = setTimeout(function() {
+			for (let i = 0; i < games.length; i++) {
+				if (games[i].info.host == gamE.info.host) { // Identify game
+					games[i].rounds.waiting = false; // Start Round
+					games[i].rounds.delayed = false;
+					if (gamE.info.mode == 'srv') { // If is survival mode
+						shrinkIntervals.push({ // Shrink the world
+							host: gamE.info.host, 
+							world: gamE.world, 
+							interval: setInterval(function() {
+								for (let i = 0; i < games.length; i++) {
+									if (games[i].info.host == gamE.info.host) { // Identify game
+										if (games[i].world.width > 200 && games[i].world.height > 200) { // If both dimensions are greater than minimum
+											games[i].world.width -= _shrinkrate;
+											games[i].world.height -= _shrinkrate;
+											games[i].world.x += _shrinkrate / 2; // World shrinks to center
+											games[i].world.y += _shrinkrate / 2;
+											break;
+										}
+									}
+								}
+							}, 40) // Same frequency as game interval
+						});
+					}
+					games[i].rounds.start = (new Date()).valueOf();
+					break;
+				}
+			}
+		}, _delaytime);
+		var spawndelay = setTimeout(function() { // Force spawns 1 second before round starts so one player does not join before the others and automatically win game
+			io.in(gamE.info.title).emit('Force Spawn');
+		}, _delaytime - 1000);
+	});
+
 	// Update Server Rounds
-	sockeT.on('Rounds', function(roundS) {
+	socket.on('Rounds', function(roundS) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == roundS.host) { // Identify game
 				games[i].rounds = roundS;
@@ -399,7 +456,7 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server Leaderboard
-	sockeT.on('Board', function(boarD) {
+	socket.on('Board', function(boarD) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == boarD.host) { // Find board's game
 				games[i].board.list = boarD.list; // Update server leaderboard list
@@ -409,10 +466,10 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server Org
-	sockeT.on('Org', function(orG) {
+	socket.on('Org', function(orG) {
 		for (let i = 0; i < games.length; i++) {
 			for (let j = 0; j < games[i].orgs.length; j++) {
-				if (games[i].orgs[j].player == sockeT.id) {
+				if (games[i].orgs[j].player == socket.id) {
 					games[i].orgs[j] = orG;
 					break;
 				}
@@ -421,10 +478,10 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server Abilities
-	sockeT.on('Ability', function(abilitY) {
+	socket.on('Ability', function(abilitY) {
 		for (let i = 0; i < games.length; i++) {
 			for (let j = 0; j < games[i].info.count; j++) {
-				if (games[i].abilities[j].player == sockeT.id) { // Find ability of socket
+				if (games[i].abilities[j].player == socket.id) { // Find ability of socket
 					games[i].abilities[j] = abilitY; // Replace ability with received
 					break;
 				}
@@ -433,7 +490,7 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server World
-	sockeT.on('World', function(worlD) {
+	socket.on('World', function(worlD) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == worlD.host) { // Identify game
 				games[i].world = worlD;
@@ -443,7 +500,7 @@ function newConnection(sockeT) {
 	});
 
 	// Update Server Teams
-	sockeT.on('Teams', function(datA) {
+	socket.on('Teams', function(datA) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == datA.host) { // Identify game
 				games[i].teams = datA.teams;
@@ -451,118 +508,29 @@ function newConnection(sockeT) {
 		}
 	});
 
-	{ // Abilities
-		sockeT.on('Tag', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Tag');
-			} else {
-				sockeT.to(playeR).emit('Tag');
-			}
-		});
-
-		sockeT.on('Extend', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Extend');
-			} else {
-				sockeT.to(playeR).emit('Extend');
-			}
-		});
-
-		sockeT.on('Compress', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Compress');
-			} else {
-				sockeT.to(playeR).emit('Compress');
-			}
-		});
-
-		// sockeT.on('Speed', function(playeR) {
-		// 	if (playeR == sockeT.id) {
-		// 		sockeT.emit('Speed');
-		// 	} else {
-		// 		sockeT.to(playeR).emit('Speed');
-		// 	}
-		// });
-
-		// sockeT.on('Slow', function(playeR) {
-		// 	if (playeR == sockeT.id) {
-		// 		sockeT.emit('Slow');
-		// 	} else {
-		// 		sockeT.to(playeR).emit('Slow');
-		// 	}
-		// });
-
-		sockeT.on('Immortality', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Immortality');
-			} else {
-				sockeT.to(playeR).emit('Immortality');
-			}
-		});
-
-		sockeT.on('Freeze', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Freeze');
-			} else {
-				sockeT.to(playeR).emit('Freeze');
-			}
-		});
-
-		// sockeT.on('Stimulate', function(playeR) {
-		// 	if (playeR == sockeT.id) {
-		// 		sockeT.emit('Stimulate');
-		// 	} else {
-		// 		sockeT.to(playeR).emit('Stimulate');
-		// 	}
-		// });
-
-		// sockeT.on('Poison', function(playeR) {
-		// 	if (playeR == sockeT.id) {
-		// 		sockeT.emit('Poison');
-		// 	} else {
-		// 		sockeT.to(playeR).emit('Poison');
-		// 	}
-		// });
-
-		sockeT.on('Neutralize', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Neutralize');
-			} else {
-				sockeT.to(playeR).emit('Neutralize');
-			}
-		});
-
-		sockeT.on('Toxin', function(playeR) {
-			if (playeR == sockeT.id) {
-				sockeT.emit('Toxin');
-			} else {
-				sockeT.to(playeR).emit('Toxin');
-			}
-		});
-	}
-
 	// Dead
-	sockeT.on('Dead', function(spectatE) {
+	socket.on('Dead', function(spectatE) {
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].players.indexOf(sockeT.id) != -1) {
+			if (games[i].players.indexOf(socket.id) != -1) {
 				for (let j = 0; j < games[i].players.length; j++) { // Remove Player
-					if (games[i].players[j] == sockeT.id) {
+					if (games[i].players[j] == socket.id) {
 						games[i].players.splice(j, 1);
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].abilities.length; j++) { // Remove Ability
-					if (games[i].abilities[j].player == sockeT.id) {
+					if (games[i].abilities[j].player == socket.id) {
 						games[i].abilities.splice(j, 1);
 						break;
 					}
 				}
 				for (let j = 0; j < games[i].orgs.length; j++) { // Do not use games[i].info.count server-side (orgs.length may change before count changes)
-					if (games[i].orgs[j].player == sockeT.id) {
+					if (games[i].orgs[j].player == socket.id) {
 						games[i].orgs.splice(j, 1); // Remove Org
 						games[i].info.count = games[i].orgs.length;
 						if (spectatE == true) {
-							sockeT.emit('Spectate'); // Dead player becomes spectator
+							socket.emit('Spectate'); // Dead player becomes spectator
+							console.log('Spectate: ' + socket.id);
 						}
 						break;
 					}
@@ -571,8 +539,99 @@ function newConnection(sockeT) {
 			}
 		}
 	});
+
+	{ // Abilities
+		socket.on('Tag', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Tag');
+			} else {
+				socket.to(playeR).emit('Tag');
+			}
+		});
+
+		socket.on('Extend', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Extend');
+			} else {
+				socket.to(playeR).emit('Extend');
+			}
+		});
+
+		socket.on('Compress', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Compress');
+			} else {
+				socket.to(playeR).emit('Compress');
+			}
+		});
+
+		// socket.on('Speed', function(playeR) {
+		// 	if (playeR == socket.id) {
+		// 		socket.emit('Speed');
+		// 	} else {
+		// 		socket.to(playeR).emit('Speed');
+		// 	}
+		// });
+
+		// socket.on('Slow', function(playeR) {
+		// 	if (playeR == socket.id) {
+		// 		socket.emit('Slow');
+		// 	} else {
+		// 		socket.to(playeR).emit('Slow');
+		// 	}
+		// });
+
+		socket.on('Immortality', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Immortality');
+			} else {
+				socket.to(playeR).emit('Immortality');
+			}
+		});
+
+		socket.on('Freeze', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Freeze');
+			} else {
+				socket.to(playeR).emit('Freeze');
+			}
+		});
+
+		// socket.on('Stimulate', function(playeR) {
+		// 	if (playeR == socket.id) {
+		// 		socket.emit('Stimulate');
+		// 	} else {
+		// 		socket.to(playeR).emit('Stimulate');
+		// 	}
+		// });
+
+		// socket.on('Poison', function(playeR) {
+		// 	if (playeR == socket.id) {
+		// 		socket.emit('Poison');
+		// 	} else {
+		// 		socket.to(playeR).emit('Poison');
+		// 	}
+		// });
+
+		socket.on('Neutralize', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Neutralize');
+			} else {
+				socket.to(playeR).emit('Neutralize');
+			}
+		});
+
+		socket.on('Toxin', function(playeR) {
+			if (playeR == socket.id) {
+				socket.emit('Toxin');
+			} else {
+				socket.to(playeR).emit('Toxin');
+			}
+		});
+	}
 }
 
 // Game Data
+const _delaytime = 10000;
 const _shrinkrate = .2;
 var shrinkIntervals = [];

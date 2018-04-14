@@ -3,6 +3,9 @@ var Org = function(datA) {
 	this.color = datA.color;
 	this.skin = datA.skin;
 	this.team = datA.team;
+	if (game.rounds.util == true) {
+		this.ready = false; // org.ready ensures that org will only be forcibly respawned once
+	}
 	if (datA.spectate == true) {
 		this.speed = _spectatespeed; // Faster movement when spectating
 	} else {
@@ -44,10 +47,14 @@ var Org = function(datA) {
 		do {
 			this.pos = { // Position is the target's location in the world
 				x: floor(random(game.world.x + 50, game.world.x + game.world.width - 50)), // +- 50 acts as buffer
-				y: floor(random(game.world.x + 50, game.world.x + game.world.height - 50))
+				y: floor(random(game.world.y + 50, game.world.y + game.world.height - 50))
 			};
 			var rePos = false;
-			if (game.world.type == 'ellipse') {
+			if (game.world.type == 'rectangle') {
+				if (this.pos.x < game.world.x || this.pos.x > game.world.x + game.world.width || this.pos.y < game.world.y || this.pos.y > game.world.y + game.world.height) {
+					rePos = false;
+				}
+			} else if (game.world.type == 'ellipse') {
 				if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
 					rePos = true;
 				}

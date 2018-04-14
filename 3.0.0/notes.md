@@ -82,7 +82,7 @@
 			If spore is on friendly side, send to jail
 			Safe zone around flag protects carrier
 			If holding the flag, throws the flag
-		Leaderboard tracks captures and round wins
+		Leaderboard tracks captures (score) and round wins
 	Infection (INF)
 		Players sorted into infected and healthy
 			One infected per eight healthy, round up
@@ -111,7 +111,6 @@
 ## Bugs/Fixes:
 	Leaderboard flicker on new spectator bug
 		Spectator has not yet been added to spectators array
-	Diagonal movement deflection on ellipse
 
 ## To-Do:
 	3.0.0 - Game Modes
@@ -145,6 +144,7 @@
 		✔ Set maximum dimensions
 		✔ Center titles in browser
 		✔ Remove host column in browser
+		✔ Update orderBoard() to game modes
 		Add Game Modes
 			✔ Add to new game settings
 				X Team colors (if applicable)
@@ -156,9 +156,12 @@
 				✔ Team length update
 			✔ Pause and respawn menus
 			Round system
-				✔ Player minimum
 				✔ Staging period before round start
+					✔ Player minimum
+					✔ 10 second wait time
 				✔ Respawn all players when round begins
+					✔ 10 second wait time
+				✔ Pause spectate menu return to non-spectate
 			Gameplay features
 				✔ Add tag ability
 					✔ Item art
@@ -166,8 +169,8 @@
 				✔ SKM
 					✔ No friendly fire
 					✔ Team leaderboard
-				SRV
-					Last man standing wins
+				✔ SRV
+					✔ Last man standing wins
 					✔ Cannot respawn until round is over
 					✔ World shrink
 				CTF
@@ -187,6 +190,7 @@
 					Round system
 					Score counting - time
 					Hill placement
+		Server browser order issue
 		Polygon skin
 			Random number of vertices
 			Random radians between using perlin noise
@@ -203,6 +207,8 @@
 		Add info menu
 		Add popup info box
 		Custom select menu
+		Sparks skin
+			On birth, release sparks particle effect
 	X.1.0 - Visual Enhancement
 		Add substance to the world (background)
 			Decoration

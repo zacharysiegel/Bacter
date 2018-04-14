@@ -166,7 +166,7 @@ function renderBrowser(datA) {
 			row.style.height = '20px';
 			let title = row.insertCell(-1);
 			title.innerHTML = games[i].info.title;
-			title.style.width = '500px';
+			title.style.width = '400px';
 			title.style.textAlign = 'center';
 			// let host = row.insertCell(-1);
 			// for (let j = 0; j < games[i].board.list.length; j++) { // Search board.list

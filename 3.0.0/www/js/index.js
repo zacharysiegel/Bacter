@@ -47,7 +47,7 @@ function setup() {
 	// 			createGame(); // Creates new game
 	// 		}
 	// 	}
-	// });
+	// });.
 }
 
 function windowResized() {
@@ -78,3 +78,15 @@ function windowResized() {
 		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	}
 }
+
+(function() {
+	Object.defineProperty(org, 'count', {
+		get: function() {
+			return org.count;
+		}, 
+		set: function(value) {
+			debugger;
+			org.count = value;
+		}
+	});
+});
