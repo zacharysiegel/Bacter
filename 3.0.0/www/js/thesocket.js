@@ -43,6 +43,9 @@ function connectSocket() {
 		}
 		if (state == 'pauseSpectateMenu') {
 			renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
+		} else if (state == 'respawnMenu') {
+			renderMenu('pauseGame', game);
+			menus.pauseGame.submit();
 		}
 		spawn({ color: org.color, skin: org.skin, team: org.team, spectate: false }); // Respawn all players on round start
 		org.spawn = false;

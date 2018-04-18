@@ -162,7 +162,9 @@
 	FIXED closed game spectate attempt bug
 	FIXED occasional rapid growth bug
 	FIXED game closure menu bug
+	FIXED team count menu option bug
 	BALANCED spore range (2200ms --> 1700ms)
+	BALANCED shoot spore range (2000ms --> 1500ms)
 	BALANCED neutralize uptime (4000ms --> 3500ms)
 	BALANCED neutralize cooldown (6000ms --> 6500ms)
 	BALANCED spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)

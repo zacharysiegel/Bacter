@@ -390,8 +390,8 @@ function newConnection(socket) {
 					clearInterval(shrinkIntervals[i].interval);
 					for (let i = 0; i < games.length; i++) {
 						if (games[i].info.host == datA.host) {
-							games[i].world.width = shrinkIntervals[i].world.width; // shrinkIntervals[i].world is preserved from 'Round Start'
-							games[i].world.height = shrinkIntervals[i].world.height; // Reset world width and height
+							games[i].world.width = shrinkIntervals[i].width; // shrinkIntervals[i].world is preserved from 'Round Delay'
+							games[i].world.height = shrinkIntervals[i].height; // Reset world width and height
 						}
 					}
 					shrinkIntervals.splice(i, 1);
@@ -419,7 +419,8 @@ function newConnection(socket) {
 					if (gamE.info.mode == 'srv') { // If is survival mode
 						shrinkIntervals.push({ // Shrink the world
 							host: gamE.info.host, 
-							world: gamE.world, 
+							width: gamE.world.width, 
+							height: gamE.world.height, 
 							interval: setInterval(function() {
 								for (let i = 0; i < games.length; i++) {
 									if (games[i].info.host == gamE.info.host) { // Identify game

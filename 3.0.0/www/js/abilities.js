@@ -192,7 +192,7 @@ var ability = {
 		timeout: [ undefined, undefined, undefined ], 
 		start: [ undefined, undefined, undefined ], 
 		end: [ undefined, undefined, undefined ], 
-		time: 2000, 
+		time: 1500, 
 		cooling: [ false, false, false ], 
 		cooldown: [ 2000, 2000, 2000 ]
 	}, 

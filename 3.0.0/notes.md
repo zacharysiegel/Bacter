@@ -63,6 +63,9 @@
 		Temporarily become invisible to opponents
 			- Usage of abilities denied while stealthed
 			- OR Usage of an ability disables cloak
+	? Lasso:
+		Send line skill shot to another to opponent
+		On hit, pulls opponent toward player
 
 ## Game Modes:
 	Free For All (FFA)
@@ -86,11 +89,12 @@
 				Pick up flag by making contact with flag on body
 			Flag returns to center of map after capture
 			Flag drops at location of flag bearer on death
-		Tag ability
-			Shoot single spore and pop on enemy
-			If spore is on friendly side, send to jail
-			Safe zone around flag protects carrier
-			If holding the flag, throws the flag
+		Uses standard ability set
+		X Tag ability (2-Flag CTF)
+			X Shoot single spore and pop on enemy
+			X If spore is on friendly side, send to jail
+			X Safe zone around flag protects carrier
+			X If holding the flag, throws the flag
 		Leaderboard tracks captures (score) and round wins
 	Infection (INF)
 		Players sorted into infected and healthy
@@ -125,70 +129,12 @@
 		Spectator has not yet been added to spectators array
 
 ## To-Do:
-	3.0.0 - Game Modes
-		✔ GitHub versioning improvement
-		✔ Menu buttons cursor is pointer
-		✔ windowResized() functionality in-game
-		✔ Circular name label positioning
-		✔ Allow rectangular world
-		✔ Elliptical world option
-		✔ Begin spectating at location of death
-		✔ Circular cells skin
-		✔ Shoot cooldown
-		✔ Fix occasional rapid growth bug
-		✔ Improve controls config variables
-		✔ Remove world border movement block
-		✔ Reduce movement speed so standard movement cannot suicide
-		✔ Extend + Compress = 0
-		✔ Color outside of world
-		✔ Remove world border movement block
-		✔ Change respawn alert to in-game tip
-		✔ Added tips setting
-		✔ Leaderboard, messages, and world shadows
-		✔ Balancing
-			✔ Lengthen neutralize cooldown
-			✔ Shorten neutralize uptime
-			✔ Spores shoot from center of mass rather than crosshair (nerf on immortality combo)
-			✔ Reduce spore range
-		✔ Back button entire footer
-		✔ Remove white world option
-		✔ Remove non-square dimensions
-		✔ Set maximum dimensions
-		✔ Center titles in browser
-		✔ Remove host column in browser
-		✔ Update orderBoard() to game modes
-		✔ Game join misplacement and browser ordering issue
-		✔ Board constructor object
-		✔ Game constructor object
-		✔ Add Game Modes
-			✔ Add to new game settings
-				X Team colors (if applicable)
-				✔ Team count (if applicable)
-			✔ Add to join game settings
-				✔ Team (if applicable)
-					X Team color background of list
-					✔ Auto-assign (square button in row below team list that disables team list when selected)
-				✔ Team length update
-			✔ Pause and respawn menus
-			✔ Round system
-				✔ Staging period before round start
-					✔ Player minimum
-					✔ 10 second wait time
-				✔ Respawn all players when round begins
-					✔ 10 second wait time
-				✔ Pause spectate menu return to non-spectate
-			✔ Game Modes
-				✔ Add tag ability
-					✔ Item art
-				✔ FFA
-				✔ SKM
-					✔ No friendly fire
-					✔ Team leaderboard
-				✔ SRV
-					✔ Last man standing wins
-					✔ Cannot respawn until round is over
-					✔ World shrink
-	3.1.0
+	3.1.0 - Title Screen + Tutorial
+		Title Screen
+			Canvas background with 3/4 bot orgs
+			Central menu - Host, Join, Tutorial, Settings/Controls
+		Tutorial
+	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
 			✔ Round system
 				Round end at 3 captures
@@ -212,11 +158,7 @@
 		Polygon skin
 			Random number of vertices
 			Random radians between using perlin noise
-	4.0.0
-		Title Screen
-			Canvas background with 3/4 bot orgs
-			Central menu - Host, Join, Tutorial, Settings/Controls
-		Tutorial
+	3.3.0
 		Images for ability tooltips
 		Add controls settings menu
 			Ability keys

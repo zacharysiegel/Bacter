@@ -147,12 +147,16 @@ var menus = {
 					pmInput.placeholder = _playermin;
 					pmInput.min = 2;
 					pmInput.addEventListener('change', function() {
-						if (parseFloat(pmInput.value) < parseFloat(pmInput.min)) {
-							pmInput.value = parseFloat(pmInput.min);
-						}
-						let tcInput = document.getElementById('Team Count Input');
-						if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
-							pmInput.value = parseFloat(tcInput.value);
+						if (pmInput != null) {
+							if (parseFloat(pmInput.value) < parseFloat(pmInput.min)) {
+								pmInput.value = parseFloat(pmInput.min);
+							}
+							let tcInput = document.getElementById('Team Count Input');
+							if (tcInput != null) {
+								if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
+									pmInput.value = parseFloat(tcInput.value);
+								}
+							}
 						}
 					});
 				}
@@ -164,13 +168,15 @@ var menus = {
 					boardLengthInput.min = 1;
 					boardLengthInput.max = 20;
 					boardLengthInput.addEventListener('change', function() {
-						if (parseFloat(boardLengthInput.value) < parseFloat(boardLengthInput.min)) {
-							boardLengthInput.value = parseFloat(boardLengthInput.min);
-						} else if (parseFloat(boardLengthInput.value) > parseFloat(boardLengthInput.max)) {
-							boardLengthInput.value = parseFloat(boardLengthInput.max);
-						}
-						if (parseFloat(boardLengthInput.value) % 1 != 0) { // If length is not an integer
-							boardLengthInput.value = floor(parseFloat(boardLengthInput.value));
+						if (boardLengthInput != null) {
+							if (parseFloat(boardLengthInput.value) < parseFloat(boardLengthInput.min)) {
+								boardLengthInput.value = parseFloat(boardLengthInput.min);
+							} else if (parseFloat(boardLengthInput.value) > parseFloat(boardLengthInput.max)) {
+								boardLengthInput.value = parseFloat(boardLengthInput.max);
+							}
+							if (parseFloat(boardLengthInput.value) % 1 != 0) { // If length is not an integer
+								boardLengthInput.value = floor(parseFloat(boardLengthInput.value));
+							}
 						}
 					});
 				}
@@ -182,18 +188,20 @@ var menus = {
 					tcInput.min = 2;
 					tcInput.max = teamColors.length; // = 4
 					tcInput.addEventListener('change', function() {
-						if (parseFloat(tcInput.value) < parseFloat(tcInput.min)) {
-							tcInput.value = parseFloat(tcInput.min);
-						} else if (parseFloat(tcInput.value) > parseFloat(tcInput.max)) {
-							tcInput.value = parseFloat(tcInput.max);
-						}
-						if (parseFloat(tcInput.value) % 1 != 0) { // If length is not an integer
-							tcInput.value = floor(parseFloat(tcInput.value));
-						}
-						let pmInput = document.getElementById('Player Minimum Input');
-						if (pmInput != null) {
-							if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
-								pmInput.value = parseFloat(tcInput.value);
+						if (tcInput != null) {
+							if (parseFloat(tcInput.value) < parseFloat(tcInput.min)) {
+								tcInput.value = parseFloat(tcInput.min);
+							} else if (parseFloat(tcInput.value) > parseFloat(tcInput.max)) {
+								tcInput.value = parseFloat(tcInput.max);
+							}
+							if (parseFloat(tcInput.value) % 1 != 0) { // If length is not an integer
+								tcInput.value = floor(parseFloat(tcInput.value));
+							}
+							let pmInput = document.getElementById('Player Minimum Input');
+							if (pmInput != null) {
+								if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
+									pmInput.value = parseFloat(tcInput.value);
+								}
 							}
 						}
 					});
