@@ -155,6 +155,7 @@
 	CHANGED title text alignment in browser (centered)
 	CHANGED name label positioning
 	FIXED spectate random positioning after death
+	FIXED game join misplacement and browser ordering issue
 	FIXED numerical operations issues in create game menu
 	FIXED respawn menu random positioning on back
 	FIXED extend and compress non-cancelation

@@ -26,7 +26,7 @@
 		Leaves trail of cells behind
 			Allows for clever spore/secrete
 			Blocks movement of opponents through trail
-	Freeze (Formerly Stunt):
+	Freeze: (Formerly Stunt):
 		Halt Birth and Death
 		Effectively freezes org, halting movement
 	X Speed:
@@ -54,6 +54,11 @@
 		Rendering - Circle around org
 			X Circle around each cell
 		No shoot
+	Tag:
+		Shoot single spore to pop on enemy
+	Stimulate: (NEW)
+		Increases birth/death rate
+		Increases movement speed
 	? Cloak:
 		Temporarily become invisible to opponents
 			- Usage of abilities denied while stealthed
@@ -75,8 +80,12 @@
 	Capture the Flag (CTF)
 		Players are sorted into teams
 			Players cannot harm teammates
-		Each team has a flag at spawn
-			Players capture opponents flag and bring back to base
+		Spawn in random positions
+		Each team has a colored base at corner of map
+			Players capture single flag and return to base for capture
+				Pick up flag by making contact with flag on body
+			Flag returns to center of map after capture
+			Flag drops at location of flag bearer on death
 		Tag ability
 			Shoot single spore and pop on enemy
 			If spore is on friendly side, send to jail
@@ -87,10 +96,13 @@
 		Players sorted into infected and healthy
 			One infected per eight healthy, round up
 		Infected players are red, Healthy players are green
-		Tag ability only for infected
+		Tag ability for infected
 			Shoots single spore to pop on enemy
 			On hit, healthy org dies, new infected org spawns
-		Infected players are zoomed in, so have less visibility to equalize power of tag
+		Stimulate ability for healthy
+			Increases birth/death rate
+			Increases movement speed
+		Infected players are zoomed in, so have less visibility to equalize power of tag 
 		Last man standing wins
 		Leaderboard tracks wins
 	King of the Hill (KTH)
@@ -145,7 +157,10 @@
 		✔ Center titles in browser
 		✔ Remove host column in browser
 		✔ Update orderBoard() to game modes
-		Add Game Modes
+		✔ Game join misplacement and browser ordering issue
+		✔ Board constructor object
+		✔ Game constructor object
+		✔ Add Game Modes
 			✔ Add to new game settings
 				X Team colors (if applicable)
 				✔ Team count (if applicable)
@@ -155,14 +170,14 @@
 					✔ Auto-assign (square button in row below team list that disables team list when selected)
 				✔ Team length update
 			✔ Pause and respawn menus
-			Round system
+			✔ Round system
 				✔ Staging period before round start
 					✔ Player minimum
 					✔ 10 second wait time
 				✔ Respawn all players when round begins
 					✔ 10 second wait time
 				✔ Pause spectate menu return to non-spectate
-			Gameplay features
+			✔ Game Modes
 				✔ Add tag ability
 					✔ Item art
 				✔ FFA
@@ -173,24 +188,27 @@
 					✔ Last man standing wins
 					✔ Cannot respawn until round is over
 					✔ World shrink
-				CTF
-					Round system
-					✔ No friendly fire
-					✔ Tag
-					Spawn on team side
-					Color team sides
-					Flag placement
-				INF
-					Round system
-						Randomize teams each round
-					✔ No friendly fire
-					✔ Tag
-					Boost ability
-				KTH
-					Round system
-					Score counting - time
-					Hill placement
-		Server browser order issue
+	3.1.0
+		CTF
+			✔ Round system
+				Round end at 3 captures
+			✔ No friendly fire
+			✔ Tag
+			✔ Larger minimum world
+			✔ Random spawn
+			✔ Color team bases
+			Flag placement
+			Base collision detection
+		INF
+			Round system
+				Randomize teams each round
+			✔ No friendly fire
+			✔ Tag
+			Boost ability
+		KTH
+			Round system
+			Score counting - time
+			Hill placement
 		Polygon skin
 			Random number of vertices
 			Random radians between using perlin noise
@@ -207,8 +225,10 @@
 		Add info menu
 		Add popup info box
 		Custom select menu
+		? Player minimum browser column
 		Sparks skin
 			On birth, release sparks particle effect
+		Fix ctf base world corner rendering bug
 	X.1.0 - Visual Enhancement
 		Add substance to the world (background)
 			Decoration

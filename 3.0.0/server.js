@@ -68,7 +68,7 @@ console.log('');
 function newConnection(socket) {
 	// Connect
 	connections++;
-	console.log('Client connected: ' + socket.id + ' (' + connections + ')'); // Server Message
+	console.log('Client connected: ' + socket.id + '    (' + connections + ')'); // Server Message
 
 	socket.join('Lobby'); // Join 'Lobby' Room
 	socket.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
@@ -504,6 +504,17 @@ function newConnection(socket) {
 		for (let i = 0; i < games.length; i++) {
 			if (games[i].info.host == datA.host) { // Identify game
 				games[i].teams = datA.teams;
+				break;
+			}
+		}
+	});
+
+	// Update Server Flag
+	socket.on('Flag', function(gamE) {
+		for (let i = 0; i < games.length; i++) {
+			if (games[i].info.host == gamE.info.host) {
+				games[i].flag = gamE.flag;
+				break;
 			}
 		}
 	});

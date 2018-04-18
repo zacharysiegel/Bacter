@@ -80,7 +80,7 @@ function connectSocket() {
 				renderLeaderboard();
 				translate(org.off.x, org.off.y);
 			}
-			renderMessages();
+			renderMessages(); // Render messages outside translation
 			move(); // Move goes at the end so player does not render his movements before others
 		} else if (state == 'spectate') {
 			{

@@ -90,55 +90,69 @@ var menus = {
 			{ // World Width and Height
 				let widthInput = document.getElementById('World Width Input');
 				let heightInput = document.getElementById('World Height Input');
-				widthInput.placeholder = _worldwidth;
-				heightInput.placeholder = _worldheight;
-				widthInput.min = 300;
-				heightInput.min = 300;
-				widthInput.max = 8000000;
-				heightInput.max = 8000000;
-				let wmin = parseFloat(widthInput.min);
-				let wmax = parseFloat(widthInput.max);
-				let hmin = parseFloat(heightInput.min);
-				let hmax = parseFloat(heightInput.max);
-				widthInput.addEventListener('change', function() {
-					if (parseFloat(widthInput.value) < wmin) {
-						widthInput.value = wmax;
-					} else if (parseFloat(widthInput.value) > wmax) {
-						widthInput.value = wmax;
+				if (widthInput != null && heightInput != null) { // Prevents listener stacking
+					widthInput.placeholder = _worldwidth;
+					heightInput.placeholder = _worldheight;
+					let modeInput = document.getElementById('Game Mode Input');
+					if (modeInput.value == 'ctf') {
+						widthInput.min = 700;
+						heightInput.min = 700;
+					} else {
+						widthInput.min = 300;
+						heightInput.min = 300;
 					}
-					if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-						heightInput.value = parseFloat(widthInput.value);
-					}
-				});
-				heightInput.addEventListener('change', function() {
-					if (parseFloat(heightInput.value) < hmin) {
-						heightInput.value = hmin;
-					} else if (parseFloat(heightInput.value) > hmax) {
-						heightInput.value = hmax;
-					}
-					if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-						widthInput.value = parseFloat(heightInput.value);
-					}
-				});
+					widthInput.max = 100000;
+					heightInput.max = 100000;
+					let wmin = parseFloat(widthInput.min);
+					let wmax = parseFloat(widthInput.max);
+					let hmin = parseFloat(heightInput.min);
+					let hmax = parseFloat(heightInput.max);
+					widthInput.addEventListener('change', function() {
+						if (parseFloat(widthInput.value) < wmin) {
+							widthInput.value = wmin;
+						} else if (parseFloat(widthInput.value) > wmax) {
+							widthInput.value = wmax;
+						}
+						if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
+							heightInput.value = parseFloat(widthInput.value);
+						}
+					});
+					heightInput.addEventListener('change', function() {
+						if (parseFloat(heightInput.value) < hmin) {
+							heightInput.value = hmin;
+						} else if (parseFloat(heightInput.value) > hmax) {
+							heightInput.value = hmax;
+						}
+						if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
+							widthInput.value = parseFloat(heightInput.value);
+						}
+					});
+				}
 			}
 			{ // Player Cap
-				let playerCapInput = document.getElementById('Player Cap Input');
-				playerCapInput.placeholder = _playercap;
-				playerCapInput.min = 2;
-				playerCapInput.addEventListener('change', function() {
-					if (parseFloat(playerCapInput.value) < parseFloat(playerCapInput.min)) {
-						playerCapInput.value = parseFloat(playerCapInput.min);
-					}
-				});
+				let pcInput = document.getElementById('Player Cap Input');
+				if (pcInput != null) { // Prevents listener stacking
+					pcInput.placeholder = _playercap;
+					pcInput.min = 2;
+					pcInput.addEventListener('change', function() {
+						if (parseFloat(pcInput.value) < parseFloat(pcInput.min)) {
+							pcInput.value = parseFloat(pcInput.min);
+						}
+					});
+				}
 			}
 			{ // Player Minimum
 				let pmInput = document.getElementById('Player Minimum Input');
 				if (pmInput != null) {
-					pmInput.placeholder = 4;
+					pmInput.placeholder = _playermin;
 					pmInput.min = 2;
 					pmInput.addEventListener('change', function() {
 						if (parseFloat(pmInput.value) < parseFloat(pmInput.min)) {
 							pmInput.value = parseFloat(pmInput.min);
+						}
+						let tcInput = document.getElementById('Team Count Input');
+						if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
+							pmInput.value = parseFloat(tcInput.value);
 						}
 					});
 				}
@@ -176,22 +190,30 @@ var menus = {
 						if (parseFloat(tcInput.value) % 1 != 0) { // If length is not an integer
 							tcInput.value = floor(parseFloat(tcInput.value));
 						}
+						let pmInput = document.getElementById('Player Minimum Input');
+						if (pmInput != null) {
+							if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
+								pmInput.value = parseFloat(tcInput.value);
+							}
+						}
 					});
 				}
 			}
 		}, 
 		editLists: function() {
 			{ // World Type
-				let worldTypeInput = document.getElementById('World Type Input');
-				let rectOption = document.createElement('option');
-				worldTypeInput.appendChild(rectOption);
-				rectOption.value = 'Rectangle';
-				rectOption.selected = 'selected';
-				rectOption.innerHTML = 'Square';
-				let ellipseOption = document.createElement('option');
-				worldTypeInput.appendChild(ellipseOption);
-				ellipseOption.value = 'Ellipse';
-				ellipseOption.innerHTML = 'Circle';
+				let wtInput = document.getElementById('World Type Input');
+				if (wtInput != null) { // Prevents listener stacking
+					let rectOption = document.createElement('option');
+					wtInput.appendChild(rectOption);
+					rectOption.value = 'Rectangle';
+					rectOption.selected = 'selected';
+					rectOption.innerHTML = 'Square';
+					let ellipseOption = document.createElement('option');
+					wtInput.appendChild(ellipseOption);
+					ellipseOption.value = 'Ellipse';
+					ellipseOption.innerHTML = 'Circle';
+				}
 			}
 			// { // World Color
 			// 	let worldColorInput = document.getElementById('World Color Input');
@@ -211,250 +233,267 @@ var menus = {
 			// }
 			{ // Game Mode
 				let modeInput = document.getElementById('Game Mode Input');
-				let ffaOption = document.createElement('option');
-				ffaOption.value = 'ffa';
-				ffaOption.selected = 'selected';
-				ffaOption.innerHTML = 'Free for All';
-				modeInput.appendChild(ffaOption);
-				let skmOption = document.createElement('option');
-				skmOption.value = 'skm';
-				skmOption.innerHTML = 'Skirmish';
-				modeInput.appendChild(skmOption);
-				let srvOption = document.createElement('option');
-				srvOption.value = 'srv';
-				srvOption.innerHTML = 'Survival';
-				modeInput.appendChild(srvOption);
-				let ctfOption = document.createElement('option');
-				ctfOption.value = 'ctf';
-				ctfOption.innerHTML = 'Capture the Flag';
-				modeInput.appendChild(ctfOption);
-				let infOption = document.createElement('option');
-				infOption.value = 'inf';
-				infOption.innerHTML = 'Infection';
-				modeInput.appendChild(infOption);
-				let kthOption = document.createElement('option');
-				kthOption.value = 'kth';
-				kthOption.innerHTML = 'King of the Hill';
-				modeInput.appendChild(kthOption);
-				modeInput.addEventListener('change', function() {
-					// Leaderboard Length & Team Count
-					if (modeInput.value == 'skm' || modeInput.value == 'ctf') { // If team game
-						if (document.getElementById('Leaderboard Length Input') != null) { // If leaderboard length input is present
-							let lengthInput = document.getElementById('Leaderboard Length Input'); // Remove Leaderboard Length Option
-							let cell = lengthInput.parentNode;
-							let row = cell.parentNode;
-							row.parentNode.removeChild(row);
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-								}
+				if (modeInput != null) { // Prevents listener stacking
+					let ffaOption = document.createElement('option');
+					ffaOption.value = 'ffa';
+					ffaOption.selected = 'selected';
+					ffaOption.innerHTML = 'Free for All';
+					modeInput.appendChild(ffaOption);
+					let skmOption = document.createElement('option');
+					skmOption.value = 'skm';
+					skmOption.innerHTML = 'Skirmish';
+					modeInput.appendChild(skmOption);
+					let srvOption = document.createElement('option');
+					srvOption.value = 'srv';
+					srvOption.innerHTML = 'Survival';
+					modeInput.appendChild(srvOption);
+					let ctfOption = document.createElement('option');
+					ctfOption.value = 'ctf';
+					ctfOption.innerHTML = 'Capture the Flag';
+					ctfOption.disabled = 'disabled';
+					modeInput.appendChild(ctfOption);
+					let infOption = document.createElement('option');
+					infOption.value = 'inf';
+					infOption.innerHTML = 'Infection';
+					infOption.disabled = 'disabled';
+					modeInput.appendChild(infOption);
+					let kthOption = document.createElement('option');
+					kthOption.value = 'kth';
+					kthOption.innerHTML = 'King of the Hill';
+					kthOption.disabled = 'disabled';
+					modeInput.appendChild(kthOption);
+					modeInput.addEventListener('change', function() {
+						// Leaderboard Length & Team Count
+						if (modeInput.value == 'ctf') { // Set world width and height
+							let widthInput = document.getElementById('World Width Input');
+							let heightInput = document.getElementById('World Height Input');
+							let width = parseFloat(widthInput.value);
+							let height = parseFloat(widthInput.value);
+							let wmin = 700;
+							let hmin = 700;
+							if (width < wmin || height < hmin) {
+								widthInput.value = wmin;
+								heightInput.value = hmin;
 							}
 						}
-						if (document.getElementById('Team Count Input') == null) { // If team count input not present
-							let modeInput = document.getElementById('Game Mode Input'); // Create Team Count Option
-							let modeCell = modeInput.parentNode;
-							let modeRow = modeCell.parentNode;
-							let tableBody = modeRow.parentNode;
-							let row = document.createElement('tr');
-							tableBody.insertBefore(row, modeRow);
-							left = document.createElement('td');
-							row.appendChild(left);
-							left.style.margin = menus.cells.margin + 'px';
-							left.style.padding = menus.cells.padding + 'px';
-							left.style.width = menus.width / 2 + 'px';
-							left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							left.style.borderWidth = menus.cells.border.width + 'px';
-							left.style.borderStyle = menus.cells.border.style;
-							left.style.textAlign = 'right';
-							left.innerHTML = 'Team Count';
-							right = document.createElement('td');
-							row.appendChild(right);
-							right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							right.style.borderWidth = menus.cells.border.width + 'px';
-							right.style.borderStyle = menus.cells.border.style;
-							tcInput = document.createElement('input');
-							right.appendChild(tcInput);
-							tcInput.id =  'Team Count Input';
-							tcInput.style.width = menus.inputs.width + 'px';
-							tcInput.style.height = menus.inputs.height + 'px';
-							tcInput.type = 'number';
-							tcInput.value = '';
-							tcInput.style.autocomplete = 'on';
-							tcInput.style.boxSizing = 'border-box';
-							tcInput.style.textAlign = 'center';
-							tcInput.style.fontFamily = menus.inputs.font;
-							tcInput.style.fontSize = menus.inputs.size + 'px';
-							tcInput.style.outline = 'none';
-							tcInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							tcInput.style.borderWidth = '0px';
-							tcInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-							tcInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-							tcInput.style.borderRadius = menus.inputs.border.radius + 'px';
-							tcInput.addEventListener('focus', function() {
-								tcInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-							});
-							tcInput.addEventListener('focusout', function() {
+						if (modeInput.value == 'skm' || modeInput.value == 'ctf') { // If team game
+							if (document.getElementById('Leaderboard Length Input') != null) { // If leaderboard length input is present
+								let lengthInput = document.getElementById('Leaderboard Length Input'); // Remove Leaderboard Length Option
+								let cell = lengthInput.parentNode;
+								let row = cell.parentNode;
+								row.parentNode.removeChild(row);
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
+								}
+							}
+							if (document.getElementById('Team Count Input') == null) { // If team count input not present
+								let modeInput = document.getElementById('Game Mode Input'); // Create Team Count Option
+								let modeCell = modeInput.parentNode;
+								let modeRow = modeCell.parentNode;
+								let tableBody = modeRow.parentNode;
+								let row = document.createElement('tr');
+								tableBody.insertBefore(row, modeRow);
+								left = document.createElement('td');
+								row.appendChild(left);
+								left.style.margin = menus.cells.margin + 'px';
+								left.style.padding = menus.cells.padding + 'px';
+								left.style.width = menus.width / 2 + 'px';
+								left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								left.style.borderWidth = menus.cells.border.width + 'px';
+								left.style.borderStyle = menus.cells.border.style;
+								left.style.textAlign = 'right';
+								left.innerHTML = 'Team Count';
+								right = document.createElement('td');
+								row.appendChild(right);
+								right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								right.style.borderWidth = menus.cells.border.width + 'px';
+								right.style.borderStyle = menus.cells.border.style;
+								tcInput = document.createElement('input');
+								right.appendChild(tcInput);
+								tcInput.id =  'Team Count Input';
+								tcInput.style.width = menus.inputs.width + 'px';
+								tcInput.style.height = menus.inputs.height + 'px';
+								tcInput.type = 'number';
+								tcInput.value = '';
+								tcInput.style.autocomplete = 'on';
+								tcInput.style.boxSizing = 'border-box';
+								tcInput.style.textAlign = 'center';
+								tcInput.style.fontFamily = menus.inputs.font;
+								tcInput.style.fontSize = menus.inputs.size + 'px';
+								tcInput.style.outline = 'none';
 								tcInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							});
-							menus.create.editNums();
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+								tcInput.style.borderWidth = '0px';
+								tcInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+								tcInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
+								tcInput.style.borderRadius = menus.inputs.border.radius + 'px';
+								tcInput.addEventListener('focus', function() {
+									tcInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
+								});
+								tcInput.addEventListener('focusout', function() {
+									tcInput.style.backgroundColor = 'rgb(255, 255, 255)';
+								});
+								menus.create.editNums();
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
 								}
 							}
-						}
-					} else { // If not a team game
-						if (document.getElementById('Leaderboard Length Input') == null) { // If leaderboard length input is not present
-							let modeCell = modeInput.parentNode; // Create Leaderboard Length Option
-							let modeRow = modeCell.parentNode;
-							let tableBody = modeRow.parentNode;
-							let row = document.createElement('tr');
-							tableBody.insertBefore(row, modeRow);
-							left = document.createElement('td');
-							row.appendChild(left);
-							left.style.margin = menus.cells.margin + 'px';
-							left.style.padding = menus.cells.padding + 'px';
-							left.style.width = menus.width / 2 + 'px';
-							left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							left.style.borderWidth = menus.cells.border.width + 'px';
-							left.style.borderStyle = menus.cells.border.style;
-							left.style.textAlign = 'right';
-							left.innerHTML = 'Leaderboard Length';
-							right = document.createElement('td');
-							row.appendChild(right);
-							right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							right.style.borderWidth = menus.cells.border.width + 'px';
-							right.style.borderStyle = menus.cells.border.style;
-							lengthInput = document.createElement('input');
-							right.appendChild(lengthInput);
-							lengthInput.id =  'Leaderboard Length Input';
-							lengthInput.style.width = menus.inputs.width + 'px';
-							lengthInput.style.height = menus.inputs.height + 'px';
-							lengthInput.type = 'number';
-							lengthInput.value = '';
-							lengthInput.style.autocomplete = 'on';
-							lengthInput.style.boxSizing = 'border-box';
-							lengthInput.style.textAlign = 'center';
-							lengthInput.style.fontFamily = menus.inputs.font;
-							lengthInput.style.fontSize = menus.inputs.size + 'px';
-							lengthInput.style.outline = 'none';
-							lengthInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							lengthInput.style.borderWidth = '0px';
-							lengthInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-							lengthInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-							lengthInput.style.borderRadius = menus.inputs.border.radius + 'px';
-							lengthInput.addEventListener('focus', function() {
-								lengthInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-							});
-							lengthInput.addEventListener('focusout', function() {
+						} else { // If not a team game
+							if (document.getElementById('Leaderboard Length Input') == null) { // If leaderboard length input is not present
+								let modeCell = modeInput.parentNode; // Create Leaderboard Length Option
+								let modeRow = modeCell.parentNode;
+								let tableBody = modeRow.parentNode;
+								let row = document.createElement('tr');
+								tableBody.insertBefore(row, modeRow);
+								left = document.createElement('td');
+								row.appendChild(left);
+								left.style.margin = menus.cells.margin + 'px';
+								left.style.padding = menus.cells.padding + 'px';
+								left.style.width = menus.width / 2 + 'px';
+								left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								left.style.borderWidth = menus.cells.border.width + 'px';
+								left.style.borderStyle = menus.cells.border.style;
+								left.style.textAlign = 'right';
+								left.innerHTML = 'Leaderboard Length';
+								right = document.createElement('td');
+								row.appendChild(right);
+								right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								right.style.borderWidth = menus.cells.border.width + 'px';
+								right.style.borderStyle = menus.cells.border.style;
+								lengthInput = document.createElement('input');
+								right.appendChild(lengthInput);
+								lengthInput.id =  'Leaderboard Length Input';
+								lengthInput.style.width = menus.inputs.width + 'px';
+								lengthInput.style.height = menus.inputs.height + 'px';
+								lengthInput.type = 'number';
+								lengthInput.value = '';
+								lengthInput.style.autocomplete = 'on';
+								lengthInput.style.boxSizing = 'border-box';
+								lengthInput.style.textAlign = 'center';
+								lengthInput.style.fontFamily = menus.inputs.font;
+								lengthInput.style.fontSize = menus.inputs.size + 'px';
+								lengthInput.style.outline = 'none';
 								lengthInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							});
-							menus.create.editNums();
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+								lengthInput.style.borderWidth = '0px';
+								lengthInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+								lengthInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
+								lengthInput.style.borderRadius = menus.inputs.border.radius + 'px';
+								lengthInput.addEventListener('focus', function() {
+									lengthInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
+								});
+								lengthInput.addEventListener('focusout', function() {
+									lengthInput.style.backgroundColor = 'rgb(255, 255, 255)';
+								});
+								menus.create.editNums();
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
+								}
+							}
+							if (document.getElementById('Team Count Input') != null) { // If team count input is not present
+								let tcInput = document.getElementById('Team Count Input'); // Remove Team Count Option
+								let cell = tcInput.parentNode;
+								let row = cell.parentNode;
+								row.parentNode.removeChild(row);
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
 								}
 							}
 						}
-						if (document.getElementById('Team Count Input') != null) { // If team count input is not present
-							let tcInput = document.getElementById('Team Count Input'); // Remove Team Count Option
-							let cell = tcInput.parentNode;
-							let row = cell.parentNode;
-							row.parentNode.removeChild(row);
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+						// Player Minimum
+						let pmInput = document.getElementById('Player Minimum Input'); 
+						if (modeInput.value == 'ffa' || modeInput.value == 'skm') {
+							if (pmInput != null) { // If player minimum option is present
+								let cell = pmInput.parentNode; // Remove player minimum option
+								let row = cell.parentNode;
+								row.parentNode.removeChild(row);
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
 								}
 							}
-						}
-					}
-					// Player Minimum
-					let pmInput = document.getElementById('Player Minimum Input'); 
-					if (modeInput.value == 'ffa' || modeInput.value == 'skm') {
-						if (pmInput != null) { // If player minimum option is present
-							let cell = pmInput.parentNode; // Remove player minimum option
-							let row = cell.parentNode;
-							row.parentNode.removeChild(row);
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-								}
-							}
-						}
-					} else if (modeInput.value == 'srv' || modeInput.value == 'ctf' || modeInput.value == 'inf' || modeInput.value == 'kth') {
-						if (pmInput == null) { // If player minimum option is not present
-							let capInput = document.getElementById('Player Cap Input'); // Add player minimum option
-							let capCell = capInput.parentNode;
-							let capRow = capCell.parentNode;
-							let tableBody = capRow.parentNode;
-							let row = document.createElement('tr');
-							tableBody.insertBefore(row, capRow);
-							left = document.createElement('td');
-							row.appendChild(left);
-							left.style.margin = menus.cells.margin + 'px';
-							left.style.padding = menus.cells.padding + 'px';
-							left.style.width = menus.width / 2 + 'px';
-							left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							left.style.borderWidth = menus.cells.border.width + 'px';
-							left.style.borderStyle = menus.cells.border.style;
-							left.style.textAlign = 'right';
-							left.innerHTML = 'Player Minimum';
-							right = document.createElement('td');
-							row.appendChild(right);
-							right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-							right.style.borderWidth = menus.cells.border.width + 'px';
-							right.style.borderStyle = menus.cells.border.style;
-							pmInput = document.createElement('input');
-							right.appendChild(pmInput);
-							pmInput.id =  'Player Minimum Input';
-							pmInput.style.width = menus.inputs.width + 'px';
-							pmInput.style.height = menus.inputs.height + 'px';
-							pmInput.type = 'number';
-							pmInput.value = '';
-							pmInput.style.autocomplete = 'on';
-							pmInput.style.boxSizing = 'border-box';
-							pmInput.style.textAlign = 'center';
-							pmInput.style.fontFamily = menus.inputs.font;
-							pmInput.style.fontSize = menus.inputs.size + 'px';
-							pmInput.style.outline = 'none';
-							pmInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							pmInput.style.borderWidth = '0px';
-							pmInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-							pmInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-							pmInput.style.borderRadius = menus.inputs.border.radius + 'px';
-							pmInput.addEventListener('focus', function() {
-								pmInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-							});
-							pmInput.addEventListener('focusout', function() {
+						} else if (modeInput.value == 'srv' || modeInput.value == 'ctf' || modeInput.value == 'inf' || modeInput.value == 'kth') {
+							if (pmInput == null) { // If player minimum option is not present
+								let capInput = document.getElementById('Player Cap Input'); // Add player minimum option
+								let capCell = capInput.parentNode;
+								let capRow = capCell.parentNode;
+								let tableBody = capRow.parentNode;
+								let row = document.createElement('tr');
+								tableBody.insertBefore(row, capRow);
+								left = document.createElement('td');
+								row.appendChild(left);
+								left.style.margin = menus.cells.margin + 'px';
+								left.style.padding = menus.cells.padding + 'px';
+								left.style.width = menus.width / 2 + 'px';
+								left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								left.style.borderWidth = menus.cells.border.width + 'px';
+								left.style.borderStyle = menus.cells.border.style;
+								left.style.textAlign = 'right';
+								left.innerHTML = 'Player Minimum';
+								right = document.createElement('td');
+								row.appendChild(right);
+								right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
+								right.style.borderWidth = menus.cells.border.width + 'px';
+								right.style.borderStyle = menus.cells.border.style;
+								pmInput = document.createElement('input');
+								right.appendChild(pmInput);
+								pmInput.id =  'Player Minimum Input';
+								pmInput.style.width = menus.inputs.width + 'px';
+								pmInput.style.height = menus.inputs.height + 'px';
+								pmInput.type = 'number';
+								pmInput.value = '';
+								pmInput.style.autocomplete = 'on';
+								pmInput.style.boxSizing = 'border-box';
+								pmInput.style.textAlign = 'center';
+								pmInput.style.fontFamily = menus.inputs.font;
+								pmInput.style.fontSize = menus.inputs.size + 'px';
+								pmInput.style.outline = 'none';
 								pmInput.style.backgroundColor = 'rgb(255, 255, 255)';
-							});
-							menus.create.editNums();
-							let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-							for (let i = 0; i < rows.length; i++) {
-								let row = rows[i];
-								row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-								if (i % 2 == 0) {
-									row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+								pmInput.style.borderWidth = '0px';
+								pmInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+								pmInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
+								pmInput.style.borderRadius = menus.inputs.border.radius + 'px';
+								pmInput.addEventListener('focus', function() {
+									pmInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
+								});
+								pmInput.addEventListener('focusout', function() {
+									pmInput.style.backgroundColor = 'rgb(255, 255, 255)';
+								});
+								menus.create.editNums();
+								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
+								for (let i = 0; i < rows.length; i++) {
+									let row = rows[i];
+									row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
+									if (i % 2 == 0) {
+										row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+									}
 								}
 							}
 						}
-					}
-				});
+					});
+				}
 			}
 		}, 
 		submit: function() {
@@ -487,10 +526,10 @@ var menus = {
 				}
 				if (width < parseFloat(widthInput.min) || height < parseFloat(heightInput.min)) {
 					ok = false;
-					alert('Dimensions must be at least 300 x 300 px');
+					alert('Dimensions must be at least ' + widthInput.min + ' x ' + heightInput.min + ' px');
 				} else if (width > parseFloat(widthInput.max) || height > parseFloat(heightInput.max)) {
 					ok = false;
-					alert('Dimensions can be at most 8000000 x 8000000 px');
+					alert('Dimensions can be at most ' + widthInput.max + ' x ' + heightInput.max + ' px');
 				}
 				if (width != height) {
 					ok = false;
@@ -500,6 +539,7 @@ var menus = {
 			{ // Player Cap
 				let playerCapInput = document.getElementById('Player Cap Input');
 				var cap = parseFloat(playerCapInput.value);
+				let pmInput = document.getElementById('Player Minimum Input');
 				if (cap == '' || cap == undefined || cap == null || cap !== cap) {
 					cap = playerCapInput.placeholder;
 				} else if (cap < parseFloat(playerCapInput.min)) {
@@ -508,6 +548,9 @@ var menus = {
 				} else if (cap % 1 != 0) {
 					ok = false;
 					alert('Player cap must be a whole number');
+				} else if (cap < parseFloat(pmInput.value)) {
+					ok = false;
+					alert('Player cap cannot be less than player minimum');
 				}
 			}
 			{ // Player Minimum
@@ -547,6 +590,7 @@ var menus = {
 				let tcInput = document.getElementById('Team Count Input');
 				if (tcInput != null) {
 					var teamCount = parseFloat(tcInput.value);
+					let pmInput = document.getElementById('Player Minimum Input');
 					if (teamCount == '' || teamCount == undefined || teamCount == null || teamCount !== teamCount) {
 						teamCount = parseFloat(tcInput.placeholder);
 					} else if (teamCount < parseFloat(tcInput.min)) {
@@ -558,6 +602,9 @@ var menus = {
 					} else if (teamCount % 1 != 0) {
 						ok = false;
 						alert('Team count must be a whole number');
+					} else if (teamCount > parseFloat(pmInput.value)) {
+						ok = false;
+						alert('Player minimum cannot be less than the number of teams');
 					}
 				}
 			}
@@ -656,8 +703,8 @@ var menus = {
 				}
 			}
 			{ // Team
-				for (let j = 0; j < games.length; j++) { // Update game (Normally occurs in thesocket.js socket.on('Game')); Used for team option updates
-					if (games[j].host == game.host) { // Identify game
+				for (let j = 0; j < games.length; j++) { // Update game (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
+					if (games[j].info.host == game.info.host) { // Identify game
 						game = games[j];
 						break;
 					}
@@ -1214,7 +1261,7 @@ var menus = {
 			}
 			{ // Team
 				for (let j = 0; j < games.length; j++) { // Update game (Normally occurs in thesocket.js socket.on('Game')); Used for team option updates
-					if (games[j].host == game.host) { // Identify game
+					if (games[j].info.host == game.info.host) { // Identify game
 						game = games[j];
 						break;
 					}

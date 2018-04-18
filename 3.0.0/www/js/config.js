@@ -1,5 +1,5 @@
-const DEV = true;
-const HEROKU = false;
+const DEV = false;
+const HEROKU = true;
 
 // Repertoires
 const worldColors = {
@@ -65,6 +65,7 @@ const teamColorDef = {
 
 // Math
 const cos45 = 0.70710678118;
+const root2 = 1.41421356;
 
 // Defaults
 const _range = 50;

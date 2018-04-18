@@ -1,3 +1,4 @@
+var org;
 var Org = function(datA) {
 	this.player = datA.player;
 	this.color = datA.color;
@@ -16,11 +17,9 @@ var Org = function(datA) {
 	} else {
 		this.spawn = true; // Allowance to spawn
 	}
-	{ // this.name
-		for (let i = 0; i < game.board.list.length; i++) {
-			if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
-				this.name = game.board.list[i].name;
-			}
+	for (let i = 0; i < game.board.list.length; i++) {
+		if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
+			this.name = game.board.list[i].name;
 		}
 	}
 	this.cells = [];
@@ -100,6 +99,7 @@ var Org = function(datA) {
 		x: this.pos.x - center.x, 
 		y: this.pos.y - center.y
 	};
+	this.col = 10; // Collision radius (square) for crosshair
 	this.target = undefined; // ID of player which this org is currently targeting
 	this.clickbox = { // Targeting box for other orgs to click
 		width: undefined, 
@@ -151,3 +151,24 @@ var Cell = function(X, Y, orG) {
 		}
 	};
 };
+
+function renderOrgs() {
+	for (let i = 0; i < game.info.count; i++) {
+		for (let j = 0; j < game.orgs[i].count; j++) {
+			let cell = game.orgs[i].cells[j];
+			fill(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b);
+			if (game.orgs[i].skin == 'grid') {
+				stroke(40, 40, 40); // Draw constant grid (natural grid is variable)
+				strokeWeight(.25);
+				rect(cell.x, cell.y, cell.width, cell.height);
+			} else if (game.orgs[i].skin == 'circles') {
+				noStroke();
+				ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
+			} else if (game.orgs[i].skin == 'none') {
+				stroke(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b); // Stroke over natural grid
+				strokeWeight(1);
+				rect(cell.x, cell.y, cell.width, cell.height);
+			}
+		}
+	}
+}
