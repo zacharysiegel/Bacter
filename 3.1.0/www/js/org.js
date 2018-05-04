@@ -157,7 +157,7 @@ function renderOrgs() {
 			} else if (src.orgs[i].skin == 'ghost') {
 				noFill();
 				stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
-				strokeWeight(.5);
+				strokeWeight(1);
 				rect(cell.x, cell.y, cell.width, cell.height);
 			} else if (src.orgs[i].skin == 'none') {
 				stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b); // Stroke over natural grid
