@@ -168,3 +168,14 @@
 	BALANCED neutralize uptime (4000ms --> 3500ms)
 	BALANCED neutralize cooldown (6000ms --> 6500ms)
 	BALANCED spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)
+
+## 3.1.0
+	ADDED title screen and menu
+	ADDED tutorial
+	ADDED tutorial pause menu
+	ADDED translucency to brower and menus
+	ADDED ghost skin
+	CHANGED join/spectate column header to 'Bacter'
+	CHANGED movement multikey detection
+	FIXED spawn on world edge issue
+	FIXED crash on stationary mouse position use

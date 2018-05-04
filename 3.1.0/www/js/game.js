@@ -1,6 +1,7 @@
  var game; // Initialize in global scope
  var Game = function(datA) {
 	let data = datA;
+	this.src = 'game';
 	this.players = [];
 	{ // Info
 		this.info = {

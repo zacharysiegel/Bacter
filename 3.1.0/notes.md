@@ -13,7 +13,7 @@
 		All exposed (membranal) cells jettison from org away from the center of org
 	Secrete: (Ultimate)
 		All non-enclosed (by friendly cells) cells secrete acid into adjacent 8 (or 4) regions
-	X Stimulate:
+	X Stimulate (OLD):
 		Accelerated Birth
 		Effectively increases movement speed
 	X Poison:
@@ -56,7 +56,7 @@
 		No shoot
 	Tag:
 		Shoot single spore to pop on enemy
-	Stimulate: (NEW)
+	Stimulate (NEW):
 		Increases birth/death rate
 		Increases movement speed
 	? Cloak:
@@ -130,10 +130,15 @@
 
 ## To-Do:
 	3.1.0 - Title Screen + Tutorial
-		Title Screen
-			Canvas background with 3/4 bot orgs
-			Central menu - Host, Join, Tutorial, Settings/Controls
-		Tutorial
+		✔ Fix spawn on world edge bug
+		✔ Objectify menu input types
+		✔ Title Screen
+			✔ Canvas background with 3/4 bot orgs
+			✔ Central menu - Host, Join, Tutorial, Settings/Controls
+			✔ Transparent background on menus
+		✔ Fix mouse position detection before mouse movement
+		✔ Tutorial
+		✔ Add ghost skin
 	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
 			✔ Round system

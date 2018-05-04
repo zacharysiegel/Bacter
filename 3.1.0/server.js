@@ -316,7 +316,7 @@ function newConnection(socket) {
 					break;
 				}
 			}
-		}, 40));
+		}, _rfrequency));
 	});
 
 	// Player Joined
@@ -646,4 +646,5 @@ function newConnection(socket) {
 // Game Data
 const _delaytime = 10000;
 const _shrinkrate = .2;
+const _rfrequency = 40;
 var shrinkIntervals = [];

@@ -1,8 +1,7 @@
 @font-face {
-	font-family: UbuntuMono;
-	src: url('../assets/UbuntuMono-R.ttf');
+	font-family: _bacter;
+	src: url(../assets/bacter.ttf);
 }
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
 
 html {
 	height: 100%;
@@ -35,6 +34,9 @@ body {
 	width: 100%;
 	border-collapse: collapse;
 }
+tr:nth-child(odd) {
+	background-color: rgb(255, 255, 255);
+}
 tr:nth-child(even) {
 	background-color: rgb(230, 230, 230);
 }
@@ -44,8 +46,8 @@ th {
 	color: rgb(255, 255, 255);
 	text-align: center;
 	font-size: 16px;
-	border-width: 1px;
-	border-color: black;
+	border-width: 0px;
+	border-color: rgb(0, 0, 0);
 	border-style: solid;
 	border-collapse: collapse;
 	padding: 8px;
@@ -54,9 +56,7 @@ td {
 	height: 24px;
 	font-size: 14px;
 	text-align: left;
-	border-width: 1px;
-	border-color: black;
-	border-style: solid;
+	border-width: 0px;
 	border-collapse: collapse;
 	padding: 5px;
 }
@@ -71,9 +71,8 @@ footer {
 	bottom: 0px;
 	background-color: rgb(0, 0, 0);
 }
-#displayConnections {
-	margin: 0px;
-	margin-left: 10px;
+footer > p {
+	margin: 0px 10px 0px 10px;
 	color: rgb(255, 255, 255);
 	font-family: 'Verdana';
 	font-size: 15px;

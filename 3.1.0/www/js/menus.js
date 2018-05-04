@@ -1,6 +1,6 @@
 var menus = {
 	width: 900, 
-	top: 30, 
+	top: 0, 
 	padding: 0, 
 	color: { r: 240, g: 240, b: 240 }, 
 	header: {
@@ -59,8 +59,8 @@ var menus = {
 		style: 'solid'
 	}, 
 	button: {
-		width: 120, 
-		height: 35, 
+		width: 95, 
+		height: 33, 
 		backgroundColor: { r: 240, g: 240, b: 240 }, 
 		color: { r: 0, g: 0, b: 0 }, 
 		font: 'Gerogia, serif', 
@@ -286,10 +286,8 @@ var menus = {
 						}
 						if (modeInput.value == 'skm' || modeInput.value == 'ctf') { // If team game
 							if (document.getElementById('Leaderboard Length Input') != null) { // If leaderboard length input is present
-								let lengthInput = document.getElementById('Leaderboard Length Input'); // Remove Leaderboard Length Option
-								let cell = lengthInput.parentNode;
-								let row = cell.parentNode;
-								row.parentNode.removeChild(row);
+								let row = document.getElementById('Leaderboard Length Input').parentNode.parentNode;
+								row.parentNode.removeChild(row); // Remove Leaderboard Length option
 								let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
 								for (let i = 0; i < rows.length; i++) {
 									let row = rows[i];
@@ -645,7 +643,7 @@ var menus = {
 			text: 'Join'
 		}, 
 		options: [ 'Screen Name', 'Password', 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign' ], 
-		values:  [ 'text',        'text',     'list',  '2 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'     ], 
+		values:  [ 'text',        'text',     'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'     ], 
 		units: [  ], 
 		editTexts: function() {
 			{ // Password
@@ -749,7 +747,7 @@ var menus = {
 		}, 
 		editRadios: function() {
 			{ // Skins
-				for (let i = 0; i < 2; i++) { // i < number of skin options
+				for (let i = 0; i < skins.length; i++) { // i < number of skin options
 					let skinInput = document.getElementById('Skin Input ' + i);
 					let cell = skinInput.parentNode;
 					let name = document.createElement('p');
@@ -792,7 +790,7 @@ var menus = {
 							}
 						}
 					}
-				} else if (game.info.mode == 'ctf' || game.info.mode == 'inf') { // CTF and INF use 'tag'
+				} else if (game.info.mode == 'inf') { // INF uses 'tag'
 					for (let i = 0; i < 3; i++) {
 						let ordinal;
 						if (i == 0) {
@@ -932,7 +930,7 @@ var menus = {
 				if (closed == true) {
 					ok = false;
 					alert('The game has closed');
-					renderBrowser();
+					renderTitle();
 				}
 			}
 			{ // Password
@@ -1010,7 +1008,7 @@ var menus = {
 									ability.shoot.can[i] = true;
 									ability.shoot.value[i] = false;
 								}
-							} else if (game.info.mode == 'ctf' || game.info.mode == 'inf') {
+							} else if (game.info.mode == 'inf') {
 								ability.tag.activated = true;
 								ability.tag.can = true;
 								ability.extend.activated = false;
@@ -1081,6 +1079,7 @@ var menus = {
 								var color = teamColorDef[team]; // Color must be after Team
 							}
 							// Initialize
+							clearInterval(title.interval);
 							if (game.rounds.util == true) {
 								if (game.rounds.waiting == true) {
 									initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
@@ -1142,7 +1141,7 @@ var menus = {
 				if (closed == true) {
 					ok = false;
 					alert('The game has closed');
-					renderBrowser();
+					renderTitle();
 				}
 			}
 			{ // Screen Name
@@ -1157,20 +1156,6 @@ var menus = {
 						alert('Name matches that of another player');
 						break;
 					}
-				}
-			}
-			{ // Game Closed
-				let closed = true;
-				for (let i = 0; i < games.length; i++) {
-					if (games[i].info.host == game.info.host) {
-						closed = false;
-						break;
-					}
-				}
-				if (closed == true) {
-					ok = false;
-					alert('The game has closed');
-					renderBrowser();
 				}
 			}
 			{ // Password
@@ -1204,6 +1189,7 @@ var menus = {
 							orderBoard(game.board.list);
 							socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
 							// Initialize
+							clearInterval(title.interval);
 							initialize(game, { spectate: true, color: undefined, skin: undefined });
 						}
 					}
@@ -1220,7 +1206,7 @@ var menus = {
 			text: 'Respawn'
 		}, 
 		options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign' ], 
-		values:  [ 'list',  '2 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'     ], 
+		values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'     ], 
 		units: [  ], 
 		editLists: function() {
 			{ // Color
@@ -1363,7 +1349,7 @@ var menus = {
 							}
 						}
 					}
-				} else if (game.info.mode == 'ctf' || game.info.mode == 'inf') { // CTF and INF use 'tag'
+				} else if (game.info.mode == 'inf') { // INF uses 'tag'
 					for (let i = 0; i < 3; i++) {
 						let ordinal;
 						if (i == 0) {
@@ -1447,7 +1433,7 @@ var menus = {
 						ok = false;
 						alert('Only one ability of a type can be selected');
 					}
-				} else if (game.info.mode == 'ctf' || game.info.mode == 'inf') { // CTF and INF use tag
+				} else if (game.info.mode == 'inf') { // INF uses tag
 
 				}
 			}
@@ -1500,7 +1486,7 @@ var menus = {
 				if (closed == true) {
 					ok = false;
 					alert('The game has closed');
-					renderBrowser();
+					renderTitle();
 				}
 			}
 			if (ok == true) {
@@ -1544,7 +1530,7 @@ var menus = {
 					ability.spore.can = true;
 					ability.secrete.activated = true;
 					ability.secrete.can = false;
-				} else if (game.info.mode == 'ctf' || game.info.mode == 'inf') {
+				} else if (game.info.mode == 'inf') {
 					ability.extend.activated = false;
 					ability.extend.can = false;
 					ability.compress.activated = false;
@@ -1598,7 +1584,7 @@ var menus = {
 			text: 'Return'
 		}, 
 		options: [ 'Color', 'Skin',    'Name Labels', 'Messages',    'Leave Game' ], 
-		values:  [ 'list',  '2 radio', '1 radio'    , '1 radio', 'button'     ], 
+		values:  [ 'list',  '3 radio', '1 radio'    , '1 radio', 'button'     ], 
 		units: [  ], 
 		editLists: function() {
 			{ // Color
@@ -1679,7 +1665,7 @@ var menus = {
 				socket.emit('Leave Game', game);
 				clearInterval(org.interval); // Copied from die()
 				for (let i in ability) { // Reset Ability Cooldowns
-					if (ability[i].i != undefined) { // If is a usable ability
+					if (typeof ability[i] == 'object') { // If is a usable ability
 						clearTimeout(ability[i].timeout);
 						ability[i].value = false;
 						ability[i].can = true;
@@ -1706,7 +1692,7 @@ var menus = {
 					}
 				}
 				org = undefined;
-				renderBrowser();
+				renderTitle();
 			});
 		}, 
 		submit: function() {
@@ -1740,7 +1726,7 @@ var menus = {
 				if (closed == true) {
 					ok = false;
 					alert('The game has closed');
-					renderBrowser();
+					renderTitle();
 				}
 			}
 			if (ok == true) {
@@ -1854,7 +1840,7 @@ var menus = {
 						}
 					}
 					org = undefined;
-					renderBrowser();
+					renderTitle();
 				});
 			}
 		}, 
@@ -1871,7 +1857,7 @@ var menus = {
 				if (closed == true) {
 					ok = false;
 					alert('The game has closed');
-					renderBrowser();
+					renderTitle();
 				}
 			}
 			if (ok == true) {
@@ -1911,6 +1897,40 @@ var menus = {
 				state = 'spectate';
 			}
 		}
+	}, 
+	pauseTutorial: {
+		header: {
+			text: 'Pause Options'
+		}, 
+		button: {
+			text: 'Return'
+		}, 
+		options: [ 'Leave Game' ], 
+		values:  [ 'button'     ], 
+		units: [  ], 
+		editButtons: function() {
+			{ // Leave Game
+				let leaveInput = document.getElementById('Leave Game Input');
+				leaveInput.addEventListener('click', function() {
+					tutorial.clear();
+					ability = new Ability({ player: socket.id }); // Reconstruct in case tutorial caused any problem in ability object
+					org = undefined;
+					renderTitle();
+				});
+			}
+		}, 
+		submit: function() {
+			var ok = true;
+			if (ok == true) {
+				// Initialize
+				cnvClear();
+				rectMode(CENTER);
+				ellipseMode(RADIUS);
+				angleMode(DEGREES);
+				textAlign(LEFT);
+				state = 'tutorial';
+			}
+		}
 	}
 };
 
@@ -1921,16 +1941,24 @@ function renderMenu(typE, datA) {
 	}
 	// Clear Body
 	var page = document.body.parentNode;
-	page.removeChild(document.body);
 	page.addEventListener('mouseup', function() {
 		button.down = false;
 	});
-	var body = document.createElement('body');
-	page.appendChild(body);
+	cnvClear();
+	var body = document.body;
 	{
 		state = type + 'Menu';
+		var shade = new Shade();
+		body.appendChild(shade.elt);
+		var container = document.createElement('div');
+		container.style.position = 'fixed';
+		container.style.top = '0px';
+		container.style.left = '0px';
+		container.style.width = '100%';
+		container.style.height = '100%';
+		body.appendChild(container);
 		var header = document.createElement('div');
-		body.appendChild(header);
+		container.appendChild(header);
 		header.id = type + 'Header';
 		header.style.height = menus.header.height + 'px';
 		header.style.width = '100%';
@@ -1949,7 +1977,7 @@ function renderMenu(typE, datA) {
 		headerText.style.fontWeight = menus.header.weight;
 		headerText.innerHTML = menus[type].header.text;
 		var content = document.createElement('div');
-		body.appendChild(content);
+		container.appendChild(content);
 		content.style.paddingBottom = menus.footer.height + 'px';
 		content.style.overflow = 'auto';
 		var table = document.createElement('table');
@@ -1960,6 +1988,7 @@ function renderMenu(typE, datA) {
 		table.style.marginTop = menus.top + 'px';
 		table.style.padding = menus.padding + 'px';
 		table.style.backgroundColor = 'rgb(' + menus.color.r + ', ' + menus.color.g + ', ' + menus.color.b + ')';
+		table.style.opacity = '.9';
 		table.style.borderCollapse = 'collapse';
 		table.style.borderColor = 'rgb(' + menus.border.color.r + ', ' + menus.border.color.g + ', ' + menus.border.color.b + ')';
 		table.style.borderWidth = menus.border.width + 'px';
@@ -1972,6 +2001,7 @@ function renderMenu(typE, datA) {
 		for (let i = 0; i < menus[type].options.length; i++) {
 			let row = tableBody.insertRow(-1);
 			row.row = i;
+			row.id = i;
 			row.style.height = menus.rows.height + 'px';
 			row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
 			if (i % 2 == 0) {
@@ -1995,160 +2025,24 @@ function renderMenu(typE, datA) {
 					}
 					cell.innerHTML = menus[type].options[i];
 				} else if (j == 1) {
+					cell.id = menus[type].options[i] + ' Cell';
 					cell.style.textAlign = 'left';
 					if (menus[type].values[i] == 'text') {
-						let textInput = document.createElement('input');
-						cell.appendChild(textInput);
-						textInput.id = menus[type].options[i] + ' Input';
-						textInput.style.width = menus.inputs.width + 'px';
-						textInput.style.height = menus.inputs.height + 'px';
-						textInput.type = 'text';
-						textInput.value = '';
-						textInput.style.autocomplete = 'on';
-						textInput.style.boxSizing = 'border-box';
-						textInput.style.textAlign = 'center';
-						textInput.style.fontFamily = menus.inputs.font;
-						textInput.style.fontSize = menus.inputs.size + 'px';
-						textInput.style.outline = 'none';
-						textInput.style.backgroundColor = 'rgb(255, 255, 255)';
-						textInput.style.borderWidth = '0px';
-						textInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-						textInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-						textInput.style.borderRadius = menus.inputs.border.radius + 'px';
-						textInput.addEventListener('focus', function() {
-							textInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-						});
-						textInput.addEventListener('focusout', function() {
-							textInput.style.backgroundColor = 'rgb(255, 255, 255)';
-						});
+						let textInput = (new Text(type, i)).elt;
 					} else if (menus[type].values[i] == 'number') {
-						let numInput = document.createElement('input');
-						cell.appendChild(numInput);
-						numInput.id = menus[type].options[i] + ' Input';
-						numInput.style.width = menus.inputs.width + 'px';
-						numInput.style.height = menus.inputs.height + 'px';
-						numInput.type = 'number';
-						numInput.value = '';
-						numInput.style.autocomplete = 'on';
-						numInput.style.boxSizing = 'border-box';
-						numInput.style.textAlign = 'center';
-						numInput.style.fontFamily = menus.inputs.font;
-						numInput.style.fontSize = menus.inputs.size + 'px';
-						numInput.style.outline = 'none';
-						numInput.style.backgroundColor = 'rgb(255, 255, 255)';
-						numInput.style.borderWidth = '0px';
-						numInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-						numInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-						numInput.style.borderRadius = menus.inputs.border.radius + 'px';
-						numInput.addEventListener('focus', function() {
-							numInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-						});
-						numInput.addEventListener('focusout', function() {
-							numInput.style.backgroundColor = 'rgb(255, 255, 255)';
-						});
+						let numInput = (new Num(type, i)).elt;
+						// cell.appendChild(numInput);
 					} else if (menus[type].values[i] == 'list') {
-						let listInput = document.createElement('select');
-						cell.appendChild(listInput);
-						listInput.id = menus[type].options[i] + ' Input';
-						listInput.style.width = menus.inputs.width + 'px';
-						listInput.style.height = menus.inputs.height + 'px';
-						listInput.style.outline = 'none';
-						listInput.style.borderWidth = '0px';
-						listInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-						listInput.style.borderStyle = menus.inputs.border.style;
-						listInput.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-						listInput.style.borderRadius = menus.inputs.border.radius + 'px';
-						listInput.style.fontFamily = menus.inputs.font;
-						listInput.style.fontSize = menus.inputs.size + 'px';
+						let listInput = (new List(type, i)).elt;
+						// cell.appendChild(listInput);
 					} else if (menus[type].values[i].indexOf('radio') != -1) { // If 'radio' is anywhere within string
-						// let radioDiv = document.createElement('div');
-						// cell.appendChild(radioDiv);
-						// radioDiv.style.display = 'block';
-						// radioDiv.style.position = 'relative';
-						// radioDiv.style.right = '0px';
 						for (let k = 0; k < parseInt(menus[type].values[i]); k++) { // Creates integer of radio inputs as specified in value string
-							let radioInput = document.createElement('div');
-							cell.appendChild(radioInput);
-							radioInput.id = menus[type].options[i] + ' Input ' + k;
-							radioInput.type = 'radio';
-							radioInput.order = k;
-							radioInput.value = false;
-							radioInput.style.display = 'inline-block';
-							radioInput.style.boxSizing = 'border-box';
-							radioInput.style.position = 'relative';
-							radioInput.style.top = '4px';
-							radioInput.style.margin = '0px 5px 0px 5px';
-							radioInput.style.width = menus.radios.width + 'px';
-							radioInput.style.height = menus.radios.height + 'px';
-							radioInput.style.outline = 'none';
-							radioInput.style.borderWidth = '0px';
-							radioInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-							radioInput.style.borderStyle = menus.inputs.border.style;
-							radioInput.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-							radioInput.style.borderRadius = menus.inputs.border.radius + 'px';
-							radioInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-							radioInput.addEventListener('click', function() {
-								radioInput.value = !radioInput.value;
-								if (radioInput.value == false) {
-									radioInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-								} else if (radioInput.value == true) {
-									radioInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-								}
-								for (let l = 0; l < parseInt(menus[type].values[i]); l++) {
-									if (l == radioInput.order) {
-										continue;
-									}
-									let other = document.getElementById(menus[type].options[i] + ' Input ' + l);
-									other.value = false;
-									other.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-								}
-							});
-							let lineBreak = document.createElement('div');
-							cell.appendChild(lineBreak);
-							lineBreak.style.display = 'block';
-							if (k + 1 < parseInt(menus[type].values[i])) { // All but last
-								lineBreak.style.height = '2px';
-							} else { // Last
-								lineBreak.style.height = '6px';
-							}
+							let radioInput = (new Radio(type, i, k)).elt;
+							// cell.appendChild(radioInput);
 						}
 					} else if (menus[type].values[i] == 'button') {
-						let buttonInput = document.createElement('button');
-						cell.appendChild(buttonInput);
-						buttonInput.id = menus[type].options[i] + ' Input';
-						buttonInput.type = 'button';
-						buttonInput.style.cursor = 'pointer';
-						buttonInput.style.position = 'relative';
-						buttonInput.style.top = '2px';
-						buttonInput.style.width = 45 + 'px';
-						buttonInput.style.height = (menus.radios.height + 4) + 'px';
-						buttonInput.style.outline = 'none';
-						buttonInput.style.padding = '0px';
-						buttonInput.style.boxSizing = 'border-box';
-						buttonInput.style.borderWidth = '0px';
-						buttonInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-						buttonInput.style.borderStyle = menus.inputs.border.style;
-						buttonInput.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-						buttonInput.style.borderRadius = menus.inputs.border.radius + 'px';
-						buttonInput.style.backgroundColor = 'rgb(' + menus.button.backgroundColor.r + ', ' + menus.button.backgroundColor.g + ', ' + menus.button.backgroundColor.b + ')';
-						buttonInput.addEventListener('mouseover', function() {
-							if (buttonInput.down != true) {
-								buttonInput.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 20) + ', ' + (menus.button.backgroundColor.g - 20) + ', ' + (menus.button.backgroundColor.b - 20) + ')';
-							} else {
-								buttonInput.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 40) + ', ' + (menus.button.backgroundColor.g - 40) + ', ' + (menus.button.backgroundColor.b - 40) + ')';
-							}
-						});
-						buttonInput.addEventListener('mouseout', function() {
-							buttonInput.style.backgroundColor = 'rgb(' + menus.button.backgroundColor.r + ', ' + menus.button.backgroundColor.g + ', ' + menus.button.backgroundColor.b + ')';
-						});
-						buttonInput.addEventListener('mousedown', function() {
-							buttonInput.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 40) + ', ' + (menus.button.backgroundColor.g - 40) + ', ' + (menus.button.backgroundColor.b - 40) + ')';
-							buttonInput.down = true;
-						});
-						buttonInput.addEventListener('mouseup', function() {
-							buttonInput.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 20) + ', ' + (menus.button.backgroundColor.g - 20) + ', ' + (menus.button.backgroundColor.b - 20) + ')';
-							buttonInput.down = false;
-						});
+						let buttonInput = (new Button(type, i)).elt;
+						// cell.appendChild(buttonInput);
 					} else {
 						cell.style.fontFamily = menus.text.font;
 						cell.style.fontSize = menus.text.size + 'px';
@@ -2156,7 +2050,7 @@ function renderMenu(typE, datA) {
 					}
 					if (menus[type].units[i] != undefined) {
 						let unitText = document.createElement('span');
-						cell.appendChild(unitText);
+						// cell.appendChild(unitText);
 						unitText.innerHTML = ' ' + menus[type].units[i];
 					}
 				}
@@ -2192,7 +2086,10 @@ function renderMenu(typE, datA) {
 		button.style.display = 'block';
 		button.style.boxSizing = 'border-box';
 		button.style.padding = '0px';
-		button.style.border = 'none';
+		button.style.borderWidth = '0px';
+		button.style.borderBottomWidth = '2px';
+		button.style.borderRaidus = '4px';
+		button.style.borderColor = 'rgb(0, 0, 0)';
 		button.style.outline = 'none';
 		button.addEventListener('mouseover', function() {
 			if (button.down != true) {
@@ -2227,7 +2124,7 @@ function renderMenu(typE, datA) {
 		buttonText.innerHTML = menus[type].button.text;
 	}
 	var footerDiv = document.createElement('div');
-	body.appendChild(footerDiv);
+	container.appendChild(footerDiv);
 	footerDiv.id = 'footerDiv';
 	footerDiv.style.position = 'absolute';
 	var footer = document.createElement('footer');
@@ -2240,19 +2137,31 @@ function renderMenu(typE, datA) {
 	footer.style.backgroundColor = 'rgb(' + menus.footer.backgroundColor.r + ', ' + menus.footer.backgroundColor.g + ', ' + menus.footer.backgroundColor.b + ')';
 	footer.style.cursor = 'pointer';
 	footer.addEventListener('click', function() { // Back link on footer so the entire height of the footer is link
-		if (type == 'create' || type == 'spectate') {
-			renderBrowser();
-		} else if (type == 'join') {
-			if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
-				socket.emit('Game Ended', game);
+		switch (type) {
+			case 'create': {
+				title.return();
+				break;
+			} case 'join': {
+				if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
+					socket.emit('Game Ended', game);
+					title.return();
+				} else {
+					renderBrowser();
+				}
+				break;
+			} case 'respawn': {
+				menus.pauseSpectate.submit();
+				break;
+			} case 'pauseGame': {
+				menus.pauseGame.submit();
+				break;
+			} case 'pauseSpectate': {
+				menus.pauseSpectate.submit();
+				break;
+			} case 'pauseTutorial': {
+				menus.pauseTutorial.submit();
+				break;
 			}
-			renderBrowser();
-		} else if (type == 'respawn') {
-			menus.pauseSpectate.submit();
-		} else if (type == 'pauseGame') {
-			menus.pauseGame.submit();
-		} else if (type == 'pauseSpectate') {
-			menus.pauseSpectate.submit();
 		}
 	});
 	var back = document.createElement('p');
@@ -2266,4 +2175,182 @@ function renderMenu(typE, datA) {
 	back.style.fontFamily = menus.footer.font;
 	back.style.fontSize = menus.footer.size + 'px';
 	back.innerHTML = '&larr; Back';
+};
+
+var Text = function(type, i) {
+	let cell = document.getElementById('Menu Body').children[i].children[1];
+	this.elt = document.createElement('input');
+	cell.appendChild(this.elt);
+	this.elt.id = menus[type].options[i] + ' Input';
+	this.elt.style.width = menus.inputs.width + 'px';
+	this.elt.style.height = menus.inputs.height + 'px';
+	this.elt.type = 'text';
+	this.elt.value = '';
+	this.elt.style.autocomplete = 'on';
+	this.elt.style.boxSizing = 'border-box';
+	this.elt.style.textAlign = 'center';
+	this.elt.style.fontFamily = menus.inputs.font;
+	this.elt.style.fontSize = menus.inputs.size + 'px';
+	this.elt.style.outline = 'none';
+	this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
+	this.elt.style.borderWidth = '0px';
+	this.elt.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+	this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
+	this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
+	this.elt.addEventListener('focus', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
+	});
+	this.elt.addEventListener('focusout', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(255, 255, 255)';
+	});
+};
+
+var Num = function(type, i) {
+	let cell = document.getElementById('Menu Body').children[i].children[1];
+	this.elt = document.createElement('input');
+	cell.appendChild(this.elt);
+	this.elt.id = menus[type].options[i] + ' Input';
+	this.elt.style.width = menus.inputs.width + 'px';
+	this.elt.style.height = menus.inputs.height + 'px';
+	this.elt.type = 'number';
+	this.elt.value = '';
+	this.elt.style.autocomplete = 'on';
+	this.elt.style.boxSizing = 'border-box';
+	this.elt.style.textAlign = 'center';
+	this.elt.style.fontFamily = menus.inputs.font;
+	this.elt.style.fontSize = menus.inputs.size + 'px';
+	this.elt.style.outline = 'none';
+	this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
+	this.elt.style.borderWidth = '0px';
+	this.elt.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+	this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
+	this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
+	this.elt.addEventListener('focus', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
+	});
+	this.elt.addEventListener('focusout', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(255, 255, 255)';
+	});
+};
+
+var List = function(type, i) {
+	let cell = document.getElementById('Menu Body').children[i].children[1];
+	this.elt = document.createElement('select');
+	cell.appendChild(this.elt);
+	this.elt.id = menus[type].options[i] + ' Input';
+	this.elt.style.width = menus.inputs.width + 'px';
+	this.elt.style.height = menus.inputs.height + 'px';
+	this.elt.style.outline = 'none';
+	this.elt.style.borderWidth = '0px';
+	this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
+	this.elt.style.borderStyle = menus.inputs.border.style;
+	this.elt.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+	this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
+	this.elt.style.fontFamily = menus.inputs.font;
+	this.elt.style.fontSize = menus.inputs.size + 'px';
+};
+
+var Radio = function(type, i, k) {
+	this.width = 16;
+	this.height = 18;
+	this.backgroundColor = { r: 255, g: 255, b: 255 };
+	this.selectColor = { r: 190, g: 190, b: 190 };
+	let cell = document.getElementById('Menu Body').children[i].children[1];
+	this.elt = document.createElement('div');
+	cell.appendChild(this.elt);
+	this.elt.id = menus[type].options[i] + ' Input ' + k;
+	this.elt.type = 'radio';
+	this.elt.order = k;
+	this.elt.value = false;
+	this.elt.style.display = 'inline-block';
+	this.elt.style.boxSizing = 'border-box';
+	this.elt.style.position = 'relative';
+	this.elt.style.top = '4px';
+	this.elt.style.margin = '0px 5px 0px 5px';
+	this.elt.style.width = menus.radios.width + 'px';
+	this.elt.style.height = menus.radios.height + 'px';
+	this.elt.style.outline = 'none';
+	this.elt.style.borderWidth = '0px';
+	this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
+	this.elt.style.borderStyle = menus.inputs.border.style;
+	this.elt.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
+	this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
+	this.elt.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
+	this.elt.addEventListener('click', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input ' + k);
+		elt.value = !elt.value;
+		if (elt.value == false) {
+			elt.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
+		} else if (elt.value == true) {
+			elt.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
+		}
+		for (let l = 0; l < parseInt(menus[type].values[i]); l++) {
+			if (l == elt.order) {
+				continue;
+			}
+			let other = document.getElementById(menus[type].options[i] + ' Input ' + l);
+			other.value = false;
+			other.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
+		}
+	});
+	let lineBreak = document.createElement('div');
+	cell.appendChild(lineBreak);
+	lineBreak.style.display = 'block';
+	if (k + 1 < parseInt(menus[type].values[i])) { // All but last
+		lineBreak.style.height = '2px';
+	} else { // Last
+		lineBreak.style.height = '6px';
+	}
+};
+
+var Button = function(type, i) {
+	this.backgroundColor = { r: 240, g: 240, b: 240 };
+	this.border = menus.inputs.border;
+	this.border = menus.inputs.border;
+	let cell = document.getElementById('Menu Body').children[i].children[1];
+	this.elt = document.createElement('button');
+	cell.appendChild(this.elt);
+	this.elt.id = menus[type].options[i] + ' Input';
+	this.elt.type = 'button';
+	this.elt.style.cursor = 'pointer';
+	this.elt.style.position = 'relative';
+	this.elt.style.top = '2px';
+	this.elt.style.width = 45 + 'px';
+	this.elt.style.height = (menus.radios.height + 4) + 'px';
+	this.elt.style.outline = 'none';
+	this.elt.style.padding = '0px';
+	this.elt.style.boxSizing = 'border-box';
+	this.elt.style.borderWidth = '0px';
+	this.elt.style.borderBottomWidth = this.border.width + 'px';
+	this.elt.style.borderStyle = this.border.style;
+	this.elt.style.borderColor = 'rgb(' + this.border.color.r + ', ' + this.border.color.g + ', ' + this.border.color.b + ')';
+	this.elt.style.borderRadius = this.border.radius + 'px';
+	this.elt.backgroundColor = { r: 240, g: 240, b: 240 };
+	this.elt.style.backgroundColor = 'rgb(' + this.backgroundColor.r + ', ' + this.backgroundColor.g + ', ' + this.backgroundColor.b + ')';
+	this.elt.addEventListener('mouseover', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		if (elt.down != true) {
+			elt.style.backgroundColor = 'rgb(' + (elt.backgroundColor.r - 20) + ', ' + (elt.backgroundColor.g - 20) + ', ' + (elt.backgroundColor.b - 20) + ')';
+		} else {
+			elt.style.backgroundColor = 'rgb(' + (elt.backgroundColor.r - 40) + ', ' + (elt.backgroundColor.g - 40) + ', ' + (elt.backgroundColor.b - 40) + ')';
+		}
+	});
+	this.elt.addEventListener('mouseout', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(' + elt.backgroundColor.r + ', ' + elt.backgroundColor.g + ', ' + elt.backgroundColor.b + ')';
+	});
+	this.elt.addEventListener('mousedown', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(' + (elt.backgroundColor.r - 40) + ', ' + (elt.backgroundColor.g - 40) + ', ' + (elt.backgroundColor.b - 40) + ')';
+		elt.down = true;
+	});
+	this.elt.addEventListener('mouseup', function() {
+		elt = document.getElementById(menus[type].options[i] + ' Input');
+		elt.style.backgroundColor = 'rgb(' + (elt.backgroundColor.r - 20) + ', ' + (elt.backgroundColor.g - 20) + ', ' + (elt.backgroundColor.b - 20) + ')';
+		elt.down = false;
+	});
 };

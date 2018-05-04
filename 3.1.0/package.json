@@ -5,15 +5,20 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.16.2",
+    "p5": "^0.6.1",
     "socket.io": "^2.0.4"
   },
   "engines": {
     "node": "9.4.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "browserify": "^16.2.0",
+    "watchify": "^3.11.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "bundle": "browserify ./www/lib/z.js ./www/js/abilities.js ./www/js/board.js ./www/js/browser.js ./www/js/config.js ./www/js/flag.js ./www/js/game.js ./www/js/index.js ./www/js/init.js ./www/js/items.js ./www/js/menus.js ./www/js/messages.js ./www/js/org.js ./www/js/run.js ./www/js/thesocket.js ./www/js/title.js ./www/js/tutorial.js ./www/js/world.js -o ./www/bundle.js",
+    "watch": "watchify ./www/lib/z.js ./www/js/abilities.js ./www/js/board.js ./www/js/browser.js ./www/js/config.js ./www/js/flag.js ./www/js/game.js ./www/js/index.js ./www/js/init.js ./www/js/items.js ./www/js/menus.js ./www/js/messages.js ./www/js/org.js ./www/js/run.js ./www/js/thesocket.js ./www/js/title.js ./www/js/tutorial.js ./www/js/world.js -o ./www/bundle.js"
   },
   "repository": {
     "type": "git",

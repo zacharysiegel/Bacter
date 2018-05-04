@@ -1,10 +1,18 @@
-var World = function(datA) {
+var World = function(datA) { // datA: { width: , height: , type: , color: , x: , y: }
 	let data = datA;
 	this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
 	this.width = data.width;
 	this.height = data.height;
-	this.x = 0;
-	this.y = 0;
+	if (data.x != undefined) { // Coordinates are for top left corner
+		this.x = data.x;
+	} else {
+		this.x = 0;
+	}
+	if (data.y != undefined) {
+		this.y = data.y;
+	} else {
+		this.y = 0;
+	}
 	this.type = data.type
 	this.color = data.color;
 	for (let i in worldColors) {
@@ -57,30 +65,38 @@ function renderWorld() {
 		translate(org.off.x, org.off.y); // Shadows in renderWorld() so it will render behind world
 		rectMode(CORNER);
 		game.board.y = game.board.marginTop; // Leaderboard Head
-		if (game.info.mode == 'ffa') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-			game.board.count = min(game.board.show, game.board.list.length);
-		} else if (game.info.mode == 'skm') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-			game.board.count = game.teams.length;
-		} else if (game.info.mode == 'srv') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-			game.board.count = min(game.board.show, game.board.list.length);
-		} else if (game.info.mode == 'ctf') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-			game.board.count = game.teams.length;
-		} else if (game.info.mode == 'inf') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
-			game.board.count = min(game.board.show, game.board.list.length);
-		} else if (game.info.mode == 'kth') {
-			game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-			rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-			game.board.count = min(game.board.show, game.board.list.length);
+		switch (game.info.mode) {
+			case 'ffa': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+				game.board.count = min(game.board.show, game.board.list.length);
+				break;
+			} case 'skm': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+				game.board.count = game.teams.length;
+				break;
+			} case 'srv': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+				game.board.count = min(game.board.show, game.board.list.length);
+				break;
+			} case 'ctf': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+				game.board.count = game.teams.length;
+				break;
+			} case 'inf': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+				game.board.count = min(game.board.show, game.board.list.length);
+				break;
+			} case 'kth': {
+				game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+				rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+				game.board.count = min(game.board.show, game.board.list.length);
+				break;
+			}
 		}
 		var a = 0;
 		for (let i = 0; i < game.board.count; i++) { // Leaderboard Body
@@ -103,18 +119,26 @@ function renderWorld() {
 					}
 				}
 			}
-			if (game.info.mode == 'ffa') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-			} else if (game.info.mode == 'skm') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-			} else if (game.info.mode == 'srv') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-			} else if (game.info.mode == 'ctf') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-			} else if (game.info.mode == 'inf') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
-			} else if (game.info.mode == 'kth') {
-				rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+			switch (game.info.mode) {
+				case 'ffa': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+					break;
+				} case 'skm': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+					break;
+				} case 'srv': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+					break;
+				} case 'ctf': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+					break;
+				} case 'inf': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+					break;
+				} case 'kth': {
+					rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+					break;
+				}
 			}
 			a++;
 		}
@@ -126,42 +150,11 @@ function renderWorld() {
 		if (Messages == true) {
 			textFont('Helvetica');
 			textStyle(NORMAL);
-			let message;
-			if (org.alive == true) {
-				if (game.rounds.util == true) {
-					if (game.rounds.waiting == true && game.rounds.delayed == false) {
-						if (game.rounds.min - game.info.count == 1) {
-							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
-						} else {
-							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
-						}
-					} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Delay at round start
-						message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-					} else if (game.rounds.waiting == false && game.rounds.delayed == true) { // Delay at round end
-						message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-					}
-				}
-			} else if (org.alive == false) {
-				if (game.rounds.util == true) {
-					if (game.rounds.waiting == true && game.rounds.delayed == false) { // Waiting for more players to join, not counting down yet
-						if (game.rounds.min - game.info.count == 1) {
-							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
-						} else {
-							message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
-						}
-					} else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Enough players have joined, counting down
-						message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-					} else if (game.rounds.waiting == false && game.rounds.delayed == false) { // Round in progress
-						message = 'Wait for the round to complete';
-					} else if (game.rounds.waiting == false && game.rounds.delayed == true) {
-						message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-					}
-				} else {
-					message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
-				}
-			}
+			let message = getMessage();
 			if (message != undefined) {
-				rect(5 + 25 + textWidth(message) / 2, 4 + 25, 25 + textWidth(message), 26);
+				let breaks = freq(message, '\n');
+				let width = messageWidth(message);
+				rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
 			}
 		}
 		translate(-org.off.x, -org.off.y);

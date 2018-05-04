@@ -24,10 +24,6 @@ function initialize(gamE, datA) {
 		x: width / 2, 
 		y: height / 2
 	};
-	rectMode(CENTER);
-	ellipseMode(RADIUS);
-	angleMode(DEGREES);
-	textAlign(LEFT);
 
 	game = gamE;
 	if (datA.spectate != true) { // Field can be left undefined

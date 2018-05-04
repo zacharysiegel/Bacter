@@ -1,14 +1,16 @@
-var ability = {
-	player: undefined, 
-	choose: {
-		width: undefined, 
-		height: undefined, 
-		color: {
-			deselected: { r: 139, g: 237, b: 173 }, 
-			selected: { r: 69, g: 204, b: 113 }
-		}
-	}, 
-	extend: {
+var ability;
+var Ability = function(datA) { // datA: { player: }
+	let data = datA;
+	this.player = data.player;
+	// this.choose = {
+	// 	width: undefined, 
+	// 	height: undefined, 
+	// 	color: {
+	// 		deselected: { r: 139, g: 237, b: 173 }, 
+	// 		selected: { r: 69, g: 204, b: 113 }
+	// 	}
+	// };
+	this.extend = {
 		value: false, 
 		activated: false, 
 		can: false, 
@@ -19,9 +21,10 @@ var ability = {
 		cooling: false, 
 		time: 4500, 
 		cooldown: 4000
-	}, 
-	compress: {
+	};
+	this.compress = {
 		value: false, 
+		applied: false, 
 		activated: false, 
 		can: false, 
 		i: 0, 
@@ -32,7 +35,7 @@ var ability = {
 		cooling: false, 
 		time: 3500, 
 		cooldown: 4000
-	}, 
+	};
 	// speed: { // Not updated
 	// 	value: false, 
 	// 	activated: false, 
@@ -51,7 +54,7 @@ var ability = {
 	// 	timeout: undefined, 
 	// 	time: 5000
 	// }, 
-	immortality: {
+	this.immortality = {
 		value: false, 
 		activated: false, 
 		can: false, 
@@ -63,9 +66,10 @@ var ability = {
 		cooling: false, 
 		time: 3500, 
 		cooldown: 6000
-	}, 
-	freeze: {
+	};
+	this.freeze = {
 		value: false, 
+		applied: false, 
 		activated: false, 
 		can: false, 
 		i: 1, 
@@ -76,7 +80,7 @@ var ability = {
 		cooling: false, 
 		time: 4000, 
 		cooldown: 6000
-	}, 
+	};
 	// stimulate: {
 	// 	value: false, 
 	// 	activated: false, 
@@ -105,7 +109,7 @@ var ability = {
 	// 	time: 3000, 
 	// 	cooldown: 5000
 	// }, 
-	neutralize: {
+	this.neutralize = {
 		value: false, 
 		activated: false, 
 		can: false, 
@@ -122,8 +126,8 @@ var ability = {
 		cooling: false, 
 		time: 3500, 
 		cooldown: 6500
-	}, 
-	toxin: {
+	};
+	this.toxin = {
 		value: false, 
 		activated: false, 
 		can: false, 
@@ -140,8 +144,8 @@ var ability = {
 		cooling: false, 
 		time: 4000, 
 		cooldown: 6000
-	}, 
-	spore: {
+	};
+	this.spore = {
 		value: false, 
 		activated: false, 
 		i: 3, 
@@ -157,8 +161,8 @@ var ability = {
 		cooling: false, 
 		time: 1700, 
 		cooldown: 7500 // 7500 default
-	}, 
-	secrete: {
+	};
+	this.secrete = {
 		value: false, 
 		activated: false, 
 		i: 3, 
@@ -170,8 +174,8 @@ var ability = {
 		start: undefined, 
 		end: undefined, 
 		time: 800
-	}, 
-	shoot: {
+	};
+	this.shoot = {
 		value: [ false, false, false ], 
 		can: [ true, true, true ], 
 		secrete: [ {}, {}, {}
@@ -195,8 +199,8 @@ var ability = {
 		time: 1500, 
 		cooling: [ false, false, false ], 
 		cooldown: [ 2000, 2000, 2000 ]
-	}, 
-	tag: {
+	};
+	this.tag = {
 		value: false, 
 		activated: false, 
 		i: 0, 
@@ -207,7 +211,7 @@ var ability = {
 		end: undefined, 
 		time: 0, 
 		cooldown: 5000
-	}
+	};
 };
 
 // function chooseAbilities() { // Old ability selection screen
@@ -260,7 +264,7 @@ var ability = {
 // 	text('Spawn', center.x - textWidth('Spawn') / 2, height * 8 / 9 + textSize() / 3); // Spawn Text
 // }
 
-function shoot(I, J) {
+function shoot(I, J) { // Both parameters are required
 	if (ability.shoot.value[I] == false && ability.shoot.can[I] == true) { // If not currently shooting and if can shoot specified ability (Should have been checked before this point)
 		ability.shoot.value[I] = true;
 		ability.shoot.can[I] = false;
@@ -270,9 +274,22 @@ function shoot(I, J) {
 
 		// Get Spore
 		let regions = getRegionInfo(org); // Get region data
-		let theta = atan((mouseY - center.y) / (mouseX - center.x)); // Get angle (theta) from mouse pointer
-		if (mouseX < center.x) { // If mouse is in second or third quadrants
-			theta += 180; // Correct theta for negative x
+		let theta;
+		if (mouseX == Infinity || mouseY == Infinity) {
+			let mpos = getMpos();
+			mouseX = mpos.x;
+			mouseY = mpos.y;
+		}
+		if (state != 'tutorial') {
+			theta = atan((mouseY - center.y) / (mouseX - center.x)); // Get angle (theta) from mouse pointer
+			if (mouseX < center.x) { // If mouse is in second or third quadrants
+				theta += 180; // Correct theta for negative x
+			}
+		} else {
+			theta = atan((mouseY - org.pos.y) / (mouseX - org.pos.x));
+			if (mouseX < org.pos.x) { // If mouse is in second or third quadrants
+				theta += 180; // Correct theta for negative x
+			}
 		}
 		let deltas = [];
 		for (let i = 0; i < regions.exposed.length; i++) { // Loop through exposed cells
@@ -333,16 +350,17 @@ function shoot(I, J) {
 		ability.shoot.secrete[I].color = org.color;
 
 		// Hit (Apply Ability) (Hit detection on local machine)
-		for (let i = 0; i < game.info.count; i++) {
-			if (game.orgs[i].player == socket.id || game.orgs[i].team == org.team && typeof team == 'string') { // Do not apply ability to self or teammate
+		let src = getSrc();
+		for (let i = 0; i < src.orgs.length; i++) {
+			if (src.orgs[i].player == socket.id || src.orgs[i].team == org.team && typeof team == 'string') { // Do not apply ability to self or teammate
 				continue;
 			}
-			for (let j = 0; j < game.orgs[i].count; j++) {
-				if (sqrt(sq(game.orgs[i].cells[j].x - ability.shoot.spore[I].x) + sq(game.orgs[i].cells[j].y - ability.shoot.spore[I].y)) < ability.shoot.secrete[I].radius) { // If center of cell is within circle (subject to change)
-					if (game.abilities[i].neutralize.value == true && sqrt(sq(game.orgs[i].cells[j].x - game.abilities[i].neutralize.x) + sq(game.orgs[i].cells[j].y - game.abilities[i].neutralize.y)) <= game.abilities[i].neutralize.radius) { // If center of cell is within neutralize circle
+			for (let j = 0; j < src.orgs[i].count; j++) {
+				if (sqrt(sq(src.orgs[i].cells[j].x - ability.shoot.spore[I].x) + sq(src.orgs[i].cells[j].y - ability.shoot.spore[I].y)) < ability.shoot.secrete[I].radius) { // If center of cell is within circle (subject to change)
+					if (src.abilities[i].neutralize.value == true && sqrt(sq(src.orgs[i].cells[j].x - src.abilities[i].neutralize.x) + sq(src.orgs[i].cells[j].y - src.abilities[i].neutralize.y)) <= src.abilities[i].neutralize.radius) { // If center of cell is within neutralize circle
 						continue;
 					}
-					use(I, J, game.orgs[i].player); // Apply ability to target
+					use(I, J, src.orgs[i].player); // Apply ability to target
 					ability.shoot.secrete[I].hit = true;
 					break;
 				}
@@ -430,12 +448,27 @@ function extend(playeR) {
 }
 
 function compress(playeR) {
-	socket.emit('Compress', playeR);
+	let src = getSrc();
+	if (src.src == 'tutorial') { // Since orgs are locally grown in tutorial, abilities must be locally applied
+		for (let i = 0; i < src.abilities.length; i++) {
+			if (src.abilities[i].player == playeR) {
+				src.abilities[i].compress.value = true;
+				clearTimeout(src.abilities[i].compress.timeout);
+				src.abilities[i].compress.timeout = setTimeout(function() {
+					src.abilities[i].compress.value = false;
+				}, src.abilities[i].compress.time);
+			}
+		}
+	} else {
+		socket.emit('Compress', playeR);
+	}
+	ability.compress.applied = true;
 	ability.compress.can = false; // Redundancy
 	ability.compress.start = new Date();
 	socket.emit('Ability', ability);
 	setTimeout(function() {
 		ability.compress.end = new Date();
+		ability.compress.applied = false;
 		ability.compress.cooling = true;
 	}, ability.compress.time);
 }
@@ -454,12 +487,27 @@ function immortality(playeR) {
 }
 
 function freeze(playeR) {
-	socket.emit('Freeze', playeR);
+	let src = getSrc();
+	if (src.src == 'tutorial') { // Since orgs are locally grown in tutorial, abilities must be locally applied
+		for (let i = 0; i < src.abilities.length; i++) {
+			if (src.abilities[i].player == playeR) {
+				src.abilities[i].freeze.value = true;
+				clearTimeout(src.abilities[i].freeze.timeout);
+				src.abilities[i].freeze.timeout = setTimeout(function() {
+					src.abilities[i].freeze.value = false;
+				}, src.abilities[i].freeze.time);
+			}
+		}
+	} else {
+		socket.emit('Freeze', playeR);
+	}
+	ability.freeze.applied = true;
 	ability.freeze.can = false; // Redundancy
 	ability.freeze.start = new Date();
 	socket.emit('Ability', ability);
 	setTimeout(function() {
 		ability.freeze.end = new Date();
+		ability.freeze.applied = false;
 		ability.freeze.cooling = true;
 	}, ability.freeze.time);
 }
@@ -559,16 +607,24 @@ function secrete() {
 }
 
 function renderSpores(abilitY) {
+	let src = getSrc();
 	if (abilitY.spore.value == true) {
 		for (let i = 0; i < abilitY.spore.count; i++) {
 			let cell = abilitY.spore.spores[i];
-			fill(cell.color.r, cell.color.g, cell.color.b);
-			noStroke();
-			for (let j = 0; j < game.info.count; j++) {
-				if (game.orgs[j].player == abilitY.player) {
-					if (game.orgs[j].skin == 'circles') {
+			for (let j = 0; j < src.orgs.length; j++) {
+				if (src.orgs[j].player == abilitY.player) {
+					if (src.orgs[j].skin == 'circles') {
+						fill(cell.color.r, cell.color.g, cell.color.b);
+						noStroke();
 						ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
+					} else if (src.orgs[j].skin == 'ghost') {
+						noFill();
+						stroke(cell.color.r, cell.color.g, cell.color.b);
+						strokeWeight(1);
+						rect(cell.x, cell.y, cell.width, cell.height);
 					} else {
+						fill(cell.color.r, cell.color.g, cell.color.b);
+						noStroke();
 						rect(cell.x, cell.y, cell.width, cell.height);
 					}
 				}
@@ -578,13 +634,20 @@ function renderSpores(abilitY) {
 	for (let i = 0; i < 3; i++) {
 		if (abilitY.shoot.value[i] == true) {
 			let cell = abilitY.shoot.spore[i];
-			fill(cell.color.r, cell.color.g, cell.color.b);
-			noStroke();
-			for (let j = 0; j < game.info.count; j++) {
-				if (game.orgs[j].player == abilitY.player) {
-					if (game.orgs[j].skin == 'circles') {
+			for (let j = 0; j < src.orgs.length; j++) {
+				if (src.orgs[j].player == abilitY.player) {
+					if (src.orgs[j].skin == 'circles') {
+						fill(cell.color.r, cell.color.g, cell.color.b);
+						noStroke();
 						ellipse(cell.x, cell.y, cell.width / 2 * .8, cell.height / 2 * .8); // .8 (default) size of spore (so as to differentiate between the two)
+					} else if (src.orgs[j].skin == 'ghost') {
+						noFill();
+						stroke(cell.color.r, cell.color.g, cell.color.b);
+						strokeWeight(1);
+						rect(cell.x, cell.y, cell.width * .8, cell.height * .8);
 					} else {
+						fill(cell.color.r, cell.color.g, cell.color.b);
+						noStroke();
 						rect(cell.x, cell.y, cell.width * .8, cell.height * .8);
 					}
 				}
@@ -593,32 +656,47 @@ function renderSpores(abilitY) {
 	}
 }
 
-function renderSecretions(abilitY) {
-	if (abilitY.secrete.value == true) {
-		for (let i = 0; i < abilitY.spore.count; i++) {
-			let cell = abilitY.spore.spores[i];
-			fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
-			noStroke();
-			ellipse(cell.x, cell.y, abilitY.secrete.radius);
-		}
-	}
-	for (let i = 0; i < 3; i++) {
-		if (abilitY.shoot.secrete[i].value == true) {
-			let cell = abilitY.shoot.spore[i];
-			fill(abilitY.shoot.secrete[i].color.r, abilitY.shoot.secrete[i].color.g, abilitY.shoot.secrete[i].color.b);
-			noStroke();
-			ellipse(cell.x, cell.y, abilitY.shoot.secrete[i].radius);
+function renderSecretions(abilitY) { // abilitY is src.abilities[x]
+	let src = getSrc();
+	for (let i = 0; i < src.orgs.length; i++) {
+		if (abilitY.player == src.orgs[i].player) { // Identify org of abilitY
+			if (abilitY.secrete.value == true) {
+				for (let j = 0; j < abilitY.spore.count; j++) {
+					let spore = abilitY.spore.spores[j];
+					if (src.orgs[i].skin == 'ghost') {
+						noFill();
+						stroke(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
+						strokeWeight(2);
+						ellipse(spore.x, spore.y, abilitY.secrete.radius);
+					} else {
+						fill(abilitY.secrete.color.r, abilitY.secrete.color.g, abilitY.secrete.color.b);
+						noStroke();
+						ellipse(spore.x, spore.y, abilitY.secrete.radius);
+					}
+				}
+			}
+			for (let j = 0; j < abilitY.shoot.value.length; j++) {
+				if (abilitY.shoot.secrete[j].value == true) {
+					let spore = abilitY.shoot.spore[j];
+					if (src.orgs[i].skin == 'ghost') {
+						noFill();
+						stroke(abilitY.shoot.secrete[j].color.r, abilitY.shoot.secrete[j].color.g, abilitY.shoot.secrete[j].color.b);
+						strokeWeight(2);
+						ellipse(spore.x, spore.y, abilitY.shoot.secrete[j].radius);
+					} else {
+						fill(abilitY.shoot.secrete[j].color.r, abilitY.shoot.secrete[j].color.g, abilitY.shoot.secrete[j].color.b);
+						noStroke();
+						ellipse(spore.x, spore.y, abilitY.shoot.secrete[j].radius);
+					}
+				}
+			}
+			break;
 		}
 	}
 }
 
 function renderNeutralize(abilitY) {
 	if (abilitY.neutralize.value == true) { // Render neutralize (not toxin) over shoots, spores, and secretes of opponents
-		for (let i = 0; i < game.info.count; i++) {
-			if (game.orgs[i].player == abilitY.player) {
-				let orG = game.orgs[i];
-			}
-		}
 		fill(100);
 		stroke(abilitY.neutralize.color.r, abilitY.neutralize.color.g, abilitY.neutralize.color.b);
 		strokeWeight(abilitY.neutralize.weight);

@@ -1,5 +1,5 @@
-var socket;
-var gamesInterval;
+var socket; // Initialize in global scope
+var gamesInterval; // Initialize in global scope
 function connectSocket() {
 	if (DEV == true) {
 		socket = io.connect('localhost'); // Local server (Development only)
@@ -30,8 +30,7 @@ function connectSocket() {
 	});
 
 	socket.on('Enter', function() {
-		grow(); // Begin growth
-		// chooseAbilities();
+		run(); // Begin growth
 	});
 
 	socket.on('Force Spawn', function() {
@@ -62,7 +61,7 @@ function connectSocket() {
 				ability.shoot.interval[i]();
 			}
 		}
-		if (state == 'game') {
+		if (state == 'game' || state == 'pauseGameMenu') {
 			{
 				translate(-org.off.x, -org.off.y);
 				renderWorld();
@@ -84,8 +83,10 @@ function connectSocket() {
 				translate(org.off.x, org.off.y);
 			}
 			renderMessages(); // Render messages outside translation
-			move(); // Move goes at the end so player does not render his movements before others
-		} else if (state == 'spectate') {
+			if (state == 'game') {
+				move(); // Move goes at the end so player does not render his movements before others
+			}
+		} else if (state == 'spectate' || state == 'pauseSpectateMenu') {
 			{
 				translate(-org.off.x, -org.off.y);
 				renderWorld();
@@ -106,7 +107,9 @@ function connectSocket() {
 				translate(org.off.x, org.off.y);
 			}
 			renderMessages();
-			move(); // Move is after messages so everything has same offset
+			if (state == 'spectate') {
+				move(); // Move is after messages so everything has same offset
+			}
 		}
 	});
 
@@ -114,7 +117,7 @@ function connectSocket() {
 		if (gamE.info.host != socket.id) { // Don't alert host (he already knows)
 			alert('The game has ended');
 		}
-		renderBrowser();
+		renderTitle();
 	});
 
 	socket.on('Spectate', function() {

@@ -1,92 +1,54 @@
 var games = [];
 var defaultCanvas;
 function setup() {
-	state = 'browser';
+	state = 'setup';
 	connectSocket();
-	renderBrowser();
-
-	// Input fields in header cells (pre-menus)
-	// var nameInput = document.getElementById('nameInput');
-	// nameInput.addEventListener('keyup', function() { // Enter event listener for name input field
-	// 	if (event.keyCode == 13) { // ENTER
-	// 		var invalid = false;
-	// 		if (nameInput.value == '' || nameInput.value == undefined || nameInput.value == null) {
-	// 			invalid = true;
-	// 		} else {
-	// 			for (let i = 0; i < games.length; i++) {
-	// 				if (nameInput.value == games[i].info.name) {
-	// 					invalid = true;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 		if (invalid == true) {
-	// 			alert('Invalid Name');
-	// 		} else {
-	// 			createGame(); // Creates new game
-	// 		}
-	// 	}
-	// });
-	// var passwordInput = document.getElementById('PasswordInput');
-	// passwordInput.addEventListener('keyup', function() { // Enter event listener for password field
-	// 	if (event.keyCode == 13) { // ENTER
-	// 		var invalid = false;
-	// 		if (nameInput.value == '' || nameInput.value == undefined || nameInput.value == null) {
-	// 			invalid = true;
-	// 		} else {
-	// 			for (let i = 0; i < games.length; i++) {
-	// 				if (nameInput.value == games[i].info.name) {
-	// 					invalid = true;
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 		if (invalid == true) {
-	// 			alert('Invalid Name');
-	// 		} else {
-	// 			createGame(); // Creates new game
-	// 		}
-	// 	}
-	// });.
+	{
+		rectMode(CENTER);
+		ellipseMode(RADIUS);
+		angleMode(DEGREES);
+		textAlign(LEFT);
+	}
+	var socketInterval = setInterval(function() {
+		ability = new Ability({ player: socket.id });
+		if (socket.id != undefined) {
+			clearInterval(socketInterval);
+		}
+	}, 50);
+	renderTitle();
 }
 
 function windowResized() {
 	var button;
-	if (state == 'game' || state == 'spectate') {
+	if (state == 'title' || state == 'browser' || state == 'tutorial') {
+		cnv = createCanvas(window.innerWidth, window.innerHeight); // Replace canvas with new canvas of new dimensions
+		center.x = width / 2;
+		center.y = height / 2;
+		getSrc().resize(0, 0, window.innerWidth, window.innerHeight);
+	} else if (state == 'game' || state == 'spectate') {
 		cnv = createCanvas(window.innerWidth, window.innerHeight); // Replace canvas with new canvas of new dimensions
 		center.x = width / 2;
 		center.y = height / 2;
 		org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
 		org.off.y = org.pos.y - center.y;
-	} else if (state == 'createMenu') {
-		button = document.getElementById('createButton');
-		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
-	} else if (state == 'joinMenu') {
-		button = document.getElementById('joinButton');
-		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
-	} else if (state == 'spectateMenu') {
-		button = document.getElementById('spectateButton');
-		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
-	} else if (state == 'respawnMenu') {
-		button = document.getElementById('respawnButton');
-		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
-	} else if (state == 'pauseGameMenu') {
-		button = document.getElementById('pauseGameButton');
-		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
-	} else if (state == 'pauseSpectateMenu') {
-		button = document.getElementById('pauseSpectateButton');
+	} else if (state.indexOf('Menu') != -1) {
+		cnv = createCanvas(window.innerWidth, window.innerHeight); // Replace canvas with new canvas of new dimensions
+		center.x = width / 2;
+		center.y = height / 2;
+		if (state == 'respawnMenu' || state.indexOf('pause') != -1) {
+			org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
+			org.off.y = org.pos.y - center.y;
+		}
+		if (getSrc().src == 'title' || getSrc().src == 'tutorial') {
+			cnv = createCanvas(window.innerWidth, window.innerHeight); // Replace canvas with new canvas of new dimensions
+			center.x = width / 2;
+			center.y = height / 2;
+			getSrc().resize(0, 0, window.innerWidth, window.innerHeight);	
+		}
+		let shade = document.getElementById('shade');
+		shade.style.width = '100%';
+		shade.style.height = '100%';
+		button = document.getElementById(state.slice(0, state.indexOf('Menu')) + 'Button'); // Button ids must follow this style
 		button.style.left = ((window.innerWidth - parseFloat(button.style.width)) / 2) + 'px';
 	}
 }
-
-(function() {
-	Object.defineProperty(org, 'count', {
-		get: function() {
-			return org.count;
-		}, 
-		set: function(value) {
-			debugger;
-			org.count = value;
-		}
-	});
-});

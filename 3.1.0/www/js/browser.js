@@ -9,30 +9,34 @@ function renderBrowser(datA) {
 	state = 'browser';
 	// Browser
 	if (datA != 'games') {
-		let page = document.body.parentNode;
-		page.removeChild(document.body);
-		let body = document.createElement('body');
-		page.appendChild(body);
+		cnvClear();
 		let bodyDiv = document.createElement('div');
 		body.appendChild(bodyDiv);
 		bodyDiv.class = 'body';
+		let shade = new Shade();
+		bodyDiv.appendChild(shade.elt);
 		let content = document.createElement('div');
 		bodyDiv.appendChild(content);
 		content.class = 'content';
 		let table = document.createElement('table');
 		content.appendChild(table);
 		table.id = 'browser';
+		table.style.position = 'fixed';
+		table.style.left = '0px';
+		table.style.top = '0px';
+		table.style.width = '100%';
 		let Thead = document.createElement('thead');
 		table.appendChild(Thead);
 		let headRow = document.createElement('tr');
 		Thead.appendChild(headRow);
 		headRow.id = 'head';
-		let title = document.createElement('th');
-		headRow.appendChild(title);
-		title.colSpan = '1';
-		title.id = 'Title';
-		title.maxWidth = '500px';
-		title.innerHTML = 'Title';
+		headRow.style.opacity = '1';
+		let tit = document.createElement('th');
+		headRow.appendChild(tit);
+		tit.colSpan = '1';
+		tit.id = 'Title';
+		tit.maxWidth = '500px';
+		tit.innerHTML = 'Title';
 		// let host = document.createElement('th');
 		// headRow.appendChild(host);
 		// host.colSpan = '1';
@@ -63,46 +67,68 @@ function renderBrowser(datA) {
 		playercap.colSpan = '1';
 		playercap.id = 'playercap';
 		playercap.innerHTML = 'Player Cap';
-		let hostAGame = document.createElement('th');
-		headRow.appendChild(hostAGame);
-		hostAGame.colSpan = '2';
-		hostAGame.id = 'join-spectate';
-		hostAGame.addEventListener('mouseover', function() {
-			hostAGame.style.backgroundColor = 'rgb(48, 48, 48)';
-		});
-		hostAGame.addEventListener('mouseout', function() {
-			hostAGame.style.backgroundColor = 'rgb(0, 0, 0)';
-		});
-		hostAGame.innerHTML = 'Host a Game';
+		// let hostAGame = document.createElement('th');
+		// headRow.appendChild(hostAGame);
+		// hostAGame.colSpan = '2';
+		// hostAGame.id = 'join-spectate';
+		// hostAGame.addEventListener('mouseover', function() {
+		// 	hostAGame.style.backgroundColor = 'rgb(48, 48, 48)';
+		// });
+		// hostAGame.addEventListener('mouseout', function() {
+		// 	hostAGame.style.backgroundColor = 'rgb(0, 0, 0)';
+		// });
+		// hostAGame.innerHTML = 'Host a Game';
+		let j_s = document.createElement('th');
+		headRow.appendChild(j_s);
+		j_s.id = 'join-spectate';
+		j_s.colSpan = '2';
+		j_s.innerHTML = 'Bacter';
+		j_s.style.fontSize = '22px';
 		let Tbody = document.createElement('tbody');
 		table.appendChild(Tbody);
 		Tbody.id = 'browserBody';
+		Tbody.style.opacity = '.95';
 		let footerDiv = document.createElement('div');
 		bodyDiv.appendChild(footerDiv);
 		footerDiv.class = 'footer';
 		let footer = document.createElement('footer');
 		footerDiv.appendChild(footer);
+		footer.style.cursor = 'pointer';
+		footer.addEventListener('click', function() {
+			title.return();
+		});
+		let back = document.createElement('p');
+		footer.appendChild(back);
+		back.style.display = 'inline';
+		back.style.position = 'absolute';
+		back.style.left = '0px';
+		back.innerHTML = '&larr; Back';
+		back.style.textAlign = 'left';
 		let displayConnections = document.createElement('p');
 		footer.appendChild(displayConnections);
 		displayConnections.id = 'displayConnections';
+		displayConnections.style.display = 'inline';
+		displayConnections.style.position = 'absolute';
+		displayConnections.style.right = '0px';
 		displayConnections.innerHTML = 'Online Clients: ' + connections;
-		hostAGame.style.cursor = 'pointer';
-		let baseColor = hostAGame.style.backgroundColor;
-		hostAGame.addEventListener('mouseover', function() {
-			if (window.mouseIsPressed == true && clicked.row == -1 && clicked.cell == 5) {
-				hostAGame.style.backgroundColor = 'rgb(70, 70, 70)';
-			}
-		});
-		hostAGame.addEventListener('mousedown', function() {
-			clicked.row = -1;
-			clicked.cell = 5;
-			hostAGame.style.backgroundColor = 'rgb(70, 70, 70)';
-		});
-		hostAGame.addEventListener('mouseup', function() { hostAGame.style.backgroundColor = baseColor; });
-		hostAGame.addEventListener('mouseleave', function() { hostAGame.style.backgroundColor = baseColor; });
-		hostAGame.addEventListener('click', function() {
-			renderMenu('create');
-		});
+		displayConnections.style.textAlign = 'right';
+		// hostAGame.style.cursor = 'pointer';
+		// let baseColor = hostAGame.style.backgroundColor;
+		// hostAGame.addEventListener('mouseover', function() {
+		// 	if (window.mouseIsPressed == true && clicked.row == -1 && clicked.cell == 5) {
+		// 		hostAGame.style.backgroundColor = 'rgb(70, 70, 70)';
+		// 	}
+		// });
+		// hostAGame.addEventListener('mousedown', function() {
+		// 	clicked.row = -1;
+		// 	clicked.cell = 5;
+		// 	hostAGame.style.backgroundColor = 'rgb(70, 70, 70)';
+		// });
+		// hostAGame.addEventListener('mouseup', function() { hostAGame.style.backgroundColor = baseColor; });
+		// hostAGame.addEventListener('mouseleave', function() { hostAGame.style.backgroundColor = baseColor; });
+		// hostAGame.addEventListener('click', function() {
+		// 	renderMenu('create');
+		// });
 	}
 	let displayConnections = document.getElementById('displayConnections');
 	if (connections == undefined) {

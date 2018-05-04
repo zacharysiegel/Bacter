@@ -1,26 +1,29 @@
 var org;
-var Org = function(datA) {
+var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
 	this.player = datA.player;
 	this.color = datA.color;
 	this.skin = datA.skin;
 	this.team = datA.team;
-	if (game.rounds.util == true) {
-		this.ready = false; // org.ready ensures that org will only be forcibly respawned once
+	let src = getSrc();
+	if (src != undefined && src.src == 'game') {
+		if (game.rounds.util == true) {
+			this.ready = false; // org.ready ensures that org will only be forcibly respawned once
+		}
+		if (game.info.mode == 'srv' && game.rounds.waiting == false) {
+			this.spawn = false;
+		} else {
+			this.spawn = true; // Allowance to spawn
+		}
+		for (let i = 0; i < game.board.list.length; i++) {
+			if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
+				this.name = game.board.list[i].name;
+			}
+		}
 	}
 	if (datA.spectate == true) {
 		this.speed = _spectatespeed; // Faster movement when spectating
 	} else {
 		this.speed = _movespeed; // Speed of position movement
-	}
-	if (game.info.mode == 'srv' && game.rounds.waiting == false) {
-		this.spawn = false;
-	} else {
-		this.spawn = true; // Allowance to spawn
-	}
-	for (let i = 0; i < game.board.list.length; i++) {
-		if (game.board.list[i].player == this.player) { // Find player name in leaderboard list
-			this.name = game.board.list[i].name;
-		}
 	}
 	this.cells = [];
 	this.count = 0;
@@ -45,8 +48,8 @@ var Org = function(datA) {
 	} else {
 		do {
 			this.pos = { // Position is the target's location in the world
-				x: floor(random(game.world.x + 50, game.world.x + game.world.width - 50)), // +- 50 acts as buffer
-				y: floor(random(game.world.y + 50, game.world.y + game.world.height - 50))
+				x: floor(random(game.world.x + 50 + _cellwidth / 2, game.world.x + game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
+				y: floor(random(game.world.y + 50 + _cellwidth / 2, game.world.y + game.world.height - 50 - _cellwidth / 2))
 			};
 			var rePos = false;
 			if (game.world.type == 'rectangle') {
@@ -127,48 +130,120 @@ var Cell = function(X, Y, orG) {
 	this.height = _cellwidth;
 	this.x = X;
 	this.y = Y;
-	{ // this.color
-		for (let i = 0; i < game.info.count; i++) {
-			if (game.orgs[i].player == socket.id) {
-				this.color = game.orgs[i].color;
-			}
-		}
-	}
-	this.r = function(orG) { // Distance from org center
-		for (let i = 0; i < game.info.count; i++) {
-			if (orG.player == game.orgs[i].player) { // Find orG in game.orgs
-				let distance = sqrt(sq(this.x - game.orgs[i].x()) + sq(this.y - game.orgs[i].y()));
-				return distance;
-			}
-		}
+	this.color = orG.color;
+	this.r = function() { // Distance from org center
+		let distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
+		return distance;
 	};
 	this.d = function(orG) { // Distance from target (Position in world)
-		for (let i = 0; i < game.info.count; i++) {
-			if (orG.player == game.orgs[i].player) { // Find orG in game.orgs
-				let distance = sqrt(sq(this.x - game.orgs[i].pos.x) + sq(this.y - game.orgs[i].pos.y));
-				return distance;
-			}
-		}
+		let distance = sqrt(sq(this.x - orG.pos.x) + sq(this.y - orG.pos.y));
+		return distance;
 	};
 };
 
 function renderOrgs() {
-	for (let i = 0; i < game.info.count; i++) {
-		for (let j = 0; j < game.orgs[i].count; j++) {
-			let cell = game.orgs[i].cells[j];
-			fill(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b);
-			if (game.orgs[i].skin == 'grid') {
+	let src = getSrc();
+	for (let i = 0; i < src.orgs.length; i++) {
+		for (let j = 0; j < src.orgs[i].count; j++) {
+			let cell = src.orgs[i].cells[j];
+			fill(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
+			if (src.orgs[i].skin == 'grid') {
 				stroke(40, 40, 40); // Draw constant grid (natural grid is variable)
 				strokeWeight(.25);
 				rect(cell.x, cell.y, cell.width, cell.height);
-			} else if (game.orgs[i].skin == 'circles') {
+			} else if (src.orgs[i].skin == 'circles') {
 				noStroke();
 				ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
-			} else if (game.orgs[i].skin == 'none') {
-				stroke(game.orgs[i].color.r, game.orgs[i].color.g, game.orgs[i].color.b); // Stroke over natural grid
+			} else if (src.orgs[i].skin == 'ghost') {
+				noFill();
+				stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
+				strokeWeight(.5);
+				rect(cell.x, cell.y, cell.width, cell.height);
+			} else if (src.orgs[i].skin == 'none') {
+				stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b); // Stroke over natural grid
 				strokeWeight(1);
 				rect(cell.x, cell.y, cell.width, cell.height);
 			}
 		}
 	}
 }
+
+var getRegionInfo = function(orG) {
+	var enclosed = [];
+	var exposed = [];
+	var adjacent = [];
+	for (let i = 0; i < orG.count; i++) {
+		let test = { x: undefined, y: undefined };
+		var left = false;
+		var top = false;
+		var right = false;
+		var bottom = false;
+		for (let j = 0; j < orG.count; j++) {
+			if (i != j) {
+				test = { // Left
+					x: orG.cells[i].x - orG.cells[i].width, 
+					y: orG.cells[i].y
+				};
+				if (test.x == orG.cells[j].x && test.y == orG.cells[j].y) {
+					left = true; // There is a friendly cell to the left
+				}
+				test = { // Top
+					x: orG.cells[i].x, 
+					y: orG.cells[i].y - orG.cells[i].height
+				};
+				if (test.x == orG.cells[j].x && test.y == orG.cells[j].y) {
+					top = true; // There is a friendly cell to the top
+				}
+				test = { // Right
+					x: orG.cells[i].x + orG.cells[i].width, 
+					y: orG.cells[i].y
+				};
+				if (test.x == orG.cells[j].x && test.y == orG.cells[j].y) {
+					right = true; // There is a friendly cell to the right
+				}
+				test = { // Bottom
+					x: orG.cells[i].x, 
+					y: orG.cells[i].y + orG.cells[i].height
+				};
+				if (test.x == orG.cells[j].x && test.y == orG.cells[j].y) {
+					bottom = true; // There is a friendly cell to the bottom
+				}
+			}
+		}
+		if (left == true && top == true && right == true && bottom == true) { // If cell is enclosed on all sides by friendly cells
+			enclosed.push(orG.cells[i]);
+		} else { // If cell is not enclosed on all sides by friendly cells
+			exposed.push(orG.cells[i]);
+		}
+		if (left == false) { // Push all empty regions adjacent to org
+			adjacent.push({ x: orG.cells[i].x - orG.cells[i].width, y: orG.cells[i].y });
+		}
+		if (top == false) {
+			adjacent.push({ x: orG.cells[i].x, y: orG.cells[i].y - orG.cells[i].height });
+		}
+		if (right == false) {
+			adjacent.push({ x: orG.cells[i].x + orG.cells[i].width, y: orG.cells[i].y });
+		}
+		if (bottom == false) {
+			adjacent.push({ x: orG.cells[i].x, y: orG.cells[i].y + orG.cells[i].height });
+		}
+	}
+	for (var j = 0; j < adjacent.length; j++) { // Splice out empty regions adjacent to multiple cells
+		for (var k = 0; k < adjacent.length; k++) {
+			if (j != k) { // If adjacent[j] and adjacent[k] are different regions
+				if (adjacent[k].x == adjacent[j].x && adjacent[k].y == adjacent[j].y) { // If region is repeated
+					adjacent.splice(k, 1);
+					k--;
+				}
+				if (j >= adjacent.length) {
+					continue;
+				}
+			}
+		}
+	}
+	return {
+		enclosed: enclosed, 
+		exposed: exposed, 
+		adjacent: adjacent
+	};
+};

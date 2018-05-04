@@ -1,5 +1,5 @@
-const DEV = false;
-const HEROKU = true;
+const DEV = true;
+const HEROKU = false;
 
 // Repertoires
 const worldColors = {
@@ -40,7 +40,8 @@ const orgColors = {
 };
 const skins = [
 	'grid', 
-	'circles'
+	'circles', 
+	'ghost'
 ];
 const modes = {
 	ffa: 'Free for All', 
@@ -68,6 +69,8 @@ const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
 // Defaults
+const _ofrequency = 70;
+const _rfrequency = 40;
 const _range = 50;
 const _cellwidth = 6;
 const _movespeed = 1.7;
@@ -79,6 +82,9 @@ const _playermin = 4;
 const _boardlength = 10;
 const _teamcount = 2;
 const _delaytime = 10000;
+const _dummies = 10;
+const _margin = 25;
+const _taskdelay = 3000;
 
 // Settings
 var Labels = true;
