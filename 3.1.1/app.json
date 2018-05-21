@@ -1,0 +1,7 @@
+{
+  "name": "Bacter",
+  "description": "2D Arena Multiplayer Game",
+  "repository": "https://github.com/siegelzc/Bacter.git",
+  "logo": "./www/favicon.ico",
+  "keywords": ["bacter", "node", "express", "heroku"]
+}

@@ -1,0 +1,98 @@
+@font-face {
+	font-family: _bacter;
+	src: url(../assets/bacter.ttf);
+}
+
+/* Page */
+html {
+	height: 100%;
+}
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+
+	/* No Selection */
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Chrome and Opera */
+}
+#cont {
+	position: fixed;
+	left: 0;
+	top: 0;
+	overflow: auto;
+	width: 100%;
+	height: 100%;
+}
+canvas {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+.content {
+	padding-bottom: 30px;
+}
+
+/* Table */
+tr:nth-child(odd) {
+	background-color: rgb(255, 255, 255);
+}
+tr:nth-child(even) {
+	background-color: rgb(230, 230, 230);
+}
+th {
+	height: 32px;
+	background-color: rgb(0, 0, 0);
+	color: rgb(255, 255, 255);
+	text-align: center;
+	font-size: 16px;
+	border-width: 0px;
+	border-color: rgb(0, 0, 0);
+	border-style: solid;
+	border-collapse: collapse;
+	padding: 8px;
+}
+td {
+	height: 24px;
+	font-size: 14px;
+	text-align: center;
+	border-width: 0px;
+	border-collapse: collapse;
+	padding: 5px;
+}
+.TableButton {
+	background-color: inherit;
+	cursor: pointer;
+}
+.TableButtonDOWN {
+	background-color: rgb(180, 180, 180);
+}
+
+/* Footer */
+.footer {
+	position: absolute;
+}
+footer {
+	height: 30px;
+	width: 100%;
+	position: fixed;
+	bottom: 0px;
+	background-color: rgb(0, 0, 0);
+}
+footer > p {
+	margin: 0px 10px 0px 10px;
+	color: rgb(255, 255, 255);
+	font-family: 'Verdana';
+	font-size: 15px;
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
