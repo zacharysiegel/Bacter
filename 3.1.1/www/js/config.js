@@ -1,6 +1,6 @@
 // Socket Settings
-const DEV = true;
-const HEROKU = false;
+const DEV = false;
+const HEROKU = true;
 
 // Repertoires
 const worldColors = {
