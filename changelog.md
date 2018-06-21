@@ -1,181 +1,210 @@
 # BACTER Change Log
+---
+	NOTE: Logs before version a1.1.2 are incomplete or inaccurate
 
-	NOTE: Logs before version 1.1.2 are incomplete or inaccurate
+## a1.0.0
+	Initial Alpha Release
 
-## 1.0.0
-	Initial Build
+## a1.1.0
+	Added spectate mode
+	Added password protection option to games
+	Added denial of movement over world border
+	Added server browser information
+	Changed frame rate to increased frequency
+	Fixed ability selection translation issue
+	Fixed spawn over opponent org
+	Balanced ability durations and cooldowns
 
-## 1.1.0
-	ADDED spectate mode
-	ADDED password protection option to games
-	ADDED denial of movement over world border
-	ADDED server browser information
-	ADDED cannot spawn over opponent org
-	CHANGED frame rate (increased)
-	FIXED chooseAbilities() translation issue
-	BALANCED ability durations and cooldowns
+## a1.1.1
+	Fixed spore/secrete lag issue
+	Fixed flicker issue
+	Fixed server crash issue
 
-## 1.1.1
-	FIXED spore/secrete lag issue
-	FIXED flicker issue
-	FIXED server crash issue
+## a1.1.2
+	Added cannot spawn outside world boundary
+	Added heroku support
+	Changed world border width to lesser width
+	Fixed package management
+	Fixed server browser row coloration
 
-## 1.1.2
-	ADDED cannot spawn outside world boundary
-	ADDED heroku support
-	ADDED Procfile
-	ADDED app.json
-	ADDED .profile
-	CHANGED world border width (smaller)
-	FIXED npm initialization
-	FIXED server browser row coloration
+## a2.0.0
+	Added neutralize
+	Added toxin
+	Added shoot skillshot mechanic
+	Added shoot ability timers
+	Added world dots (decoration)
+	Added dot eat/replace mechanic
+	Added footer with online clients counter
+	Removed stimulate
+	Removed poison
+	Removed 'you are dead' alert
+	Improved org aesthetics (stroke on cells to fill gaps)
+	Improved browser aesthetics
+	Changed stunt mechanic to halt natural death as well as birth (effective freze)
+	Changed poison mechanic (accelerated death --> decelerated birth)
+	Changed cell width (7px --> 6px);
+	Changed movement speed (2.5px/frame --> 2px/frame)
+	Changed spore frame rate (increased)
+	Changed secrete timer animation
+	Fixed spore lag issue
+	Fixed join/spectate click mousedown script
+	Fixed browser row bug
+	Fixed favicon issue
+	Balanced secretion duration (decreased)
+	Balanced extend/compress durations (decreased)
+	Balanced stimulate/poison factors (increased)
+	Balanced ability cooldowns
 
-## 2.0.0
-	ADDED neutralize
-	ADDED toxin
-	ADDED shoot skillshot mechanic
-	ADDED shoot ability timers
-	ADDED world dots (decoration)
-	ADDED dot eat/replace mechanic
-	ADDED footer with online clients counter
-	REMOVED stimulate
-	REMOVED poison
-	REMOVED 'you are dead' text
-	CHANGED stunt mechanic to halt natural death as well as birth (effective freze)
-	CHANGED poison mechanic (accelerated death --> decelerated birth)
-	CHANGED cell width (7px --> 6px);
-	CHANGED movement speed (2.5px/frame --> 2px/frame)
-	CHANGED spore frame rate (increased)
-	CHANGED secrete timer animation
-	CHANGED org aesthetics (stroke on cells to fill gaps)
-	CHANGED browser aesthetics
-	FIXED spore lag issue
-	FIXED join/spectate click mousedown script
-	FIXED browser row bug
-	FIXED favicon issue
-	BALANCED secretion duration (decreased)
-	BALANCED extend/compress durations (decreased)
-	BALANCED stimulate/poison factors (increased)
-	BALANCED ability cooldowns
+## a2.1.0
+	Added leaderboard
+	Added kill/death counters
+	Added screen names
+	Added screen name label when targeting
+	Added more org colors
+	Added space bar spawn in ability choosing menu
+	Removed dots
+	Fixed spawn without picking three abilities
+	Fixed index death/crash bug
+	Fixed render layering bug
 
-## 2.1.0
-	ADDED leaderboard
-	ADDED kill/death counters
-	ADDED screen names
-	ADDED screen name label when targeting
-	ADDED more org colors
-	ADDED space bar spawn in ability choosing menu
-	REMOVED dots
-	FIXED spawn without picking three abilities
-	FIXED index death/crash bug
-	FIXED render layering bug
+## a2.1.1
+	Changed runs per second of growth interval (100 --> 80)
+	Changed host server info to show screen name of host
+	Fixed spawn crash bug
+	Fixed two death bug
+	Fixed cannot spawn over opponent org
+	Fixed leaderboard cover end of long name
 
-## 2.1.1
-	CHANGED runs per second of growth interval (100 --> 80)
-	CHANGED host server info to show screen name of host
-	FIXED spawn crash bug
-	FIXED two death bug
-	FIXED cannot spawn over opponent org
-	FIXED leaderboard cover end of long name
+## a2.1.2
+	Added popunder advertising
 
-## 2.1.2
-	ADDED popunder advertising
+## a2.2.0
+	Added game creation options menu
+	Added join game options menu
+	Added spectate game options menu
+	Added respawn options menu
+	Added pause options menus
+	Added world size customization
+	Added world color customization
+	Added player cap customization
+	Added leaderboard length customization
+	Added player color customization
+	Added player grid texture customization
+	Added ability selection to join and respawn menus
+	Added leave game option
+	Added player name labels
+	Added player name label toggle option
+	Added leader column to browser
+	Added player cap column to browser
+	Added peacock color option to white world
+	Added burnt color option to white world
+	Added forest color option to white world
+	Removed ability selection screen
+	Removed password entry column from browser
+	Removed display of spectators in leaderboard
+	Removed turquoise color
+	Removed kiwi color
+	Improved password protection security
+	Improved browser re-rendering (no reload)
+	Improved browser updating method
+	Improved browser aesthetics
+	Improved skill tooltip and timer aesthetics
+	Changed 'Screen Name' to 'Player' in leaderboard head
+	Changed stunt ability name to 'freeze' (no mechanical change)
+	Changed game 'name' to 'title'
+	Changed header height (36px --> 32px)
+	Fixed browser event listener stacking
+	Fixed spawn over toxin and secretions
+	Fixed non-removal of passwords on server after game close
+	Fixed premature showing of game in browser
+	Fixed game closure recurrance issue
+	Fixed spore color initialization issue
+	Fixed death crossover issue
+	Balanced extend time (4000ms --> 4500ms)
+	Balanced compress time (3000ms --> 3500ms)
+	Balanced immortality cooldown (4000ms --> 3500ms)
 
-## 2.2.0
-	ADDED game creation options menu
-	ADDED join game options menu
-	ADDED spectate game options menu
-	ADDED respawn options menu
-	ADDED pause options menus
-	ADDED world size customization
-	ADDED world color customization
-	ADDED player cap customization
-	ADDED leaderboard length customization
-	ADDED player color customization
-	ADDED player grid texture customization
-	ADDED ability selection to join and respawn menus
-	ADDED leave game option
-	ADDED player name labels
-	ADDED player name label toggle option
-	ADDED leader column to browser
-	ADDED player cap column to browser
-	ADDED peacock color option to white world
-	ADDED burnt color option to white world
-	ADDED forest color option to white world
-	REMOVED ability selection screen
-	REMOVED password entry column from browser
-	REMOVED display of spectators in leaderboard
-	REMOVED turquoise color
-	REMOVED kiwi color
-	CHANGED 'Screen Name' to 'Player' in leaderboard head
-	CHANGED stunt ability name to 'freeze' (no mechanical change)
-	CHANGED game 'name' to 'title'
-	CHANGED header height (36px --> 32px)
-	CHANGED password protection security (more secure)
-	CHANGED browser re-rendering (no reload)
-	CHANGED browser updating method
-	CHANGED browser aesthetics
-	CHANGED skill tooltip and timer aesthetics
-	FIXED browser event listener stacking
-	FIXED spawn over toxin and secretions
-	FIXED non-removal of passwords on server after game close
-	FIXED premature showing of game in browser
-	FIXED game closure recurrance issue
-	FIXED spore color initialization issue
-	FIXED death crossover issue
-	BALANCED extend time (4000ms --> 4500ms)
-	BALANCED compress time (3000ms --> 3500ms)
-	BALANCED immortality cooldown (4000ms --> 3500ms)
+## a3.0.0
+	Added skirmish game mode
+	Added survival game mode
+	Added game mode column to browser
+	Added tag ability (ctf + inf)
+	Added shoot cooldown
+	Added circular world option
+	Added circles skin
+	Added game backdrop color
+	Added messages and messages on/off setting
+	Added world, leaderboard, and message shadows
+	Added menu responsivity (restructure depending on selections)
+	Added window resizing functionality when in game
+	Added maximum world dimensions
+	Added name label 20 character limit
+	Removed world color option
+	Removed world border movement block
+	Removed host browser column
+	Removed leader browser column
+	Improved name label positioning
+	Improved title text alignment in browser (centered)
+	Changed respawn alert message
+	Changed menu buttons' cursors to pointer
+	Changed lake color (lighter)
+	Changed pink color name to petal
+	Changed skin selection style in menus
+	Changed back button click-box
+	Fixed spectate random positioning after death
+	Fixed game join misplacement and browser ordering issue
+	Fixed numerical operations issues in create game menu
+	Fixed respawn menu random positioning on back
+	Fixed extend and compress non-cancelation
+	Fixed closed game spectate attempt bug
+	Fixed occasional rapid growth bug
+	Fixed game closure menu bug
+	Fixed team count menu option bug
+	Balanced spore range (2200ms --> 1700ms)
+	Balanced shoot spore range (2000ms --> 1500ms)
+	Balanced neutralize uptime (4000ms --> 3500ms)
+	Balanced neutralize cooldown (6000ms --> 6500ms)
+	Balanced spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)
 
-## 3.0.0
-	ADDED skirmish game mode
-	ADDED survival game mode
-	ADDED game mode column to browser
-	ADDED tag ability (ctf + inf)
-	ADDED shoot cooldown
-	ADDED circular world option
-	ADDED circles skin
-	ADDED game backdrop color
-	ADDED messages and messages on/off setting
-	ADDED world, leaderboard, and message shadows
-	ADDED menu responsivity (restructure depending on selections)
-	ADDED window resizing functionality when in game
-	ADDED maximum world dimensions
-	ADDED name label 20 character limit
-	REMOVED world color option
-	REMOVED world border movement block
-	REMOVED host browser column
-	REMOVED leader browser column
-	CHANGED respawn alert message
-	CHANGED menu buttons' cursors to pointer
-	CHANGED lake color (lighter)
-	CHANGED pink color name to petal
-	CHANGED skin selection style in menus
-	CHANGED back button click-box
-	CHANGED title text alignment in browser (centered)
-	CHANGED name label positioning
-	FIXED spectate random positioning after death
-	FIXED game join misplacement and browser ordering issue
-	FIXED numerical operations issues in create game menu
-	FIXED respawn menu random positioning on back
-	FIXED extend and compress non-cancelation
-	FIXED closed game spectate attempt bug
-	FIXED occasional rapid growth bug
-	FIXED game closure menu bug
-	FIXED team count menu option bug
-	BALANCED spore range (2200ms --> 1700ms)
-	BALANCED shoot spore range (2000ms --> 1500ms)
-	BALANCED neutralize uptime (4000ms --> 3500ms)
-	BALANCED neutralize cooldown (6000ms --> 6500ms)
-	BALANCED spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)
+## a3.1.0
+	Added title screen and menu
+	Added tutorial
+	Added tutorial pause menu
+	Added translucency to brower and menus
+	Added ghost skin
+	Improved movement multikey detection
+	Changed join/spectate column header to 'Bacter'
+	Fixed spawn on world edge issue
+	Fixed crash on stationary mouse position use
 
-## 3.1.0
-	ADDED title screen and menu
-	ADDED tutorial
-	ADDED tutorial pause menu
-	ADDED translucency to brower and menus
-	ADDED ghost skin
-	CHANGED join/spectate column header to 'Bacter'
-	CHANGED movement multikey detection
-	FIXED spawn on world edge issue
-	FIXED crash on stationary mouse position use
+## a3.1.1
+	Added menu issue warnings
+	Added leave game option to respawn menu
+	Added fullscreen recommendation to tutorial
+	Added escape key to go back in game browser and respawn, create, join, and spectate menus
+	Added auto-selection of smallest team in join menu team list
+	Added darker focus color to select input boxes
+	Added backwards compatibility to older browsers
+	Added black theme color to compatible browsers
+	Removed menu alerts
+	Removed targeting click box
+	Removed setting update upon exiting pause menu through back button/escape
+	Removed pixel units from create game menu
+	Improved world width/height auto-equalization response
+	Improved auto-assign algorithm
+	Improved load times with file compilation into bundle.js
+	Improved UI responsiveness and reliability
+	Changed pause menu submit button text from 'Return' to 'Apply'
+	Fixed skirmish friendly fire issue
+	Fixed skirmish team overpopulation issue
+	Fixed host menu bug
+	Fixed rapid growth bug
+	Fixed leader board multiple issue
+	Fixed skirmish game creation issue
+	Fixed spectate menu back button
+	Fixed respawn menu pause issue
+	Fixed join game without abilities issue
+	Fixed invalid zero dimension error issue
+	Fixed minor ability bug
+	Fixed minor player cap bug
+>>>>>>> 3.1.1
