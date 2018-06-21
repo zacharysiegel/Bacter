@@ -195,6 +195,7 @@
 	Improved load times with file compilation into bundle.js
 	Improved UI responsiveness and reliability
 	Changed pause menu submit button text from 'Return' to 'Apply'
+	Fixed spawn with one cell issue
 	Fixed skirmish friendly fire issue
 	Fixed skirmish team overpopulation issue
 	Fixed host menu bug

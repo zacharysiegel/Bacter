@@ -1,8 +1,12 @@
 var tutorial;
-var Tutorial = function() {
+
+function renderTutorial() {
    clearInterval(title.interval);
-   ReactDOM.unmountComponentAtNode($('cont'));
+   ReactDOM.render(<CanvasCont />, $('cont'));
    state = 'tutorial';
+}
+
+var Tutorial = function() {
    this.src = 'tutorial';
    this.task = 'move';
    this.taskTimeout = undefined;
@@ -118,6 +122,7 @@ var Tutorial = function() {
          this.orgs[i].count = 1;
       }
       this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
+      if (state === 'tutorial') renderTutorial(); // Only render if state is 'tutorial'; otherwise, will render over pause menu
    };
    this.detect = function() {
       switch (this.task) {

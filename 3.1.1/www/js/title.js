@@ -2,9 +2,6 @@ var title; // Initialize in global scope
 var Title = function() {
    state = 'title';
    this.src = 'title';
-   // this.cnv = createCanvas(window.innerWidth, window.innerHeight);
-   // this.canvas = this.cnv.elt; // HTML Node is stored in p5 canvas' .elt property
-   // this.canvas.style.zIndex = '-1';
    this.margin = _margin;
    this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin });
    this.orgs = [];
@@ -95,8 +92,6 @@ var Title = function() {
       } else if (state === 'browser') {
          renderBrowser();
       }
-      cnv = createCanvas(window.innerWidth, window.innerHeight); // Create p5 canvas
-      cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
    };
 };
 
@@ -114,6 +109,7 @@ class TitleMenu extends React.Component {
             renderBrowser();
             break;
          case 'tutorial':
+            renderTutorial();
             tutorial = new Tutorial();
             break;
       }
@@ -162,6 +158,7 @@ function renderTitle() {
          <TitleMenu />
       </div>
    , $('cont')); // TitleMenu will not retain its this. namespace
+   ability = new Ability({ player: socket.id });
 }
 
 var Shade = function() {

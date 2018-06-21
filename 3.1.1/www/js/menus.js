@@ -48,8 +48,6 @@ function renderMenu(typE, datA) {
       ReactDOM.unmountComponentAtNode($('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
    }
    ReactDOM.render(<Menu type={typE} data={datA} />, $('cont')); // Render instance of Menu component class in container with id 'cont'
-   cnv = createCanvas(window.innerWidth, window.innerHeight); // Create p5 canvas
-   cnv.parent('#canvascont'); // Set CanvasCont (id='canvascont') as p5 canvas parent
    state = typE + 'Menu'; // Game state - not component state
 }
 
@@ -861,10 +859,10 @@ class Button extends React.Component {
    handleClick() {
       switch (this.instance) {
          case 'leave game':
-            socket.emit('Leave Game', game);
             org.clearIntervals(); // Copied from die()
             ability = new Ability({ player: socket.id }); // Reset ability object
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
+               socket.emit('Leave Game', game);
                for (let i = 0; i < game.board.list.length; i++) {
                   if (game.board.list[i].player == socket.id) { // Find player in leaderboard
                      game.board.list.splice(i, 1); // Remove player from leaderboard
@@ -874,8 +872,12 @@ class Button extends React.Component {
                   }
                }
             }
+            if (getSrc().src === 'tutorial') {
+               tutorial.clear(); // Clear tutorial intervals
+            }
             org = undefined; // Clear org variable
             renderTitle();
+            title = new Title();
             break;
       }
    }
@@ -937,10 +939,8 @@ class MenuSubmit extends React.Component {
       super(props);
       this.state = {
          down: false, // Is mouse down?
-         backgroundColor: 'rgb(240, 240, 240)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
-      };
-      this.style = { // this.style is read-only in React classes
-         left: (window.innerWidth - 95) / 2 + 'px' // Submit width === 95px
+         backgroundColor: 'rgb(240, 240, 240)', // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+         left: (window.innerWidth - 95) / 2 + 'px' // Submit width is 95px
       };
       this.menuType = props.menuType;
 
@@ -986,14 +986,12 @@ class MenuSubmit extends React.Component {
       if (!mouseDown) this.setState({ down: false });
    }
    componentWillReceiveProps(next) {
-      this.setState({ values: next.values });
+      this.setState({ left: (window.innerWidth - 95) / 2 + 'px' }); // Center submit button on the screen
    }
    render() {
       let style = {};
-      for (let i in this.style) {
-         style[i] = this.style[i];
-      }
       style.backgroundColor = this.state.backgroundColor;
+      style.left = this.state.left;
 
       return (
          <button 

@@ -145,6 +145,7 @@
 		✓ React browser
 		✓ Auto-select team with fewest players in join menu
 		✓ Mouse up on whole page
+		✓ Fix spawn with one cell
 	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
 			✓ Round system
@@ -171,6 +172,7 @@
 			Random radians between using perlin noise
 			Fill color
 		Fullscreen button
+		Mouse click, in, and out behavior correction
 	3.3.0
 		Images for ability tooltips
 		Add controls settings menu

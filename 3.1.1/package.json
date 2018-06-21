@@ -22,10 +22,9 @@
       "eslint-plugin-react": "^7.8.1"
    },
    "scripts": {
-      "start": "node server.js",
+      "start": "start.sh",
       "build": "build.sh",
-      "run": "run.sh",
-      "start": "start.sh"      
+      "run": "run.sh"
    },
    "babel": {
       "babelrc": "false",

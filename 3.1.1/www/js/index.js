@@ -267,7 +267,7 @@ function windowResized() {
       org.off.y = org.pos.y - center.y;
    } else if (state.indexOf('Menu') !== -1) {
       let type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
-      let data = type === 'join' ? game : null;
+      let data = (type === 'join' || type === 'spectate' || type === 'respawn') ? game : null; // Only join, spectate, and respawn menus use game variable as data
       renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
       if (src.src === 'title') { // ^^ Cut out Menu at end of state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
          src.resize(0, 0, window.innerWidth, window.innerHeight);
@@ -276,6 +276,6 @@ function windowResized() {
          org.off.y = org.pos.y - center.y;
       } else if (src.src === 'tutorial') {
          src.resize(0, 0, window.innerWidth, window.innerHeight);
-      }
+      } // Resize the content of the canvas in the background of menus
    }
 }
