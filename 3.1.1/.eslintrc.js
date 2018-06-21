@@ -28,7 +28,7 @@ module.exports = {
          "windows"
       ],
       "quotes": [
-         "warn",
+         "off",
          "single"
       ],
       "semi": [
@@ -42,6 +42,9 @@ module.exports = {
          "off"
       ],
       "no-inner-declarations": [
+         "off"
+      ],
+      "no-redeclare": [
          "off"
       ]
    }

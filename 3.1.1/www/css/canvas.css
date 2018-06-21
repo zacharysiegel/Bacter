@@ -1,8 +1,9 @@
 body {
 	overflow: hidden;
-	margin: 0;
-	border: 0;
-	padding: 0;
+	margin: none;
+	padding: none;
+	border: none;
+	outline: none;
 
 	/*No Selection*/
 	-webkit-touch-callout: none; /* iOS Safari */

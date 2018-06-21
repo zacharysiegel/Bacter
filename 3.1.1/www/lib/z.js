@@ -1,4 +1,4 @@
-var freq = function(arR, elM) {
+var freq = function(arR, elM) { // Get the frequency of an element in an array or string
 	let arr = arR;
 	let elm = elM;
 	let freq = 0;
@@ -15,8 +15,34 @@ var freq = function(arR, elM) {
 	}
 };
 
-var isHTMLElement = (elt) => {
-	return (elt instanceof HTMLElement);
+var capitalize = function(stR) { // Capitalize the first character of every word in the given string
+	let str = stR;
+	let arr = str.split('');
+	arr[0] = arr[0].toUpperCase();
+	for (let i = 0; i < arr.length; i++) {
+		if (arr[i] === ' ') {
+			arr[i+1] = arr[i+1].toUpperCase();
+		}
+	}
+	str = arr.join('');
+	return str;
+};
+
+var $ = function(a) { // JQuery-esque
+   switch (a[0]) { // Get the type of input
+      default: return document.getElementById(a); // If no special character is provided, input is interpreted as an id
+      case '#': return document.getElementById(a.slice(1)); // An element id follows the # symbol (convention)
+      case '.': return document.getElementsByClassName(a.slice(1)); // An element class follows the . symbol (convention)
+      case '%': return document.getElementsByTagName(a.slice(1));  // An element tag name follows the % symbol
+   }
+};
+
+var getKeys = function(obj) { // Returns an array of strings representing keys of an object
+	let arr = [];
+	for (let i in obj) {
+		arr.push(i);
+	}
+	return arr;
 };
 
 function requestFullscreen(elT) {
@@ -56,14 +82,4 @@ function isFull() {
 	} else {
 		return true;
 	}
-}
-
-var lrot = function(bin, rot) { // Bitwise left rotation
-	const shifted = bin.slice(rot);
-	const falloff = bin.slice(0, rot);
-	let fin = shifted;
-	for (let i = 0; i < rot; i++) {
-		fin += falloff.charAt(i);
-	}
-	return fin;
 }

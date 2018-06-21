@@ -1,4 +1,4 @@
-function spawn(datA) {
+function spawn(datA) { // datA: { color: {}, skin: '', team: '' }
    state = 'game';
    org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, spectate: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
@@ -6,10 +6,10 @@ function spawn(datA) {
    socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 }
 
-function spectate(datA) {
+function spectate(datA) { // datA: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
    socket.emit('Spectator Joined', game);
-   org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true });
+   org = new Org( { player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true } );
 }
 
 function renderUI() {
@@ -432,30 +432,6 @@ function runLoop() {
       }
    }
 
-   // Dots
-   // for (let i = 0; i < game.world.dots.count; i++) {
-   //    let dot = game.world.dots.array[i];
-   //    let broken = false;
-   //    for (let j = 0; j < org.count; j++) {
-   //       let cell = org.cells[j];
-   //       if (dot.x >= cell.x - cell.width / 2 && dot.x <= cell.x + cell.width / 2 && dot.y >= cell.y - cell.height / 2 && dot.y <= cell.y + cell.height / 2) {
-   //          let doT = {
-   //             i: dot.i, 
-   //             r: random(game.world.dots.r.min, game.world.dots.r.max), 
-   //             x: random(0, game.world.x + game.world.width), 
-   //             y: random(0, game.world.y + game.world.height)
-   //          };
-   //          game.world.dots.array.splice(dot.i, 1, doT); // Replace eaten dot with new random doT
-   //          socket.emit('World', game.world);
-   //          broken = true;
-   //          break;
-   //       }
-   //    }
-   //    if (broken == true) {
-   //       break;
-   //    }
-   // }
-
    socket.emit('Org', org);
    if (org.count == 0) {
       for (let i = 0; i < game.board.list.length; i++) {
@@ -776,7 +752,7 @@ function die(spectatE) {
    socket.emit('Dead', spectatE);
    org.clearIntervals();
    for (let i in ability) { // Reset Ability Cooldowns
-      if (typeof ability[i] == 'object' && i !== 'shoot') { // Avoid reference error
+      if (typeof ability[i] === 'object' && i !== 'shoot') { // Avoid reference error
          if (ability[i].activated != undefined && ability[i].activated == true) { // If is a usable ability
             clearTimeout(ability[i].timeout);
             ability[i].value = false;
@@ -797,203 +773,4 @@ function die(spectatE) {
       ability.shoot.end[i] = undefined;
    }
    socket.emit('Ability', ability);
-}
-
-function keyPressed() {
-   // if (keyCode == 65 || keyCode == 37 || keyCode == 87 || keyCode == 38 || keyCode == 68 || keyCode == 39 || keyCode == 83 || keyCode == 40) { // If a directional key
-   // 	if (keyCode == 65 || keyCode == 37) { // A or LEFT_ARROW
-   // 		org.pos.x -= 15; // Move the position 15 pixels in the indicated direction
-   // 	} else if (keyCode == 87 || keyCode == 38) { // W or UP_ARROW
-   // 		org.pos.y -= 15;
-   // 	} else if (keyCode == 68 || keyCode == 39) { // D or RIGHT_ARROW
-   // 		org.pos.x += 15;
-   // 	} else if (keyCode == 83 || keyCode == 40) { // S or DOWN_ARROW
-   // 		org.pos.y += 15;
-   // 	}
-   // 	org.off.x = org.pos.x - center.x;
-   // 	org.off.y = org.pos.y - center.y;
-   // }
-   switch (keyCode) {
-      case Controls.ability1.code: // X by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.extend.activated == true && ability.extend.can == true) {
-               extend(org.player); // Extend self
-            } else if (ability.compress.activated == true && ability.compress.can == true) {
-               shoot(0, 1);
-               // for (let i = 0; i < game.info.count; i++) {
-               // 	if (org.target == game.players[i]) { // Find targeted org
-               // 		compress(org.target); // Compress targeted org
-               // 		break;
-               // 	}
-               // }
-            } else if (ability.tag.activated == true && ability.tag.can == true) {
-               shoot(0, 1);
-            }
-            // if (ability.speed.activated == true) { (Not updated)
-            // 	speed(org.player);
-            // } else if (ability.slow.activated == true) {
-            // 	slow(org.target);
-            // }
-         }
-         break;
-      case Controls.ability2.code: // C by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.immortality.activated == true && ability.immortality.can == true) {
-               immortality(org.player); // Immortalize self
-            } else if (ability.freeze.activated == true && ability.freeze.can == true) {
-               shoot(1, 1);
-               // for (let i = 0; i < game.info.count; i++) {
-               // 	if (org.target == game.players[i]) { // Find targeted org
-               // 		freeze(org.target); // Freeze targeted org
-               // 		break;
-               // 	}
-               // }
-            }
-         }
-         break;
-      case Controls.ability3.code: // V by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
-            // 	stimulate(org.player); // Stimulate self
-            // } else if (ability.poison.activated == true && ability.poison.can == true) {
-            // 	shoot(2, 1);
-            // 	// for (let i = 0; i < game.info.count; i++) {
-            // 	// 	if (org.target == game.players[i]) { // Find targeted org
-            // 	// 		poison(org.target); // Poison targeted org
-            // 	// 		break;
-            // 	// 	}
-            // 	// }
-            // }
-            if (ability.neutralize.activated == true && ability.neutralize.can == true) {
-               neutralize(org.player);
-            } else if (ability.toxin.activated == true && ability.toxin.can == true) {
-               toxin(org.player);
-            }
-         }
-         break;
-      case Controls.ability4.code: // SPACE by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.spore.value == false && ability.secrete.value == false) {
-               spore();
-            } else if (ability.spore.value == true && ability.secrete.value == false) {
-               secrete();
-            }
-         }
-         break;
-      case Controls.respawn.code: // R by default
-         if (state == 'spectate' && org.alive == false && org.spawn == true) {
-            if (game.players.length < game.info.cap) {
-               socket.emit('Spectator Left', game.info);
-               renderMenu('respawn', game);
-            } else {
-               alert('Game is at maximum player capacity');
-            }
-         }
-         break;
-      case Controls.pause.code: { // ESC by default
-         let action = { // Speedy conditionality
-            createMenu: () => title.return(),
-            browser: () => title.return(),
-            joinMenu: () => {
-               if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
-                  title.return();
-               } else {
-                  renderBrowser();
-               }
-            },
-            spectateMenu: () => renderBrowser(),
-            game: () => renderMenu('pauseGame', game),
-            spectate: () => renderMenu('pauseSpectate', game),
-            tutorial: () => renderMenu('pauseTutorial', tutorial),
-            respawnMenu: () => menus.pauseSpectate.submit(),
-            pauseGameMenu: () => menus.pauseGame.submit(),
-            pauseSpectateMenu: () => menus.pauseSpectate.submit(),
-            pauseTutorialMenu: () => menus.pauseTutorial.submit()
-         };
-         if (typeof action[state] == 'function') {
-            action[state]();
-         }
-         break;
-      }
-   }
-   // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
-   switch (keyCode) {
-      case 13: // ENTER
-         switch (state) {
-            case 'createMenu':
-               menus.create.submit();
-               break;
-            case 'joinMenu':
-               menus.join.submit(game);
-               break;
-            case 'spectateMenu':
-               menus.spectate.submit(game);
-               break;
-            case 'respawnMenu':
-               menus.respawn.submit(game);
-               break;
-            case 'pauseMenu':
-               menus.pause.submit(game);
-               break;
-         }
-         break;
-      case 27 !== Controls.pause.code ? 27 : '': // ESCAPE only if variable pause key is not ESCAPE
-         switch (state) { // Used as the back key for menus (variable pause key may be used as well)
-            case 'createMenu':
-               title.return();
-               break;
-            case 'browser':
-               title.return();
-               break;
-            case 'joinMenu':
-               if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
-                  title.return();
-               } else {
-                  renderBrowser();
-               }
-               break;
-            case 'spectateMenu':
-               renderBrowser();
-               break;
-            case 'respawnMenu':
-               menus.pauseSpectate.submit();
-               break;
-            case 'pauseGameMenu':
-               menus.pauseGame.submit();
-               break;
-            case 'pauseSpectateMenu':
-               menus.pauseSpectate.submit();
-               break;
-            case 'pauseTutorialMenu':
-               menus.pauseTutorial.submit();
-               break;
-         }
-         break;
-   }
-}
-
-function mouseClicked() {
-   if (mouseButton == LEFT) {
-      // if (state == 'game') { // DO NOT DELETE
-      //    { // Targeting
-      //       org.target = undefined; // Clear target if click not on opponent org
-      //       for (let i = 0; i < game.info.count; i++) {
-      //          if (game.orgs[i].player == org.player) { // If org is player's org
-      //             continue; // Cannot target oneself
-      //          }
-      //          if (mouseX + org.off.x >= game.orgs[i].clickbox.left && mouseX + org.off.x <= game.orgs[i].clickbox.right && mouseY + org.off.y >= game.orgs[i].clickbox.top && mouseY + org.off.y <= game.orgs[i].clickbox.bottom) { // If clicked another org
-      //             org.target = game.orgs[i].player;
-      //             break;
-      //          }
-      //       }
-      //    }
-      // }
-      return false;
-   } else if (mouseButton == RIGHT) {
-      return false;
-   } else if (mouseButton == CENTER) {
-      return false;
-   }
 }

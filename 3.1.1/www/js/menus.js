@@ -1,617 +1,1280 @@
 var menus = {
-   width: 900,
-   top: 0,
-   padding: 0,
-   color: { r: 240, g: 240, b: 240 },
-   header: {
-      padding: 9,
-      height: 32,
-      backgroundColor: { r: 0, g: 0, b: 0 },
-      color: { r: 255, g: 255, b: 255 },
-      font: 'Verdana',
-      size: 16,
-      weight: 'bold'
-   },
-   rows: {
-      height: 21,
-      color: { r: 255, g: 255, b: 255 },
-      margin: 0,
-      padding: 0
-   },
-   cells: {
-      count: 2,
-      margin: 0,
-      padding: 5,
-      border: {
-         color: { r: 0, g: 0, b: 0 },
-         width: 0,
-         style: 'solid'
-      }
-   },
-   text: {
-      color: { r: 0, g: 0, b: 0 },
-      font: 'Georgia, serif',
-      size: 15
-   },
-   inputs: {
-      color: { r: 0, g: 0, b: 0 },
-      backgroundColor: { r: 230, g: 230, b: 230 },
-      border: {
-         color: { r: 50, g: 50, b: 50 },
-         width: 2,
-         radius: 3,
-         style: 'solid'
-      },
-      width: 100,
-      height: 26,
-      font: 'serif',
-      size: 14
-   },
-   radios: {
-      width: 16,
-      height: 18,
-      backgroundColor: { r: 255, g: 255, b: 255 },
-      selectColor: { r: 190, g: 190, b: 190 }
-   },
-   border: {
-      color: { r: 0, g: 0, b: 0 },
-      width: 0,
-      style: 'solid'
-   },
-   button: {
-      width: 95,
-      height: 33,
-      backgroundColor: { r: 240, g: 240, b: 240 },
-      color: { r: 0, g: 0, b: 0 },
-      font: 'Gerogia, serif',
-      size: 16,
-      weight: 'bold',
-      top: 20,
-      borderRadius: 2,
-   },
-   footer: {
-      backgroundColor: { r: 0, g: 0, b: 0 },
-      color: { r: 255, g: 255, b: 255 },
-      height: 30,
-      font: 'Verdana',
-      size: 15
-   },
    create: {
-      header: {
-         text: 'Game Creation Options'
-      },
-      button: {
-         text: 'Create'
-      },
-      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Cap', 'Leaderboard Length', 'Game Mode'], // Team count not included because ffa is default
-      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'list'],
-      units: [undefined, undefined, 'px', 'px'],
-      editNums: function() {
-         { // World Width and Height
-            let widthInput = document.getElementById('World Width Input');
-            let heightInput = document.getElementById('World Height Input');
-            if (widthInput != null && heightInput != null) { // Prevents listener stacking
-               widthInput.placeholder = _worldwidth;
-               heightInput.placeholder = _worldheight;
-               let modeInput = document.getElementById('Game Mode Input');
-               if (modeInput.value == 'ctf') {
-                  widthInput.min = 700;
-                  heightInput.min = 700;
-               } else {
-                  widthInput.min = 300;
-                  heightInput.min = 300;
-               }
-               widthInput.max = 100000;
-               heightInput.max = 100000;
-               let wmin = parseFloat(widthInput.min);
-               let wmax = parseFloat(widthInput.max);
-               let hmin = parseFloat(heightInput.min);
-               let hmax = parseFloat(heightInput.max);
-               widthInput.addEventListener('change', function() {
-                  if (parseFloat(widthInput.value) < wmin) {
-                     widthInput.value = wmin;
-                  } else if (parseFloat(widthInput.value) > wmax) {
-                     widthInput.value = wmax;
-                  }
-                  if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-                     heightInput.value = parseFloat(widthInput.value);
-                  }
-               });
-               heightInput.addEventListener('change', function() {
-                  if (parseFloat(heightInput.value) < hmin) {
-                     heightInput.value = hmin;
-                  } else if (parseFloat(heightInput.value) > hmax) {
-                     heightInput.value = hmax;
-                  }
-                  if (parseFloat(widthInput.value) != parseFloat(heightInput.value)) {
-                     widthInput.value = parseFloat(heightInput.value);
-                  }
-               });
+      header: 'Game Creation Options',
+      button: 'Create',
+      options: [ 'Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode' ],
+      values:  [ 'text',       'text',     'list',       'number',      'number',       'number',         'number',     'number',     'number',             'list'      ]
+   },
+   join: {
+      header: 'Join Game Options',
+      button: 'Join',
+      options: [ 'Screen Name', 'Password', 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign' ],
+      values:  [ 'text',        'text',     'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'     ]
+   },
+   spectate: {
+      header: 'Spectate Game Options',
+      button: 'Spectate',
+      options: [ 'Screen Name', 'Password' ],
+      values:  [ 'text',        'text'     ]
+   },
+   respawn: {
+      header: 'Respawn Options',
+      button: 'Respawn',
+      options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game' ],
+      values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'    , 'button'     ]
+   },
+   pauseGame: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: [ 'Color', 'Skin',    'Name Labels', 'Messages', 'Leave Game' ],
+      values:  [ 'list',  '3 radio', '1 radio',     '1 radio',  'button'     ]
+   },
+   pauseSpectate: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: [ 'Name Labels', 'Messages', 'Leave Game' ],
+      values:  [ '1 radio',     '1 radio',  'button'     ]
+   },
+   pauseTutorial: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: [ 'Leave Game' ],
+      values:  [ 'button'     ]
+   }
+};
+
+function renderMenu(typE, datA) {
+   if (state.indexOf('Menu') !== -1 && typE !== state.slice(0, -4)) { // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+      ReactDOM.unmountComponentAtNode($('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+   }
+   ReactDOM.render(<Menu type={typE} data={datA} />, $('cont')); // Render instance of Menu component class in container with id 'cont'
+   cnv = createCanvas(window.innerWidth, window.innerHeight); // Create p5 canvas
+   cnv.parent('#canvascont'); // Set CanvasCont (id='canvascont') as p5 canvas parent
+   state = typE + 'Menu'; // Game state - not component state
+}
+
+class Menu extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         instances: [], // Array of instances which should be displayed
+         values: Array(menus[props.type].options.length).fill(''), // Array of input values; includes all possible inputs, not just those rendered
+         issues: Array(menus[props.type].options.length + 1).fill([]) // +1 because issues includes issues which do not apply to any one instance
+      }; // Component state - not game state
+      this.type = props.type;
+      this.data = props.data;
+
+      this.instantiate = this.instantiate.bind(this);
+      this.update = this.update.bind(this);
+      this.issue = this.issue.bind(this);
+      if (this.type === 'join' || this.type === 'spectate' || this.type === 'respawn') {
+         game = props.data;
+      } // join, spectate, and respawn are the only menu types which use the data property
+      this.instantiate(); // Set initial instances
+   }
+
+   instantiate() { // Set initial instances of menus; called only inside constructor (do not use setState(), change state literally)
+      let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set instances to all possible options to start
+      switch (this.type) {
+         case 'create':
+            insts.splice(insts.indexOf('player minimum'), 1); // Remove player min (ffa is selected by default)
+            insts.splice(insts.indexOf('team count'), 1); // Remove team count (ffa is selected by default)
+            break;
+         case 'join':
+            if (!this.data.info.protected || this.data.info.host === socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+               insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
+            switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
+               case 'ffa':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'skm':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by team selection)
+                  break;
+               case 'srv':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'ctf':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by team selection)
+                  break;
+               case 'inf':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by assigned infected status)
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'kth':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
             }
-         } { // Player Cap
-            let pcInput = document.getElementById('Player Cap Input');
-            if (pcInput != null) { // Prevents listener stacking
-               pcInput.placeholder = _playercap;
-               pcInput.min = 2;
-               pcInput.addEventListener('change', function() {
-                  if (parseFloat(pcInput.value) < parseFloat(pcInput.min)) {
-                     pcInput.value = parseFloat(pcInput.min);
-                  }
-               });
+            break;
+         // case 'spectate': break; // All possible optons are always used in spectate menu
+         case 'respawn':
+            switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
+               case 'ffa':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'skm':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by team selection)
+                  break;
+               case 'srv':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'ctf':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by team selection)
+                  break;
+               case 'inf':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set by assigned infected status)
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
+               case 'kth':
+                  insts.splice(insts.indexOf('team'), 1); // Remove team selection (not team mode)
+                  insts.splice(insts.indexOf('auto assign'), 1); // Remove auto assign to team (not team mode)
+                  break;
             }
-         } { // Player Minimum
-            let pmInput = document.getElementById('Player Minimum Input');
-            if (pmInput != null) {
-               pmInput.placeholder = _playermin;
-               pmInput.min = 2;
-               pmInput.addEventListener('change', function() {
-                  if (pmInput != null) {
-                     if (parseFloat(pmInput.value) < parseFloat(pmInput.min)) {
-                        pmInput.value = parseFloat(pmInput.min);
-                     }
-                     let tcInput = document.getElementById('Team Count Input');
-                     if (tcInput != null) {
-                        if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
-                           pmInput.value = parseFloat(tcInput.value);
-                        }
-                     }
-                  }
-               });
+            break;
+         case 'pauseGame':
+            switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
+               case 'skm': // If players are sorted into teams/groups
+               case 'ctf':
+               case 'inf':
+                  insts.splice(insts.indexOf('color'), 1); // Remove color selection (color set automatically)
+                  break;
             }
-         } { // Leaderboard Length
-            let boardLengthInput = document.getElementById('Leaderboard Length Input');
-            if (boardLengthInput != null) {
-               boardLengthInput.placeholder = _boardlength;
-               boardLengthInput.min = 1;
-               boardLengthInput.max = 20;
-               boardLengthInput.addEventListener('change', function() {
-                  if (boardLengthInput != null) {
-                     if (parseFloat(boardLengthInput.value) < parseFloat(boardLengthInput.min)) {
-                        boardLengthInput.value = parseFloat(boardLengthInput.min);
-                     } else if (parseFloat(boardLengthInput.value) > parseFloat(boardLengthInput.max)) {
-                        boardLengthInput.value = parseFloat(boardLengthInput.max);
-                     }
-                     if (parseFloat(boardLengthInput.value) % 1 != 0) { // If length is not an integer
-                        boardLengthInput.value = floor(parseFloat(boardLengthInput.value));
-                     }
-                  }
-               });
+            break;
+         // case 'pauseSpectate': break; // All possible optons are always used in pause spectate menu
+         // case 'pauseTutorial': break; // All possible optons are always used in pause tutorial menu
+      }
+      this.state.instances = insts; // Only set state value literally in constructor, else use setState()
+   }
+   update(instance, valuE) { // The purpose of update is to update the state of the menu depending on input values
+      let value = valuE;
+      let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set local instances to lowercase options
+      let vals = this.state.values;
+      let index = menus[this.type].options.indexOf(capitalize(instance));
+      let elt = $(instance + ' input'); // DOM node of instance input
+      let wInput = $('world width input'); // Width input DOM node
+      let hInput = $('world height input'); // Height input DOM node
+      let pmInput = $('player minimum input'); // Player minimum input DOM node
+      let tcInput = $('team count input'); // Team count input DOM node
+      let teamInput = $('team input'); // Team selections input DOM node
+      let wI = menus[this.type].options.indexOf('World Width'); // Width input index (options and state values)
+      let hI = menus[this.type].options.indexOf('World Height'); // Height input index (options and state values)
+      let pmI = menus[this.type].options.indexOf('Player Minimum'); // Player minimum input index (options and state values)
+      let tcI = menus[this.type].options.indexOf('Team Count'); // Team count input index (options and state values)
+      if (menus[this.type].values[index] === 'number') { // Special editorial actions for number inputs only
+         value = parseFloat(value) ? parseFloat(value) : 0;
+         if (value % 1 !== 0) { // If value is not an integer, set it to the greatest integer
+            value = floor(value);
+         }
+      }
+      vals[index] = value; // Update input value
+      switch (instance) {
+         case 'world width':
+            vals[hI] = value; // Set world height value to given world width value (hI is hInput index in options array)
+            break;
+         case 'world height':
+            vals[wI] = value; // Set world width value to given world height value (wI is wInput index in options array)
+            break;
+         case 'player minimum':
+            if (tcInput && parseFloat(vals[tcI]) > value) // If team count is greater than player minimum
+               vals[tcI] = value; // Reduce team count to player minimum value (tcI is tcInput index in options array)
+            break;
+         case 'team count':
+            if (pmInput && parseFloat(vals[pmI]) > value) // If player minimum is greater than team count
+               vals[pmI] = value; // Reduce player minimum to team count (pmI is pmInput index in options array)
+            break;
+         case 'game mode': // Updates based upon game mode input changes
+            // Set displayed instances and special attributes
+            if (wInput) wInput.min = 300; // Set default width minimum value
+            if (hInput) hInput.min = 300; // Set default height minimum value
+            switch (value) {
+               case 'ffa':
+                  insts.splice(insts.indexOf('player minimum'), 1); // Remove player min
+                  insts.splice(insts.indexOf('team count'), 1); // Remove team count
+                  break;
+               case 'skm':
+                  insts.splice(insts.indexOf('player minimum'), 1); // Remove player min
+                  insts.splice(insts.indexOf('leaderboard length'), 1); // Remove leaderboard length
+                  break;
+               case 'srv':
+                  insts.splice(insts.indexOf('team count'), 1); // Remove team count
+                  break;
+               case 'ctf':
+                  insts.splice(insts.indexOf('leaderboard length'), 1); // Remove leaderboard length
+                  if (wInput) wInput.min = 700; // Dimensional minimums increase in ctf mode
+                  if (hInput) hInput.min = 700;
+                  break;
+               case 'inf':
+                  insts.splice(insts.indexOf('team count'), 1); // Remove team count
+                  break;
+               case 'kth':
+                  insts.splice(insts.indexOf('team count'), 1); // Remove team count
+                  break;
             }
-         } { // Team Count
-            let tcInput = document.getElementById('Team Count Input');
-            if (tcInput != null) {
-               tcInput.placeholder = _teamcount;
-               tcInput.min = 2;
-               tcInput.max = teamColors.length; // = 4
-               tcInput.addEventListener('change', function() {
-                  if (tcInput != null) {
-                     if (parseFloat(tcInput.value) < parseFloat(tcInput.min)) {
-                        tcInput.value = parseFloat(tcInput.min);
-                     } else if (parseFloat(tcInput.value) > parseFloat(tcInput.max)) {
-                        tcInput.value = parseFloat(tcInput.max);
-                     }
-                     if (parseFloat(tcInput.value) % 1 != 0) { // If length is not an integer
-                        tcInput.value = floor(parseFloat(tcInput.value));
-                     }
-                     let pmInput = document.getElementById('Player Minimum Input');
-                     if (pmInput != null) {
-                        if (parseFloat(tcInput.value) > parseFloat(pmInput.value) || pmInput.value == '') {
-                           pmInput.value = parseFloat(tcInput.value);
-                        }
-                     }
-                  }
-               });
+            this.setState({ instances: insts });
+            break;
+         case 'auto assign':
+            if (value) teamInput.disabled = true; // If auto assign is selected, disable team selection input
+            else teamInput.disabled = false;
+            break;
+      }
+      for (let i = 0; i < vals.length; i++) {
+         if (vals[i] === 0) // If number (only number because of type comparison in ===) input value is 0 or empty (if empty would have already converted to 0)
+            vals[i] = ''; // Replace with an empty string so placeholder is rendered instead of 0
+      }
+      this.setState({ values: vals }); // Update values in state
+   }
+   issue(issues) { // issues: Array[ { instance: 'message' } ]
+      let iss = issues;
+      let count = iss.length;
+      let stateIssues = []; // Issues array to be stored in state: Array1[ Array2[ 'message0', ..., 'messageN' ] ] (index of Array1 refers to instance as in options array) (different format than incoming issues)
+      for (let i = 0; i < menus[this.type].options.length; i++) {
+         let instance = menus[this.type].options[i].toLowerCase(); // Save instance value from options into instance variable
+         stateIssues.push([]); // There exists an issues array for each possible option
+         for (let j = 0; j < count; j++) {
+            if (getKeys(iss[j])[0] === instance) { // If instance of issue is instance from options array
+               stateIssues[i].push(iss[j][instance]); // Add issue to messages array within instance index of state issues array
+               iss.splice(j, 1); // Remove issue from inputted issues array so it is not unnecessarily looped through
+               count--; // count must be reduced since length of iss is reduced
+               j--; // j must be reduced since the entire array is shifted back after splicing, so j need not be incremented (always do this after splicing iterated array)
             }
          }
-      },
-      editLists: function() {
-         { // World Type
-            let wtInput = document.getElementById('World Type Input');
-            if (wtInput != null) { // Prevents listener stacking
-               let rectOption = document.createElement('option');
-               wtInput.appendChild(rectOption);
-               rectOption.value = 'Rectangle';
-               rectOption.selected = 'selected';
-               rectOption.innerHTML = 'Square';
-               let ellipseOption = document.createElement('option');
-               wtInput.appendChild(ellipseOption);
-               ellipseOption.value = 'Ellipse';
-               ellipseOption.innerHTML = 'Circle';
-            }
+      }
+      if (iss.length) { // If there are any remaining issues (issues with instance '' which do not apply to any single input)
+         stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu
+         for (let i = 0; i < count; i++) { // count is the number of remaining issues
+            let key = getKeys(iss[i])[0];
+            stateIssues[stateIssues.length - 1].push(iss[i][key]); // Add reamining issues to last index of state issues array because they are displayed after all other issues at the bottom of the menu
          }
-         // { // World Color
-         // 	let worldColorInput = document.getElementById('World Color Input');
-         // 	let blackOption = document.createElement('option');
-         // 	worldColorInput.appendChild(blackOption);
-         // 	blackOption.value = 'Black';
-         // 	blackOption.selected = 'selected';
-         // 	blackOption.style.backgroundColor = 'rgb(0, 0, 0)';
-         // 	blackOption.style.color = 'rgb(255, 255, 255)';
-         // 	blackOption.innerHTML = 'Black';
-         // 	let whiteOption = document.createElement('option');
-         // 	worldColorInput.appendChild(whiteOption);
-         // 	whiteOption.value = 'White';
-         // 	whiteOption.style.backgroundColor = 'rgb(255, 255, 255)';
-         // 	whiteOption.style.color = 'rgb(0, 0, 0)';
-         // 	whiteOption.innerHTML = 'White';
-         // }
-         { // Game Mode
-            let modeInput = document.getElementById('Game Mode Input');
-            if (modeInput != null) { // Prevents listener stacking
-               let ffaOption = document.createElement('option');
-               ffaOption.value = 'ffa';
-               ffaOption.selected = 'selected';
-               ffaOption.innerHTML = 'Free for All';
-               modeInput.appendChild(ffaOption);
-               let skmOption = document.createElement('option');
-               skmOption.value = 'skm';
-               skmOption.innerHTML = 'Skirmish';
-               modeInput.appendChild(skmOption);
-               let srvOption = document.createElement('option');
-               srvOption.value = 'srv';
-               srvOption.innerHTML = 'Survival';
-               modeInput.appendChild(srvOption);
-               let ctfOption = document.createElement('option');
-               ctfOption.value = 'ctf';
-               ctfOption.innerHTML = 'Capture the Flag';
-               ctfOption.disabled = 'disabled';
-               modeInput.appendChild(ctfOption);
-               let infOption = document.createElement('option');
-               infOption.value = 'inf';
-               infOption.innerHTML = 'Infection';
-               infOption.disabled = 'disabled';
-               modeInput.appendChild(infOption);
-               let kthOption = document.createElement('option');
-               kthOption.value = 'kth';
-               kthOption.innerHTML = 'King of the Hill';
-               kthOption.disabled = 'disabled';
-               modeInput.appendChild(kthOption);
-               modeInput.addEventListener('change', function() {
-                  // Leaderboard Length & Team Count
-                  if (modeInput.value == 'ctf') { // Set world width and height
-                     let widthInput = document.getElementById('World Width Input');
-                     let heightInput = document.getElementById('World Height Input');
-                     let width = parseFloat(widthInput.value);
-                     let height = parseFloat(widthInput.value);
-                     let wmin = 700;
-                     let hmin = 700;
-                     if (width < wmin || height < hmin) {
-                        widthInput.value = wmin;
-                        heightInput.value = hmin;
-                     }
-                  }
-                  if (modeInput.value == 'skm' || modeInput.value == 'ctf') { // If team game
-                     if (document.getElementById('Leaderboard Length Input') != null) { // If leaderboard length input is present
-                        let row = document.getElementById('Leaderboard Length Input').parentNode.parentNode;
-                        row.parentNode.removeChild(row); // Remove Leaderboard Length option
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                     if (document.getElementById('Team Count Input') == null) { // If team count input not present
-                        let modeInput = document.getElementById('Game Mode Input'); // Create Team Count Option
-                        let modeCell = modeInput.parentNode;
-                        let modeRow = modeCell.parentNode;
-                        let tableBody = modeRow.parentNode;
-                        let row = document.createElement('tr');
-                        tableBody.insertBefore(row, modeRow);
-                        left = document.createElement('td');
-                        row.appendChild(left);
-                        left.style.margin = menus.cells.margin + 'px';
-                        left.style.padding = menus.cells.padding + 'px';
-                        left.style.width = menus.width / 2 + 'px';
-                        left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        left.style.borderWidth = menus.cells.border.width + 'px';
-                        left.style.borderStyle = menus.cells.border.style;
-                        left.style.textAlign = 'right';
-                        left.innerHTML = 'Team Count';
-                        right = document.createElement('td');
-                        row.appendChild(right);
-                        right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        right.style.borderWidth = menus.cells.border.width + 'px';
-                        right.style.borderStyle = menus.cells.border.style;
-                        tcInput = document.createElement('input');
-                        right.appendChild(tcInput);
-                        tcInput.id = 'Team Count Input';
-                        tcInput.style.width = menus.inputs.width + 'px';
-                        tcInput.style.height = menus.inputs.height + 'px';
-                        tcInput.type = 'number';
-                        tcInput.value = '';
-                        tcInput.style.autocomplete = 'on';
-                        tcInput.style.boxSizing = 'border-box';
-                        tcInput.style.textAlign = 'center';
-                        tcInput.style.fontFamily = menus.inputs.font;
-                        tcInput.style.fontSize = menus.inputs.size + 'px';
-                        tcInput.style.outline = 'none';
-                        tcInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        tcInput.style.borderWidth = '0px';
-                        tcInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-                        tcInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-                        tcInput.style.borderRadius = menus.inputs.border.radius + 'px';
-                        tcInput.addEventListener('focus', function() {
-                           tcInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-                        });
-                        tcInput.addEventListener('focusout', function() {
-                           tcInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        });
-                        menus.create.editNums();
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                  } else { // If not a team game
-                     if (document.getElementById('Leaderboard Length Input') == null) { // If leaderboard length input is not present
-                        let modeCell = modeInput.parentNode; // Create Leaderboard Length Option
-                        let modeRow = modeCell.parentNode;
-                        let tableBody = modeRow.parentNode;
-                        let row = document.createElement('tr');
-                        tableBody.insertBefore(row, modeRow);
-                        left = document.createElement('td');
-                        row.appendChild(left);
-                        left.style.margin = menus.cells.margin + 'px';
-                        left.style.padding = menus.cells.padding + 'px';
-                        left.style.width = menus.width / 2 + 'px';
-                        left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        left.style.borderWidth = menus.cells.border.width + 'px';
-                        left.style.borderStyle = menus.cells.border.style;
-                        left.style.textAlign = 'right';
-                        left.innerHTML = 'Leaderboard Length';
-                        right = document.createElement('td');
-                        row.appendChild(right);
-                        right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        right.style.borderWidth = menus.cells.border.width + 'px';
-                        right.style.borderStyle = menus.cells.border.style;
-                        lengthInput = document.createElement('input');
-                        right.appendChild(lengthInput);
-                        lengthInput.id = 'Leaderboard Length Input';
-                        lengthInput.style.width = menus.inputs.width + 'px';
-                        lengthInput.style.height = menus.inputs.height + 'px';
-                        lengthInput.type = 'number';
-                        lengthInput.value = '';
-                        lengthInput.style.autocomplete = 'on';
-                        lengthInput.style.boxSizing = 'border-box';
-                        lengthInput.style.textAlign = 'center';
-                        lengthInput.style.fontFamily = menus.inputs.font;
-                        lengthInput.style.fontSize = menus.inputs.size + 'px';
-                        lengthInput.style.outline = 'none';
-                        lengthInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        lengthInput.style.borderWidth = '0px';
-                        lengthInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-                        lengthInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-                        lengthInput.style.borderRadius = menus.inputs.border.radius + 'px';
-                        lengthInput.addEventListener('focus', function() {
-                           lengthInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-                        });
-                        lengthInput.addEventListener('focusout', function() {
-                           lengthInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        });
-                        menus.create.editNums();
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                     if (document.getElementById('Team Count Input') != null) { // If team count input is not present
-                        let tcInput = document.getElementById('Team Count Input'); // Remove Team Count Option
-                        let cell = tcInput.parentNode;
-                        let row = cell.parentNode;
-                        row.parentNode.removeChild(row);
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                  }
-                  // Player Minimum
-                  let pmInput = document.getElementById('Player Minimum Input');
-                  if (modeInput.value == 'ffa' || modeInput.value == 'skm') {
-                     if (pmInput != null) { // If player minimum option is present
-                        let cell = pmInput.parentNode; // Remove player minimum option
-                        let row = cell.parentNode;
-                        row.parentNode.removeChild(row);
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                  } else if (modeInput.value == 'srv' || modeInput.value == 'ctf' || modeInput.value == 'inf' || modeInput.value == 'kth') {
-                     if (pmInput == null) { // If player minimum option is not present
-                        let capInput = document.getElementById('Player Cap Input'); // Add player minimum option
-                        let capCell = capInput.parentNode;
-                        let capRow = capCell.parentNode;
-                        let tableBody = capRow.parentNode;
-                        let row = document.createElement('tr');
-                        tableBody.insertBefore(row, capRow);
-                        left = document.createElement('td');
-                        row.appendChild(left);
-                        left.style.margin = menus.cells.margin + 'px';
-                        left.style.padding = menus.cells.padding + 'px';
-                        left.style.width = menus.width / 2 + 'px';
-                        left.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        left.style.borderWidth = menus.cells.border.width + 'px';
-                        left.style.borderStyle = menus.cells.border.style;
-                        left.style.textAlign = 'right';
-                        left.innerHTML = 'Player Minimum';
-                        right = document.createElement('td');
-                        row.appendChild(right);
-                        right.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-                        right.style.borderWidth = menus.cells.border.width + 'px';
-                        right.style.borderStyle = menus.cells.border.style;
-                        pmInput = document.createElement('input');
-                        right.appendChild(pmInput);
-                        pmInput.id = 'Player Minimum Input';
-                        pmInput.style.width = menus.inputs.width + 'px';
-                        pmInput.style.height = menus.inputs.height + 'px';
-                        pmInput.type = 'number';
-                        pmInput.value = '';
-                        pmInput.style.autocomplete = 'on';
-                        pmInput.style.boxSizing = 'border-box';
-                        pmInput.style.textAlign = 'center';
-                        pmInput.style.fontFamily = menus.inputs.font;
-                        pmInput.style.fontSize = menus.inputs.size + 'px';
-                        pmInput.style.outline = 'none';
-                        pmInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        pmInput.style.borderWidth = '0px';
-                        pmInput.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-                        pmInput.style.borderBottomWidth = menus.inputs.border.width + 'px';
-                        pmInput.style.borderRadius = menus.inputs.border.radius + 'px';
-                        pmInput.addEventListener('focus', function() {
-                           pmInput.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-                        });
-                        pmInput.addEventListener('focusout', function() {
-                           pmInput.style.backgroundColor = 'rgb(255, 255, 255)';
-                        });
-                        menus.create.editNums();
-                        let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                        for (let i = 0; i < rows.length; i++) {
-                           let row = rows[i];
-                           row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                           if (i % 2 == 0) {
-                              row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                           }
-                        }
-                     }
-                  }
+      }
+      this.setState({ issues: stateIssues });
+   }
+
+   render() {
+      let rows = [];
+      for (let i = 0; i < menus[this.type].options.length; i++) {
+         let instance = menus[this.type].options[i].toLowerCase(); // instance: name of input for identification purposes
+         if (this.state.instances.indexOf(instance) === -1) { // If local instance is not found within stated instances of the menu
+            continue; // it should not be rendered in the menu
+         } // Allows menus[type].xxxx[i] to be used in this loop without having to check if it should exist within the menu
+         let input;
+         if (menus[this.type].values[i] === 'text') {
+            input = <Text   key={instance} menuType={this.type} instance={instance} value={this.state.values[i]} update={this.update} submit={submit.bind(this)} />; // menuType: which menu is to be rendered
+         } else if (menus[this.type].values[i] === 'number') {
+            input = <Num    key={instance} menuType={this.type} instance={instance} value={this.state.values[i]} update={this.update} submit={submit.bind(this)} />;
+         } else if (menus[this.type].values[i] === 'list') {
+            input = <List   key={instance} menuType={this.type} instance={instance} value={this.state.values[i]} update={this.update} submit={submit.bind(this)} />; // instance: name of list to tell what to render
+         } else if (menus[this.type].values[i].indexOf('radio') !== -1) { // If 'radio' is anywhere within string
+            input = <Radios key={instance} menuType={this.type} instance={instance} value={this.state.values[i]} update={this.update} submit={submit.bind(this)} count={parseInt(menus[this.type].values[i])} />;
+         } else if (menus[this.type].values[i] === 'button') {
+            input = <Button key={instance} menuType={this.type} instance={instance} />; // Button does not need update since it has no internal value
+         } else {
+            input = menus[this.type].values[i];
+         }
+         let issues = this.state.issues[i].map((iss, ix) => (
+            <p key={ix} 
+            style={ { 
+               color: 'red', 
+               display: (this.state.issues[i].length ? 'block' : 'none'), 
+               margin: '5px 0px 3px 0px'
+            } }>{iss}</p>
+         ));
+         let row = (
+            <tr className='menurow' key={instance}>
+               <td className='menucell' key={0} style={ { textAlign: 'right' } }>{menus[this.type].options[i]}</td>
+               <td className='menucell' key={1} style={ { textAlign: 'left' } }>
+                  {input}
+                  {issues}
+               </td>
+            </tr>
+         );
+         rows.push(row);
+      }
+      if (this.state.issues[this.state.issues.length - 1].length) { // If there are non-specific issues, display them in an additional row at the bottom of the menu
+         let row = (
+            <tr className='menurow' key={'nonspecissues'}>
+               <td className='menucell' key={0}></td>
+               <td className='menucell' key={1} style={ { textAlign: 'left' } }>
+                  {this.state.issues[this.state.issues.length - 1].map((iss, ix) => (
+                     <p key={ix} 
+                     style={ { 
+                        color: 'red', 
+                        display: 'block', 
+                        margin: '5px 0px 3px 0px'
+                     } }>{iss}</p>
+                  ))}
+               </td>
+            </tr>
+         );
+         rows.push(row);
+      }
+
+      return ( // CanvasCont: zIndex = '-2'; Shade: z-index = '-1'; Menu: zIndex = '1'; (Unpredictable behavior if shade is 0)
+         <div id='menu'>
+            <Shade />
+            <CanvasCont />
+            <div id={this.type + 'Header'} className='header' style={ { zIndex: '1', opacity: '.95' } }>
+               <h2 className='headertext'>{menus[this.type].header}</h2>
+            </div>
+            <div className='content' style={ { zIndex: '1' } }>
+               <table id={this.type + 'Table'} className='menutable'>
+                  <tbody id='Menu Body'>
+                     {rows}
+                  </tbody>
+               </table>
+               <MenuSubmit menuType={this.type} values={this.state.values} submit={submit.bind(this)} />
+            </div>
+            <MenuFooter menuType={this.type} submit={submit.bind(this)} />
+         </div>
+      );
+   }
+}
+
+class Text extends React.Component { // Each input-type component renders a table row containing the input type
+   constructor(props) {
+      super(props);
+      this.state = {
+         value: props.value,
+         focused: false, // If the user is focused on the field
+         backgroundColor: 'rgb(255, 255, 255)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+      };
+      this.style = {};
+      this.menuType = props.menuType;
+      this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      this.applyInstance = this.applyInstance.bind(this);
+      this.handleFocus = this.handleFocus.bind(this);
+      this.handleChange = this.handleChange.bind(this);
+      this.handleKeyDown = this.handleKeyDown.bind(this);
+   }
+   applyInstance() {
+      switch (this.instance) {
+         case 'password':
+            if (this.menuType === 'join') // Caution: password instance exists in create and join menus
+               socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
+            break;
+      }
+   }
+
+   handleFocus(e) {
+      if (e.type === 'focus') {
+         this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
+      } else if (e.type === 'blur') {
+         this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
+      }
+   }
+   handleChange(e) { // e.target is dom element of target
+      this.props.update(this.instance, e.target.value);
+      if (this.instance === 'password' && this.menuType === 'join') {
+         socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
+      }
+   }
+   handleKeyDown(e) {
+      if (e.keyCode === 13) // If ENTER key is down
+         this.props.submit(this.menuType);
+   }
+
+   componentWillMount() {
+      this.applyInstance();
+   }
+   componentDidMount() {
+      this.props.update(this.instance, this.state.value);
+   }
+   componentWillReceiveProps(next) {
+      this.setState({ value: next.value });
+   }
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+      style.backgroundColor = this.state.backgroundColor;
+
+      return (
+         <input 
+            id={this.instance + ' input'} 
+            className='menuinput' 
+            type='text' 
+            value={this.state.value} 
+            autoComplete='off' 
+            style={style} 
+            onFocus={this.handleFocus} 
+            onBlur={this.handleFocus} 
+            onChange={this.handleChange} 
+            onKeyDown={this.handleKeyDown}
+         ></input>
+      );
+   }
+}
+
+class Num extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         value: props.value, // Actuall value of the input field
+         focused: false, // If the user is focused on the field
+         backgroundColor: 'rgb(255, 255, 255)',
+         display: 'table-row' // Indicates whether 'display: none' property will be set on the container table row
+      };
+      this.style = {};
+      this.menuType = props.menuType; // Type of menu rendered inside
+      this.instance = props.instance; // Name of input
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      this.placeholder = null;
+
+      this.applyInstance = this.applyInstance.bind(this);
+      this.handleFocus = this.handleFocus.bind(this);
+      this.handleChange = this.handleChange.bind(this);
+      this.handleKeyDown = this.handleKeyDown.bind(this);
+   }
+   applyInstance() {
+      switch (this.instance) {
+         case 'world width':
+            this.placeholder = Defaults.worldwidth;
+            this.min = 300;
+            this.max = 100000;
+            break;
+         case 'world height':
+            this.placeholder = Defaults.worldheight;
+            this.min = 300;
+            this.max = 100000;
+            break;
+         case 'player minimum':
+            this.placeholder = Defaults.playermin;
+            this.min = 2;
+            break;
+         case 'player cap':
+            this.placeholder = Defaults.playercap;
+            this.min = 2;
+            break;
+         case 'leaderboard length':
+            this.placeholder = Defaults.boardlength;
+            this.min = 1;
+            this.max = 20;
+            break;
+         case 'team count':
+            this.placeholder = Defaults.teamcount;
+            this.min = 2;
+            this.max = teamColors.length;
+            break;
+      }
+   }
+
+   handleFocus(e) {
+      if (e.type === 'focus') { // If focus in
+         this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' }); // Darken
+      } else if (e.type === 'blur') { // If focus out
+         this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' }); // Lighten
+      }
+   }
+   handleChange(e) {
+      let val = e.target.value; // Create local, editable value
+      if (e.target.value % 1 !== 0) // If value is not an integer
+         val = floor(val); // Set value to greatest integer
+      this.props.update(this.instance, val); // Update local value and rest of menu if applicable
+   }
+   handleKeyDown(e) {
+      if (e.keyCode === 13) // If ENTER key is down
+         this.props.submit(this.menuType);
+   }
+
+   componentWillMount() { // Runs on initial mount, not every update
+      this.applyInstance();
+   }
+   componentDidMount() {
+      this.props.update(this.instance, this.state.value);
+   }
+   componentWillReceiveProps(next) {
+      this.setState({ value: next.value });
+   }
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+      style.backgroundColor = this.state.backgroundColor;
+
+      return (
+         <input 
+            id={this.instance + ' input'} 
+            className='menuinput' 
+            type='number' 
+            value={this.state.value} 
+            placeholder={this.placeholder} 
+            min={this.min} 
+            max={this.max} 
+            autoComplete='off' 
+            style={style} 
+            onFocus={this.handleFocus} 
+            onBlur={this.handleFocus} 
+            onChange={this.handleChange} 
+            onKeyDown={this.handleKeyDown}
+         ></input>
+      );
+   }
+}
+
+class List extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         value: props.value,
+         options: [],
+         focused: false,
+         backgroundColor: 'rgb(255, 255, 255)'
+      };
+      this.style = {};
+      this.menuType = props.menuType;
+      this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      this.applyInstance = this.applyInstance.bind(this);
+      this.handleChange = this.handleChange.bind(this);
+      this.handleFocus = this.handleFocus.bind(this);
+      this.handleKeyDown = this.handleKeyDown.bind(this);
+   }
+
+   applyInstance() {
+      let info = []; // Info array holds meta data for option elements to be created later
+      let unset = true; // If value is unset initially, will set value to first in list
+      switch (this.instance) {
+         case 'world type':
+            info = [
+               { value: 'rectangle', inner: 'Square' },
+               { value: 'ellipse',   inner: 'Circle' }
+            ];
+            break;
+         case 'game mode':
+            for (let i in modes) {
+               let mode = modes[i];
+               let disabled = false;
+               if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true;
+               info.push({ value: i, inner: modes[i], disabled: disabled });
+            }
+            break;
+         case 'color':
+            for (let i in orgColors[game.world.color]) { // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
+               let color = i; // Key: Color name: String
+               let rgb = orgColors[game.world.color][i]; // Value: RGB: Object
+               info.push({ value: color, inner: color[0].toUpperCase() + color.slice(1), 
+                  style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
                });
             }
-         }
-      },
-      submit: function() {
-         var ok = true; // Check for inputs' validities
-         { // Game Title
-            var title = document.getElementById('Game Title Input').value;
-            if (!title) { // If empty
-               ok = false;
-               alert('Title cannot be left blank');
-            } else {
-               for (let i = 0; i < games.length; i++) {
-                  if (title == games[i].info.title) { // Find matching title to another game
-                     ok = false;
-                     alert('Title matches that of another game');
+            if (this.menuType === 'respawn') {
+               for (let i = 0; i < info.length; i++) {
+                  if (org.color === info[i].value) {
+                     this.setState({ value: info[i].value });
+                     unset = false;
                      break;
                   }
                }
             }
+            break;
+         case 'team':
+            if (getSrc().src === 'title') { // If in title, set game value to game in games array
+               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
+                  if (games[i].info.host === game.info.host) { // Identify game
+                     game = games[i]; // Set game to updated game from server array
+                     break;
+                  }
+               }
+            }
+            for (let i = 0; i < game.teams.length; i++) { // If is not a team mode, rendering should be blocked in Menu.render()
+               info.push({ value: teamColors[i], inner: teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + game.teams[i].length });
+            }
+            if (this.menuType === 'join') { // Team auto-selection in join menu
+               let lengths = game.teams.map((team) => team.length); // Array which records the number of players on each team
+               let min = { [0]: lengths[0] }; // min is an object whose only key is the index of the smallest team and whose value is the size of that team (start with first team by default)
+               for (let i = 0; i < info.length; i++) { // Must keep track of index of minimum team within teams array, so index is key within min
+                  if (min[i] > lengths[i+1]) {
+                     delete min[i]; // Remove previous team key-value pair (it is not minimum size)
+                     min[i+1] = lengths[i+1];
+                  }
+               }
+               for (let i in min) { // For-in loop only used so key in min object can be accessed
+                  this.setState({ value: info[parseInt(i)].value }); // i is of type string, so parseInt must be used to make type number
+                  unset = false;
+               }
+            } else if (this.menuType === 'respawn') { // Team auto-selection in respawn menu
+               for (let i = 0; i < info.length; i++) {
+                  if (org.team === teamColors[i]) {
+                     this.setState({ value: info[i].value });
+                     unset = false;
+                     break;
+                  }
+               }
+            }
+            break;
+      }
+      if (unset) this.setState({ value: info[0].value }); // If no value has been set, set first option to select element's value
+      let ops = info.map((inf) => <option key={inf.value} value={inf.value} disabled={inf.disabled} style={inf.style}>{inf.inner}</option>); // Create option elements from info
+      this.setState({ options: ops });
+   }
+
+   handleChange(e) {
+      this.props.update(this.instance, e.target.value); // Update local value and menu based on current instance and value
+   }
+   handleFocus(e) {
+      if (e.type === 'focus') { // e.type: the type of event (focus or blur); typeof e.type is DOMString:
+         this.setState({ focused: true,  backgroundColor: 'rgb(230, 230, 230)' });
+      } else if (e.type === 'blur') {
+         this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
+      }
+   }
+   handleKeyDown(e) {
+      if (e.keyCode === 13) // If ENTER key is down
+         this.props.submit(this.menuType);
+   }
+
+   componentWillMount() { // Does not run when component is merely changed, only on initial mount
+      this.applyInstance();
+   }
+   componentDidMount() {
+      this.props.update(this.instance, this.state.value); // Update internal values of this and other inputs
+   }
+   componentWillReceiveProps(next) {
+      this.setState({ value: next.value });
+   }
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+      style.backgroundColor = this.state.backgroundColor;
+
+      return (
+         <select
+            id={this.instance + ' input'} 
+            className='menuinput' 
+            value={this.state.value} 
+            style={style} 
+            onChange={this.handleChange} 
+            onFocus={this.handleFocus} 
+            onBlur={this.handleFocus} 
+            onKeyDown={this.handleKeyDown}
+            >{this.state.options}
+         </select>
+      );
+   }
+}
+
+class Radios extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         value: props.value, // Value is represented as index of radio which is selected (only one is selected at once) (null if none are selected)
+         selections: Array(props.count).fill(false) // Boolean array to show selection state of radios
+      };
+      this.count = props.count;
+      this.menuType = props.menuType;
+      this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      this.applyInstance = this.applyInstance.bind(this);
+   }
+
+   applyInstance() { // this.props.update should not be run within applyInstance since component is not yet mounted
+      switch (this.instance) {
+         case 'skin':
+            this.set = skins; // Set is an array of text to be displayed next to the radio inputs
+            if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Placed outside and after above for loop so the above will occur by defualt and this will overwrite if applicable
+               for (let i = 0; i < skins.length; i++) {
+                  if (org && org.skin === skins[i]) {
+                     let sels = this.state.selections; // Create copy of state selections array
+                     sels.fill(false); // Set entire array to false
+                     sels[i] = true; // Set current skin to value true
+                     this.setState({ value: org.skin, selections: sels });
+                     break;
+                  }
+               }
+            }
+            break;
+         case '1st ability':
+            this.set = firsts; // Defined in config.js
+            if (this.menuType === 'respawn') {
+               let index;
+               let sels = this.state.selections; // Create copy of state selections array
+               sels.fill(false);
+               if (ability.extend.activated)
+                  index = 0; // Set index value of selected radio in radios
+               else if (ability.compress.activated)
+                  index = 1; // Set index value of selected radio in radios
+               sels[index] = true;
+               this.setState({ value: this.set[index], selections: sels });
+            }
+            break;
+         case '2nd ability':
+            this.set = seconds; // Defined in config.js
+            if (this.menuType === 'respawn') {
+               let index;
+               let sels = this.state.selections; // Create copy of state selections array
+               sels.fill(false);
+               if (ability.immortality.activated)
+                  index = 0; // Set index value of selected radio in radios
+               else if (ability.freeze.activated)
+                  index = 1; // Set index value of selected radio in radios
+               sels[index] = true;
+               this.setState({ value: this.set[index], selections: sels });
+            }
+            break;
+         case '3rd ability':
+            this.set = thirds; // Defined in config.js
+            if (this.menuType === 'respawn') {
+               let index;
+               let sels = this.state.selections; // Create copy of state selections array
+               sels.fill(false);
+               if (ability.neutralize.activated)
+                  index = 0; // Set index value of selected radio in radios
+               else if (ability.toxin.activated)
+                  index = 1; // Set index value of selected radio in radios
+               sels[index] = true;
+               this.setState({ value: this.set[index], selections: sels });
+            }
+            break;
+         case 'auto assign':
+            this.set = ['']; // Do not display any text adjacent to name label radio
+            if (this.menuType === 'respawn') {
+               if (ability.auto)
+                  this.setState({ value: 'auto assign', selections: [true] });
+               else
+                  this.setState({ value: '', selections: [false] });
+            }
+            break;
+         case 'name labels':
+            this.set = ['']; // Do not display any text adjacent to name label radio
+            if (Labels) // If name labels setting is on
+               this.setState({ value: this.instance, selections: [true] }); // Set value of Radios to instance value ('name labels') and select the radio
+            else
+               this.setState({ value: '', selections: [false] }); // Set value of Radios to '' (no value) and deselect the radio
+            break;
+         case 'messages':
+            this.set = ['']; // Do not display any text adjacent to name label radio
+            if (Messages) // If messages setting is on
+               this.setState({ value: this.instance, selections: [true] }); // Set value of Radios to instance value ('messages') and select the radio
+            else
+               this.setState({ value: '', selections: [false] }); // Set value of Radios to '' (no value) and deselect the radio
+            break;
+      }
+   }
+
+   handleClick(index) {
+      let selections = this.state.selections.slice(); // Copy state selections array into selections
+      let newValue = !selections[index]; // Flip selected radio value
+      selections.fill(false); // Set all selections to false
+      selections[index] = newValue; // Apply new value to selections array
+      let val;
+      if (this.set.length === 1 && this.set[0] === '') // If there is no text labeling radio, and there is only one radio in a set, set value to instance
+         val = selections[index] ? this.instance : ''; // If radio is selected, set value to instance; If deselected, value is empty string
+      else
+         val = selections[index] ? this.set[index] : ''; // If radio is selected, set value to radio label; If deselected, value is empty string
+      this.props.update(this.instance, val); // Update state value
+      this.setState({ selections: selections }); // Update selections
+   }
+
+   componentWillMount() {
+      this.applyInstance();
+   }
+   componentDidMount() { // Does not run when component is merely changed
+      this.props.update(this.instance, this.state.value);
+   }
+   componentWillReceiveProps(next) {
+      this.setState({ value: next.value });
+   }
+   render() {
+      let radios = [];
+      for (let i = 0; i < this.count; i++) {
+         radios.push(<Radio key={i} instance={this.instance} order={i} value={this.state.selections[i]} onClick={() => this.handleClick(i)} />); // Uses arrow function syntax so 'i' can be passed rather than event parameter
+      }
+      let elts = radios.map((radio, index) => ( // Add spacers under radio buttons; Last spacer is twice as high
+         <div key={index} onKeyDown={this.handleKeyDown}>
+            {radio}
+            <p className='menuradiotext'>{this.set[index] ? (this.set[index][0].toUpperCase() + this.set[index].slice(1)) : null}</p>
+            <div style={ { display: 'block', height: ((index === radios.length - 1) ? '6px' : '3px') } }></div>
+         </div>
+      )); // If this.set[index] is empty, do not render text (inner HTML of <p> is null)
+
+      return (
+         <div id={this.instance + ' input'} value={this.state.value}>
+            {elts}
+         </div>
+      );
+   }
+}
+
+class Radio extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         value: props.value
+      };
+      this.style = {};
+      this.instance = props.instance;
+      this.order = props.order; // Index of radio within radio group (for identification purposes)
+   }
+
+   componentWillReceiveProps(next) {
+      this.setState({ value: next.value });
+   }
+   render() {
+      let style = {};
+      if (this.state.value)
+         style.backgroundColor = 'rgb(190, 190, 190)';
+      else
+         style.backgroundColor = 'rgb(255, 255, 255)';
+      return (
+         <div
+            id={this.instance + ' input ' + this.order} 
+            className='menuradio' 
+            type='radio' 
+            style={style} 
+            onClick={this.props.onClick}
+         ></div>
+      );
+   }
+}
+
+class Button extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         down: false, // Is mouse down?
+         backgroundColor: 'rgb(240, 240, 240)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+      };
+      this.style = {};
+      this.menuType = props.menuType;
+      this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      this.handleClick = this.handleClick.bind(this); // Bind this. reference value to class functions
+      this.handleMouseOver = this.handleMouseOver.bind(this);
+      this.handleMouseOut = this.handleMouseOut.bind(this);
+      this.handleMouseUp = this.handleMouseUp.bind(this);
+      this.handleMouseDown = this.handleMouseDown.bind(this);
+   }
+
+   handleClick() {
+      switch (this.instance) {
+         case 'leave game':
+            socket.emit('Leave Game', game);
+            org.clearIntervals(); // Copied from die()
+            ability = new Ability({ player: socket.id }); // Reset ability object
+            if (getSrc().src === 'game') { // No game object in pause tutorial menu
+               for (let i = 0; i < game.board.list.length; i++) {
+                  if (game.board.list[i].player == socket.id) { // Find player in leaderboard
+                     game.board.list.splice(i, 1); // Remove player from leaderboard
+                     orderBoard(game.board.list); // Sort the list
+                     socket.emit('Board', game.board); // Send updated board to server
+                     break;
+                  }
+               }
+            }
+            org = undefined; // Clear org variable
+            renderTitle();
+            break;
+      }
+   }
+   handleMouseOver() {
+      let page = document.body.parentNode;
+      if (!mouseDown || !this.state.down) { // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
+         this.setState({
+            down: false,
+            backgroundColor: 'rgb(220, 220, 220)'
+         });
+      } else {
+         if (this.state.down) {
+            this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+            mouseDown = true;
+         }
+      }
+   }
+   handleMouseOut() {
+      this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
+   }
+   handleMouseUp() {
+      this.style.backgroundColor = 'rgb(220, 220, 220)';
+      this.setState({ down: false });
+   }
+   handleMouseDown() {
+      this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+      this.setState({ down: true });
+   }
+
+   componentWillMount() {
+      let page = document.body.parentNode;
+      if (!mouseDown) this.setState({ down: false });
+   }
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+      style.backgroundColor = this.state.backgroundColor;
+
+      return (
+         <button
+            id={this.instance + ' input'} 
+            className='menubutton' 
+            type='button' 
+            style={style} 
+            onMouseOver={this.handleMouseOver} 
+            onMouseOut={this.handleMouseOut} 
+            onMouseDown={this.handleMouseDown} 
+            onMouseUp={this.handleMouseUp} 
+            onClick={this.handleClick}
+         ></button>
+      );
+   }
+}
+
+class MenuSubmit extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {
+         down: false, // Is mouse down?
+         backgroundColor: 'rgb(240, 240, 240)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+      };
+      this.style = { // this.style is read-only in React classes
+         left: (window.innerWidth - 95) / 2 + 'px' // Submit width === 95px
+      };
+      this.menuType = props.menuType;
+
+      this.handleClick = this.handleClick.bind(this);
+      this.handleMouseOver = this.handleMouseOver.bind(this);
+      this.handleMouseOut = this.handleMouseOut.bind(this);
+      this.handleMouseDown = this.handleMouseDown.bind(this);
+      this.handleMouseUp = this.handleMouseUp.bind(this);
+   }
+
+   handleClick(e) { // Submit functions based upon menu type
+      this.props.submit(this.menuType);
+   }
+   handleMouseOver(e) {
+      let page = document.body.parentNode;
+      if (!mouseDown || !this.state.down) { // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
+         this.setState({ down: false, backgroundColor: 'rgb(220, 220, 220)' });
+      } else {
+         if (this.state.down) {
+            this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+            mouseDown = true;
+         }
+      }
+   }
+   handleMouseOut(e) {
+      this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
+   }
+   handleMouseDown(e) {
+      this.setState({
+         down: true,
+         backgroundColor: 'rgb(200, 200, 200)'
+      });
+   }
+   handleMouseUp(e) {
+      this.setState({
+         down: false,
+         backgroundColor: 'rgb(240, 240, 240)'
+      });
+   }
+
+   componentWillMount() {
+      let page = document.body.parentNode;
+      if (!mouseDown) this.setState({ down: false });
+   }
+   componentWillReceiveProps(next) {
+      this.setState({ values: next.values });
+   }
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+      style.backgroundColor = this.state.backgroundColor;
+
+      return (
+         <button 
+            id={this.menuType + 'Button'} 
+            className='menusubmit' 
+            type='button' 
+            style={style} 
+            onClick={this.handleClick} 
+            onMouseOver={this.handleMouseOver} 
+            onMouseOut={this.handleMouseOut} 
+            onMouseDown={this.handleMouseDown} 
+            onMouseUp={this.handleMouseUp}
+         ><p style={ { margin: 0 } }>{menus[this.menuType].button}</p>
+         </button>
+      );
+   }
+}
+
+class MenuFooter extends React.Component {
+   constructor(props) {
+      super(props);
+      this.state = {};
+      this.style = {
+         zIndex: '1',
+         position: 'absolute',
+         opacity: '.95'
+      };
+      this.menuType = props.menuType;
+
+      this.handleClick = this.handleClick.bind(this);
+   }
+
+   handleClick() { // Click is handled on footer rather than back text so click applies to entire footer
+      switch (this.menuType) {
+         case 'create':
+            renderTitle();
+            break;
+         case 'join':
+            if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
+               socket.emit('Game Ended', game);
+               renderTitle();
+            } else {
+               renderBrowser();
+            }
+            break;
+         case 'spectate':
+            renderBrowser();
+            break;
+         case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
+         case 'respawn':
+            state = 'spectate';
+            ReactDOM.render(<CanvasCont />, $('cont'));
+            break;
+         case 'pauseGame': {
+            let skip = false;
+            for (let i = 0; i < game.players.length; i++) {
+               if (game.players[i] === socket.id) { // If still is a player
+                  state = 'game';
+                  skip = true;
+                  break;
+               }
+            }
+            if (!skip) {
+               for (let i = 0; i < game.spectators.length; i++) {
+                  if (game.spectators[i] === socket.id) {
+                     state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                     break;
+                  }
+               }
+            }
+            ReactDOM.render(<CanvasCont />, $('cont'));
+            break;
+         }
+         case 'pauseTutorial':
+            state = 'tutorial';
+            ReactDOM.render(<CanvasCont />, $('cont'));
+            break;
+      }
+   }
+
+   render() {
+      let style = {};
+      for (let i in this.style) {
+         style[i] = this.style[i];
+      }
+
+      return (
+         <div id='footerDiv' style={style} onClick={this.handleClick}>
+            <footer id='footer' className='menufooter'>
+               <p className='menufootertext'>&larr; Back</p>
+            </footer>
+         </div>
+      );
+   }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////// SUBMIT ///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+////////                                                                                                                                                      ////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function submit(menuType) {
+   let issues = []; // Array of objects [ { [instance]: 'error message' } ] (instance of input to render error message next to)
+   let ok = true; // Check for inputs' validities
+   let tInput = $('game title input');
+   let pInput = $('password input');
+   let typeInput = $('world type input');
+   let widthInput = $('world width input');
+   let heightInput = $('world height input');
+   let pcInput = $('player cap input');
+   let pmInput = $('player minimum input');
+   let boardLengthInput = $('leaderboard length input');
+   let tcInput = $('team count input');
+   let modeInput = $('game mode input');
+   let snInput = $('screen name input');
+   let cInput = $('color input');
+   let teamInput = $('team input');
+   let gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
+   let password = pInput ? pInput.value : null;
+   let type = typeInput ? typeInput.value.toLowerCase() : null;
+   let width = widthInput ? parseFloat(widthInput.value) : null;
+   let height = heightInput ? parseFloat(heightInput.value) : null;
+   let cap = pcInput ? parseFloat(pcInput.value) : null;
+   let minimum = pmInput ? parseFloat(pmInput.value) : null;
+   let show = boardLengthInput ? parseFloat(boardLengthInput.value) : null;
+   let teamCount = tcInput ? parseFloat(tcInput.value) : null;
+   let mode = modeInput ? modeInput.value : null;
+   let name = snInput ? snInput.value : null;
+   let color = cInput ? cInput.value.toLowerCase() : null;
+   let first = this.state.values[menus[this.type].options.indexOf('1st Ability')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let second = this.state.values[menus[this.type].options.indexOf('2nd Ability')]; // Value of second ability input
+   let third = this.state.values[menus[this.type].options.indexOf('3rd Ability')]; // Valeu of third ability input
+   first = first ? first.toLowerCase() : ''; // toLowerCase() is separated so entire getting of first value need not be repeated in ternary expression
+   second = second ? second.toLowerCase() : '';
+   third = third ? third.toLowerCase() : '';
+   let skin = this.state.values[menus[this.type].options.indexOf('Skin')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   skin = skin ? skin : 'none'; // If no skin is selected, set value of skin to 'none'
+   let team = teamInput ? teamInput.value.toLowerCase() : null;
+   let auto = this.state.values[menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   auto = auto ? true : false; // Set auto assign to Boolean value
+   let label = this.state.values[menus[this.type].options.indexOf('Name Labels')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   label = label === 'name labels' ? true : false; // Set label to Boolean value
+   let message = this.state.values[menus[this.type].options.indexOf('Messages')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   message = message === 'messages' ? true : false; // Set messages to Boolean value
+   switch (menuType) {
+      case 'create':
+         { // Game Title
+            if (tInput) { // If title input exists
+               if (!gametitle) { // If empty
+                  ok = false;
+                  issues.push({ ['game title']: 'Title cannot be left blank' });
+                  // alert('Title cannot be left blank');
+               } else {
+                  for (let i = 0; i < games.length; i++) {
+                     if (gametitle === games[i].info.title) { // Find matching title to another game
+                        ok = false;
+                        issues.push({ ['game title']: 'Title matches that of another game' });
+                        // alert('Title matches that of another game');
+                        break;
+                     }
+                  }
+               }
+            }
          } { // World Width and Height
-            let widthInput = document.getElementById('World Width Input');
-            var width = parseFloat(widthInput.value);
-            if (!width) {
-               width = parseFloat(widthInput.placeholder);
-            }
-            let heightInput = document.getElementById('World Height Input');
-            var height = parseFloat(heightInput.value);
-            if (!height) {
-               height = parseFloat(heightInput.placeholder);
-            }
-            if (width < parseFloat(widthInput.min) || height < parseFloat(heightInput.min)) {
-               ok = false;
-               alert('Dimensions must be at least ' + widthInput.min + ' x ' + heightInput.min + ' px');
-            } else if (width > parseFloat(widthInput.max) || height > parseFloat(heightInput.max)) {
-               ok = false;
-               alert('Dimensions can be at most ' + widthInput.max + ' x ' + heightInput.max + ' px');
-            }
-            if (width != height) {
-               ok = false;
-               alert('Width and height must be equivalent');
+            if (widthInput && heightInput) { // If width and height inputs exist
+               if (!width && width !== 0) { // If width input is empty
+                  width = parseFloat(widthInput.placeholder); // Set width to default (rendered in placeholder)
+               }
+               if (!height && height !== 0) { // If height input is empty
+                  height = parseFloat(heightInput.placeholder); // Set height to default (rendered in placeholder)
+               }
+               if (width < parseFloat(widthInput.min) || height < parseFloat(heightInput.min)) {
+                  ok = false;
+                  issues.push({ ['world width']: 'Dimensions must be at least ' + widthInput.min + ' x ' + heightInput.min + ' px' });
+                  issues.push({ ['world height']: 'Dimensions must be at least ' + widthInput.min + ' x ' + heightInput.min + ' px' });
+                  // alert('Dimensions must be at least ' + widthInput.min + ' x ' + heightInput.min + ' px');
+               } else if (width > parseFloat(widthInput.max) || height > parseFloat(heightInput.max)) {
+                  ok = false;
+                  issues.push({ ['world width']: 'Dimensions can be at most ' + widthInput.max + ' x ' + heightInput.max + ' px' });
+                  issues.push({ ['world height']: 'Dimensions can be at most ' + widthInput.max + ' x ' + heightInput.max + ' px' });
+                  // alert('Dimensions can be at most ' + widthInput.max + ' x ' + heightInput.max + ' px');
+               }
+               if (width % 1 !== 0 || height % 1 !== 0) {
+                  ok = false;
+                  issues.push({ ['world width']: 'Width and height must be whole numbers' });
+                  issues.push({ ['world height']: 'Width and height must be whole numbers' });
+                  // alert('Width and height must be whole numbers');
+               }
+               if (width != height) {
+                  ok = false;
+                  issues.push({ ['world width']: 'Width and height must be equivalent' });
+                  issues.push({ ['world height']: 'Width and height must be equivalent' });
+                  // alert('Width and height must be equivalent');
+               }
             }
          } { // Player Cap
-            let playerCapInput = document.getElementById('Player Cap Input');
-            var cap = parseFloat(playerCapInput.value);
-            let pmInput = document.getElementById('Player Minimum Input');
-            if (!cap) {
-               cap = playerCapInput.placeholder;
-            } else if (cap < parseFloat(playerCapInput.min)) {
-               ok = false;
-               alert('Player cap must be at least ' + parseFloat(playerCapInput.min));
-            } else if (cap % 1 != 0) {
-               ok = false;
-               alert('Player cap must be a whole number');
-            } else if (pmInput ? cap < parseFloat(pmInput.value) : false) {
-               ok = false;
-               alert('Player cap cannot be less than player minimum');
+            if (pcInput) { // If player cap input exists
+               if (!cap && cap !== 0) { // If player cap input is left empty
+                  cap = parseFloat(pcInput.placeholder); // Set cap to default as rendered as placeholder
+               } else if (cap < parseFloat(pcInput.min)) {
+                  ok = false;
+                  issues.push({ ['player cap']: 'Player cap must be at least ' + parseFloat(pcInput.min) });
+                  // alert('Player cap must be at least ' + parseFloat(pcInput.min));
+               } else if (cap % 1 !== 0) {
+                  ok = false;
+                  issues.push({ ['player cap']: 'Player cap must be a whole number' });
+                  // alert('Player cap must be a whole number');
+               } else if (pmInput ? cap < parseFloat(pmInput.value) : false) { // If player minimum input exists and player cap is less than player minimum value
+                  ok = false;
+                  issues.push({ ['player cap']: 'Player cap cannot be less than player minimum' });
+                  // alert('Player cap cannot be less than player minimum');
+               }
             }
          } { // Player Minimum
-            let pmInput = document.getElementById('Player Minimum Input');
-            if (pmInput != null) {
-               var minimum = parseFloat(pmInput.value);
-               if (!minimum) {
-                  minimum = parseFloat(pmInput.placeholder);
+            if (pmInput) { // If player minimum input exists
+               if (!minimum && minimum !== 0) { // If player minimum input is left empty
+                  minimum = parseFloat(pmInput.placeholder); // Set player minimum to default rendered as placeholder
                } else if (minimum < parseFloat(pmInput.min)) {
                   ok = false;
-                  alert('Player minimum must be at least ' + parseFloat(pmInput.min));
-               } else if (minimum % 1 != 0) {
+                  issues.push({ ['player minimum']: 'Player minimum must be at least ' + parseFloat(pmInput.min) });
+                  // alert('Player minimum must be at least ' + parseFloat(pmInput.min));
+               } else if (minimum % 1 !== 0) {
                   ok = false;
-                  alert('Player minimum must be a whole number');
+                  issues.push({ ['player minimum']: 'Player minimum must be a whole number' });
+                  // alert('Player minimum must be a whole number');
                }
             }
          } { // Leaderboard Length
-            let boardLengthInput = document.getElementById('Leaderboard Length Input');
-            if (boardLengthInput != null) {
-               var show = parseFloat(boardLengthInput.value);
-               if (!show) {
+            if (boardLengthInput) { // If leaderboard length input exists
+               if (!show && show !== 0) { // If input is left blank
                   show = parseFloat(boardLengthInput.placeholder);
                } else if (show < parseFloat(boardLengthInput.min)) {
                   ok = false;
-                  alert('Leaderboard length must be at least ' + parseFloat(boardLengthInput.min));
+                  issues.push({ ['leaderboard length']: 'Leaderboard length must be at least ' + parseFloat(boardLengthInput.min) });
+                  // alert('Leaderboard length must be at least ' + parseFloat(boardLengthInput.min));
                } else if (show > parseFloat(boardLengthInput.max)) {
                   ok = false;
-                  alert('Leaderboard length can be at most ' + parseFloat(boardLengthInput.max));
-               } else if (show % 1 != 0) {
+                  issues.push({ ['leaderboard length']: 'Leaderboard length can be at most ' + parseFloat(boardLengthInput.max) });
+                  // alert('Leaderboard length can be at most ' + parseFloat(boardLengthInput.max));
+               } else if (show % 1 !== 0) {
                   ok = false;
-                  alert('Leaderboard length must be a whole number');
+                  issues.push({ ['leaderboard length']: 'Leaderboard length must be a whole number' });
+                  // alert('Leaderboard length must be a whole number');
                }
             }
          } { // Team Count
-            let tcInput = document.getElementById('Team Count Input');
-            if (tcInput != null) {
-               var teamCount = parseFloat(tcInput.value);
-               var pcInput = document.getElementById('Player Cap Input');
-               if (teamCount == '' || teamCount == undefined || teamCount == null || teamCount !== teamCount) {
-                  teamCount = parseFloat(tcInput.placeholder);
+            if (tcInput) { // If team count input exists
+               if (!teamCount && teamCount !== 0) { // If team count input is left empty
+                  teamCount = parseFloat(tcInput.placeholder); // Set team count to default rendered as placeholder
                } else if (teamCount < parseFloat(tcInput.min)) {
                   ok = false;
-                  alert('Team count must be at least ' + parseFloat(tcInput.min));
+                  issues.push({ ['team count']: 'Team count must be at least ' + parseFloat(tcInput.min) });
+                  // alert('Team count must be at least ' + parseFloat(tcInput.min));
                } else if (teamCount > parseFloat(tcInput.max)) {
                   ok = false;
-                  alert('Team count can be at most ' + parseFloat(tcInput.max));
-               } else if (teamCount % 1 != 0) {
+                  issues.push({ ['team count']: 'Team count can be at most ' + parseFloat(tcInput.max) });
+                  // alert('Team count can be at most ' + parseFloat(tcInput.max));
+               } else if (teamCount % 1 !== 0) {
                   ok = false;
-                  alert('Team count must be a whole number');
+                  issues.push({ ['team count']: 'Team count must be a whole number' });
+                  // alert('Team count must be a whole number');
                } else if (teamCount > parseFloat(pcInput.value)) {
                   ok = false;
-                  alert('Player cap cannot be less than the number of teams');
+                  issues.push({ ['team count']: 'Player cap cannot be less than the number of teams' });
+                  // alert('Player cap cannot be less than the number of teams');
                }
             }
          }
-         if (ok == true) {
-            let password = document.getElementById('Password Input').value;
-            let type = document.getElementById('World Type Input').value.toLowerCase();
-            let color = 'black'; // document.getElementById('World Color Input').value.toLowerCase(); // Only black world is enabled
-            let mode = document.getElementById('Game Mode Input').value;
+         if (ok) {
+            let color = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
-               title: title,
+               title: gametitle,
                password: password,
                type: type,
                width: width,
@@ -623,263 +1286,59 @@ var menus = {
                teamCount: teamCount,
                min: minimum
             });
+            renderMenu('join', game); // Pass in game data for certain menu information
+         } else {
+            this.issue(issues);
          }
-      }
-   },
-   join: {
-      header: {
-         text: 'Join Game Options'
-      },
-      button: {
-         text: 'Join'
-      },
-      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
-      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio'],
-      units: [],
-      editTexts: function() {
-         { // Password
-            let passwordInput = document.getElementById('Password Input');
-            socket.emit('Ask Permission', { pass: passwordInput.value, info: game.info }); // Initialize game as a player
-            passwordInput.addEventListener('change', function() {
-               socket.emit('Ask Permission', { pass: passwordInput.value, info: game.info }); // Initialize game as a player
-            });
-            if (game.info.protected == false || socket.id == game.info.host) { // If game is not password protected or player is host
-               let passInput = document.getElementById('Password Input'); // Remove Password Field
-               let cell = passInput.parentNode;
-               let row = cell.parentNode;
-               row.parentNode.removeChild(row);
-               let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-               for (let i = 0; i < rows.length; i++) {
-                  let row = rows[i];
-                  row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                  if (i % 2 == 0) {
-                     row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                  }
-               }
-            }
-         }
-      },
-      editLists: function() {
-         { // Color
-            let colorInput = document.getElementById('Color Input');
-            if (game.info.mode != 'skm' && game.info.mode != 'ctf' && game.info.mode != 'inf') { // If not a team mode + inf
-               var colorNames = [];
-               var options = [];
-               var colorLength = 0;
-               for (let i in orgColors[game.world.color]) {
-                  colorLength++;
-               }
-               let i = 0;
-               for (let j in orgColors[game.world.color]) {
-                  let option;
-                  if (colorInput.options.length < colorLength) { // If options not already created
-                     option = document.createElement('option');
-                     colorInput.appendChild(option);
-                  } else { // If options already created
-                     option = colorInput.options[i];
-                  }
-                  option.style.backgroundColor = 'rgb(' + orgColors[game.world.color][j].r + ', ' + orgColors[game.world.color][j].g + ', ' + orgColors[game.world.color][j].b + ')';
-                  option.style.color = 'rgb(0, 0, 0)';
-                  option.innerHTML = j[0].toUpperCase() + j.slice(1);
-                  i++;
-               }
-            } else {
-               if (colorInput != undefined) { // If color input not already removed
-                  let cell = colorInput.parentNode;
-                  let row = cell.parentNode;
-                  row.parentNode.removeChild(row); // Remove color row if is a team mode
-                  let rows = document.getElementById('Menu Body').children;
-                  for (let i = 0; i < rows.length; i++) { // Reset row coloration
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               }
-            }
-         } { // Team
-            for (let j = 0; j < games.length; j++) { // Update game (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
-               if (games[j].info.host == game.info.host) { // Identify game
-                  game = games[j];
-                  break;
-               }
-            }
-            let teamInput = document.getElementById('Team Input');
-            if (teamInput != undefined) { // If team option not already removed
-               if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team mode
-                  let cell = teamInput.parentNode;
-                  let row = cell.parentNode;
-                  row.parentNode.removeChild(row); // Remove team option
-                  let rows = document.getElementById('Menu Body').children; // Reset row coloration
-                  for (let i = 0; i < rows.length; i++) {
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               } else { // If a team mode
-                  for (let i = 0; i < game.teams.length; i++) {
-                     let option;
-                     if (teamInput.options.length < game.teams.length) {
-                        option = document.createElement('option');
-                        teamInput.appendChild(option);
-                     } else {
-                        option = teamInput.options[i];
-                     }
-                     option.value = teamColors[i];
-                     option.innerHTML = teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + game.teams[i].length;
-                  }
-               }
-            }
-         }
-      },
-      editRadios: function() {
-         { // Skins
-            for (let i = 0; i < skins.length; i++) { // i < number of skin options
-               let skinInput = document.getElementById('Skin Input ' + i);
-               let cell = skinInput.parentNode;
-               let name = document.createElement('p');
-               name.innerHTML = skins[i][0].toUpperCase() + skins[i].slice(1);
-               name.style.display = 'inline';
-               name.style.margin = '0px';
-               name.style.fontFamily = menus.text.font;
-               name.style.fontSize = menus.text.size - 2 + 'px';
-               name.style.color = 'rgb(' + menus.text.color.r + ', ' + menus.text.color.g + ', ' + menus.text.color.b + ')';
-               cell.insertBefore(name, cell.getElementsByTagName('div')[2 * i + 1]); // Insert name before the div line break
-            }
-         } { // Ability Selection
-            if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-               for (let i = 0; i < 3; i++) {
-                  let ordinal;
-                  if (i == 0) {
-                     ordinal = '1st';
-                  } else if (i == 1) {
-                     ordinal = '2nd';
-                  } else if (i == 2) {
-                     ordinal = '3rd';
-                  }
-                  for (let j = 0; j < 2; j++) {
-                     let abilityInput = document.getElementById(ordinal + ' Ability Input ' + j);
-                     var cell = abilityInput.parentNode;
-                     for (let k in ability) {
-                        if (ability[k] != undefined && k != 'tag') {
-                           if (ability[k].i == i && ability[k].j == j) {
-                              let name = document.createElement('p');
-                              name.innerHTML = k[0].toUpperCase() + k.slice(1);
-                              name.style.display = 'inline';
-                              name.style.margin = '0px';
-                              name.style.fontFamily = menus.text.font;
-                              name.style.fontSize = menus.text.size - 2 + 'px';
-                              name.style.color = 'rgb(' + menus.text.color.r + ', ' + menus.text.color.g + ', ' + menus.text.color.b + ')';
-                              cell.insertBefore(name, cell.getElementsByTagName('div')[2 * j + 1]); // Insert name before the div line break
-                           }
-                        }
-                     }
-                  }
-               }
-            } else if (game.info.mode == 'inf') { // INF uses 'tag'
-               for (let i = 0; i < 3; i++) {
-                  let ordinal;
-                  if (i == 0) {
-                     ordinal = '1st';
-                  } else if (i == 1) {
-                     ordinal = '2nd';
-                  } else if (i == 2) {
-                     ordinal = '3rd';
-                  }
-                  let row = document.getElementById(ordinal + ' Ability Input 0').parentNode.parentNode; // Input is first radio button; Input parent is cell
-                  row.parentNode.removeChild(row);
-                  let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                  for (let i = 0; i < rows.length; i++) {
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               }
-            }
-         } { // Auto Assign
-            let autoInput = document.getElementById('Auto Assign Input 0');
-            if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team game
-               let cell = autoInput.parentNode;
-               let row = cell.parentNode;
-               row.parentNode.removeChild(row);
-               let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-               for (let i = 0; i < rows.length; i++) {
-                  let row = rows[i];
-                  row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                  if (i % 2 == 0) {
-                     row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                  }
-               }
-            } else { // If a team game
-               autoInput.addEventListener('click', () => {
-                  let teamInput = document.getElementById('Team Input');
-                  if (autoInput.value == true) {
-                     teamInput.disabled = true;
-                  } else {
-                     teamInput.disabled = false;
-                  }
-               });
-            }
-         }
-      },
-      submit: function() {
-         var ok = true; // Check for inputs' validities
+         break;
+      case 'join':
          { // Screen Name
-            var name = document.getElementById('Screen Name Input').value;
-            if (name == '' || name == undefined || name == null) {
+            if (!name) { // If screen name input is left empty
                ok = false;
-               alert('Screen name cannot be left empty');
+               issues.push({ ['screen name']: 'Screen name cannot be left empty' });
+               // alert('Screen name cannot be left empty');
             }
             for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in renderMenu(datA))
                if (name == game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
-                  alert('Name matches that of another player');
+                  issues.push({ ['screen name']: 'Name matches that of another player' });
+                  // alert('Name matches that of another player');
                   break;
                }
             }
-         } { // Skins
-            let skin = 'none';
-            let values = [];
-            for (let i = 0; i < skins.length; i++) {
-               if (document.getElementById('Skin Input ' + i).value == true) {
-                  for (let j = 0; j < values.length; j++) {
-                     if (values[j] == true) {
-                        ok = false;
-                        alert('Only one skin can be selected');
-                        break;
-                     }
-                  }
-                  values[i] = true;
-               } else {
-                  values[i] = false;
+         }
+         // Skins
+         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') { // If the skin value is not 'none' or any other possible skin (should never occur)
+            ok = false;
+            issues.push({ skin: 'There is an issue with the skin selection' });
+         }
+         { // Abilities
+            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+               if (!first) {
+                  ok = false;
+                  issues.push({ ['1st ability']: 'Select a first ability' });
+               } else if (first !== 'extend' && first !== 'compress') {
+                  ok = false;
+                  issues.push({ ['1st ability']: 'There is an issue with the first ability selection' });
                }
-            }
-         } { // Abilities
-            if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-               var extend = document.getElementById('1st Ability Input 0');
-               var compress = document.getElementById('1st Ability Input 1');
-               var immortality = document.getElementById('2nd Ability Input 0');
-               var freeze = document.getElementById('2nd Ability Input 1');
-               var neutralize = document.getElementById('3rd Ability Input 0');
-               var toxin = document.getElementById('3rd Ability Input 1');
-               if (!extend.value && !compress.value || !immortality.value && !freeze.value || !neutralize.value && !toxin.value) { // If both false
+               if (!second) {
                   ok = false;
-                  alert('Please select three abilities');
-               } else if (extend.value && compress.value || immortality.value && freeze.value || neutralize.value && toxin.value) { // If both true
+                  issues.push({ ['2nd ability']: 'Select a second ability' });
+               } else if (second !== 'immortality' && second !== 'freeze') {
                   ok = false;
-                  alert('Only one ability of a type can be selected');
+                  issues.push({ ['2nd ability']: 'There is an issue with the second ability selection' });
+               }
+               if (!third) {
+                  ok = false;
+                  issues.push({ ['3rd ability']: 'Select a third ability' });
+               } else if (third !== 'neutralize' && third !== 'toxin') {
+                  ok = false;
+                  issues.push({ ['3rd ability']: 'There is an issue with the third ability selection' });
                }
             }
          } { // Team
             if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
-               let auto = document.getElementById('Auto Assign Input 0').value;
                if (!auto) {
-                  let team = document.getElementById('Team Input').value.toLowerCase();
                   for (let i = 0; i < game.teams.length; i++) {
                      if (i === teamColors.indexOf(team)) { // If i is selected team
                         continue;
@@ -889,20 +1348,23 @@ var menus = {
                            break; // Allow spawn
                         }
                         ok = false;
-                        alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
+                        issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[i] });
+                        // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
                         break;
                      }
                   }
                   if (org && org.team !== team && game.teams[teamColors.indexOf(org.team)].length === game.teams[teamColors.indexOf(team)].length) {
                      ok = false;
-                     alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
+                     issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
+                     // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
                   }
                }
             }
          } { // Player Cap
             if (game.players.length >= game.info.cap) {
                ok = false;
-               alert('Game is at maximum player capacity');
+               issues.push({ ['player cap']: 'Game is at maximum player capacity' });
+               // alert('Game is at maximum player capacity');
             }
          } { // Game Closed
             let closed = true;
@@ -912,556 +1374,314 @@ var menus = {
                   break;
                }
             }
-            if (closed == true) {
+            if (closed) {
                ok = false;
+               // issues.push({ ['']: 'The game has closed' }); // Empty quotes for game closed instance because it is not specific to a single input
                alert('The game has closed');
                renderTitle();
             }
          } { // Password
             socket.emit('Check Permission', { title: game.info.title, type: 'join' });
-            socket.on('Permission Denied', deniedJoin);
-            socket.on('Permission Granted', grantedJoin);
+            socket.on('Permission Denied', deniedJoin.bind(this)); // Call bound function so this.issues() can be called from within
+            socket.on('Permission Granted', grantedJoin.bind(this));
 
-            function deniedJoin(datA) {
-               if (datA.type == 'join') { // 'type' is necessary so won't run spectate code when joining game
+            function deniedJoin() {
+               ok = false;
+               if (password == '' || typeof password != 'string') {
                   ok = false;
-                  let password = document.getElementById('Password Input').value;
-                  if (password == '' || typeof password != 'string') {
-                     alert('A password is required for this game');
-                  } else {
-                     alert('Password is invalid');
-                  }
+                  issues.push({ ['password']: 'A password is required for this game' });
+                  // alert('A password is required for this game');
+               } else {
+                  ok = false;
+                  issues.push({ ['password']: 'Password is invalid' });
+                  // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedJoin);
+               socket.removeListener('Permission Denied', deniedJoin.bind(this));
             }
 
-            function grantedJoin(datA) {
-               if (datA.type == 'join') { // 'type' is necessary so won't run spectate code when joining game
-                  if (ok == true) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
-                     // Leaderboard
-                     let already = false;
-                     for (let i = 0; i < game.board.list.length; i++) {
-                        if (game.board.list[i].player == socket.id) {
-                           already = true;
+            function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
+               if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
+                  // Leaderboard
+                  let already = false;
+                  for (let i = 0; i < game.board.list.length; i++) {
+                     if (game.board.list[i].player == socket.id) {
+                        already = true;
+                        break;
+                     }
+                  }
+                  if (!already) {
+                     game.board.list.push({
+                        player: socket.id,
+                        name: name,
+                        kills: 0,
+                        deaths: 0,
+                        score: 0,
+                        wins: 0
+                     });
+                  }
+                  orderBoard(game.board.list);
+                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  // Abilities
+                  if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+                     ability.tag.activated = false;
+                     ability.tag.can = false;
+                     if (first === 'extend') {
+                        ability.extend.activated = true;
+                        ability.extend.can = true;
+                        ability.compress.activated = false;
+                        ability.compress.can = false;
+                     } else if (first === 'compress') {
+                        ability.compress.activated = true;
+                        ability.compress.can = true;
+                        ability.extend.activated = false;
+                        ability.extend.can = false;
+                     }
+                     if (second === 'immortality') {
+                        ability.immortality.activated = true;
+                        ability.immortality.can = true;
+                        ability.freeze.activated = false;
+                        ability.freeze.can = false;
+                     } else if (second === 'freeze') {
+                        ability.freeze.activated = true;
+                        ability.freeze.can = true;
+                        ability.immortality.activated = false;
+                        ability.immortality.can = false;
+                     }
+                     if (third === 'neutralize') {
+                        ability.neutralize.activated = true;
+                        ability.neutralize.can = true;
+                        ability.toxin.activated = false;
+                        ability.toxin.can = false;
+                     } else if (third === 'toxin') {
+                        ability.toxin.activated = true;
+                        ability.toxin.can = true;
+                        ability.neutralize.activated = false;
+                        ability.neutralize.can = false;
+                     }
+                     ability.spore.activated = true;
+                     ability.spore.can = true;
+                     ability.secrete.activated = true;
+                     ability.secrete.can = false;
+                     for (let i = 0; i < ability.shoot.value.length; i++) {
+                        ability.shoot.can[i] = true;
+                        ability.shoot.value[i] = false;
+                     }
+                  } else if (game.info.mode === 'inf') {
+                     ability.tag.activated = true;
+                     ability.tag.can = true;
+                     ability.extend.activated = false;
+                     ability.extend.can = false;
+                     ability.compress.activated = false;
+                     ability.compress.can = false;
+                     ability.immortality.activated = false;
+                     ability.immortality.can = false;
+                     ability.freeze.activated = false;
+                     ability.freeze.can = false;
+                     ability.neutralize.activated = false;
+                     ability.neutralize.can = false;
+                     ability.toxin.activated = false;
+                     ability.toxin.can = false;
+                     ability.spore.activated = false;
+                     ability.spore.can = false;
+                     ability.secrete.activated = false;
+                     ability.secrete.can = false;
+                     for (let i = 0; i < ability.shoot.value.length; i++) {
+                        if (i == ability.tag.i) {
+                           ability.shoot.can[i] = true;
+                        } else {
+                           ability.shoot.can[i] = false;
+                        }
+                        ability.shoot.value[i] = false;
+                     }
+                  }
+                  // Team
+                  if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
+                     ability.auto = auto; // auto variable is Boolean
+                     if (auto) { // If auto assign is selected
+                        let indices = [];
+                        let minimum = Infinity;
+                        for (let i = 0; i < game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within game.teams array into indices array
+                           if (game.teams[i].length < minimum) { // If length is less than minimum
+                              minimum = game.teams[i].length; // Set length as new minimum
+                              indices = [i]; // Clear indices and push i
+                           } else if (game.teams[i].length == minimum) {
+                              indices.push(i);
+                           }
+                        }
+                        team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
+                     }
+                     for (let i = 0; i < teamColors.length; i++) {
+                        if (team === teamColors[i]) {
+                           game.teams[i].push(socket.id); // Add player to selected team
+                           socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
                      }
-                     if (!already) {
-                        game.board.list.push({
-                           player: socket.id,
-                           name: name,
-                           kills: 0,
-                           deaths: 0,
-                           score: 0,
-                           wins: 0
-                        });
-                     }
-                     orderBoard(game.board.list);
-                     socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
-                     // Abilities
-                     if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-                        ability.tag.activated = false;
-                        ability.tag.can = false;
-                        if (extend.value == true) {
-                           ability.extend.activated = true;
-                           ability.extend.can = true;
-                           ability.compress.activated = false;
-                           ability.compress.can = false;
-                        } else if (compress.value == true) {
-                           ability.compress.activated = true;
-                           ability.compress.can = true;
-                           ability.extend.activated = false;
-                           ability.extend.can = false;
-                        }
-                        if (immortality.value == true) {
-                           ability.immortality.activated = true;
-                           ability.immortality.can = true;
-                           ability.freeze.activated = false;
-                           ability.freeze.can = false;
-                        } else if (freeze.value == true) {
-                           ability.freeze.activated = true;
-                           ability.freeze.can = true;
-                           ability.immortality.activated = false;
-                           ability.immortality.can = false;
-                        }
-                        if (neutralize.value == true) {
-                           ability.neutralize.activated = true;
-                           ability.neutralize.can = true;
-                           ability.toxin.activated = false;
-                           ability.toxin.can = false;
-                        } else if (toxin.value == true) {
-                           ability.toxin.activated = true;
-                           ability.toxin.can = true;
-                           ability.neutralize.activated = false;
-                           ability.neutralize.can = false;
-                        }
-                        ability.spore.activated = true;
-                        ability.spore.can = true;
-                        ability.secrete.activated = true;
-                        ability.secrete.can = false;
-                        for (let i = 0; i < ability.shoot.value.length; i++) {
-                           ability.shoot.can[i] = true;
-                           ability.shoot.value[i] = false;
-                        }
-                     } else if (game.info.mode == 'inf') {
-                        ability.tag.activated = true;
-                        ability.tag.can = true;
-                        ability.extend.activated = false;
-                        ability.extend.can = false;
-                        ability.compress.activated = false;
-                        ability.compress.can = false;
-                        ability.immortality.activated = false;
-                        ability.immortality.can = false;
-                        ability.freeze.activated = false;
-                        ability.freeze.can = false;
-                        ability.neutralize.activated = false;
-                        ability.neutralize.can = false;
-                        ability.toxin.activated = false;
-                        ability.toxin.can = false;
-                        ability.spore.activated = false;
-                        ability.spore.can = false;
-                        ability.secrete.activated = false;
-                        ability.secrete.can = false;
-                        for (let i = 0; i < ability.shoot.value.length; i++) {
-                           if (i == ability.tag.i) {
-                              ability.shoot.can[i] = true;
-                           } else {
-                              ability.shoot.can[i] = false;
-                           }
-                           ability.shoot.value[i] = false;
-                        }
-                     }
-                     // Skin
-                     let skin = 'none';
-                     for (let i = 0; i < skins.length; i++) {
-                        if (document.getElementById('Skin Input ' + i).value == true) {
-                           skin = skins[i];
-                        }
-                     }
-                     // Team
-                     if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
-                        var team;
-                        var auto = document.getElementById('Auto Assign Input 0').value;
-                        if (auto != true) { // If auto assign is not selected
-                           team = document.getElementById('Team Input').value;
-                        } else { // If auto assign is selected
-                           let indices = [];
-                           let minimum = Infinity;
-                           for (let i = 0; i < game.teams.length; i++) {
-                              if (game.teams[i].length < minimum) { // If length is less than minimum
-                                 minimum = game.teams[i].length; // Set length as new minimum
-                                 indices = [i]; // Clear indices and push i
-                              } else if (game.teams[i].length == minimum) {
-                                 indices.push(i);
-                              }
-                           }
-                           team = teamColors[indices[floor(random(0, indices.length))]];
-                        }
-                        for (let i = 0; i < teamColors.length; i++) {
-                           if (team == teamColors[i]) {
-                              game.teams[i].push(socket.id); // Add player to selected team
-                              socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
-                              break;
-                           }
-                        }
-                     }
-                     // Color
-                     var color;
-                     if (game.info.mode == 'inf') { // If inf mode
-                        color = teamColorDef.green; // All players healthy by default
-                     } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team game
-                        color = document.getElementById('Color Input').value.toLowerCase();
-                     } else {
-                        color = teamColorDef[team]; // Color must be after Team
-                     }
-                     // Initialize
-                     clearInterval(title.interval);
-                     if (game.rounds.util == true) {
-                        if (game.rounds.waiting == true) {
-                           initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
-                        } else {
-                           initialize(game, { spectate: true, color: orgColors[game.world.color][color], skin: skin, team: team });
-                        }
-                     } else {
-                        initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
-                     }
                   }
-               }
-               socket.removeListener('Permission Granted', grantedJoin);
-            }
-         }
-      }
-   },
-   spectate: {
-      header: {
-         text: 'Spectate Game Options'
-      },
-      button: {
-         text: 'Spectate'
-      },
-      options: ['Screen Name', 'Password'],
-      values: ['text', 'text'],
-      units: [undefined, undefined],
-      editTexts: function() {
-         // Password
-         let passwordInput = document.getElementById('Password Input');
-         socket.emit('Ask Permission', { pass: passwordInput.value, info: game.info }); // Initialize game as a player
-         passwordInput.addEventListener('change', function() {
-            socket.emit('Ask Permission', { pass: passwordInput.value, info: game.info }); // Initialize game as a player
-         });
-         if (game.info.protected == false || socket.id == game.info.host) { // If game is not password protected or player is host
-            let passInput = document.getElementById('Password Input'); // Remove Password Field
-            let cell = passInput.parentNode;
-            let row = cell.parentNode;
-            row.parentNode.removeChild(row);
-            let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-            for (let i = 0; i < rows.length; i++) {
-               let row = rows[i];
-               row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-               if (i % 2 == 0) {
-                  row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
+                  // Color
+                  var color;
+                  if (game.info.mode === 'inf') { // If inf mode
+                     color = teamColorDef.green; // All players healthy by default
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team game
+                     color = $('color input').value.toLowerCase();
+                  } else {
+                     color = teamColorDef[team]; // Color must be after Team
+                  }
+                  // Initialize
+                  clearInterval(title.interval);
+                  if (game.rounds.util) {
+                     if (game.rounds.waiting) {
+                        initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+                     } else {
+                        initialize(game, { spectate: true, color: orgColors[game.world.color][color], skin: skin, team: team });
+                     }
+                  } else {
+                     initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+                  }
+               } else {
+                  this.issue(issues);
                }
             }
+            socket.removeListener('Permission Granted', grantedJoin.bind(this));
          }
-      },
-      submit: function() {
-         var ok = true; { // Game Closed
+         break;
+      case 'spectate':
+         { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == game.info.host) {
+               if (games[i].info.host === game.info.host) {
                   closed = false;
                   break;
                }
             }
-            if (closed == true) {
+            if (closed) {
                ok = false;
+               // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
                renderTitle();
             }
          } { // Screen Name
-            var name = document.getElementById('Screen Name Input').value;
-            if (name == '' || name == undefined || name == null) {
+            if (!name) {
                ok = false;
-               alert('Screen name cannot be left empty');
+               issues.push({ ['screen name']: 'Screen name cannot be left empty' });
+               // alert('Screen name cannot be left empty');
             }
             for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in renderMenu(datA))
-               if (name == game.board.list[i].name) { // Name cannot match another player's name
+               if (name === game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
-                  alert('Name matches that of another player');
+                  issues.push({ ['screen name']: 'Name matches that of another player' });
+                  // alert('Name matches that of another player');
                   break;
                }
             }
          } { // Password
             socket.emit('Check Permission', { title: game.info.title, type: 'spectate' });
-            socket.on('Permission Denied', deniedSpectate);
-            socket.on('Permission Granted', grantedSpectate);
+            socket.on('Permission Denied', deniedSpectate.bind(this));
+            socket.on('Permission Granted', grantedSpectate.bind(this));
 
-            function deniedSpectate(datA) {
-               if (datA.type == 'spectate') { // 'type' is necessary so won't run join code when spectating game
+            function deniedSpectate() {
+               ok = false;
+               if (!password) {
                   ok = false;
-                  let password = document.getElementById('Password Input').value;
-                  if (password == '' || typeof password != 'string') {
-                     alert('A password is required for this game');
-                  } else {
-                     alert('Password is invalid');
-                  }
+                  issues.push('A password is required for this game');
+                  // alert('A password is required for this game');
+               } else {
+                  ok = false;
+                  issues.push('Password is invalid');
+                  // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedSpectate);
+               socket.removeListener('Permission Denied', deniedSpectate.bind(this));
+               this.issue(issues);
             }
 
-            function grantedSpectate(datA) {
-               if (datA.type == 'spectate') { // 'type' is necessary so won't run join code when spectating game
-                  if (ok == true) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
-                     // Leaderboard
-                     let already = false;
-                     for (let i = 0; i < game.board.list.length; i++) {
-                        if (game.board.list[i].player == socket.id) {
-                           already = true;
+            function grantedSpectate() {
+               if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
+                  // Leaderboard
+                  let already = false;
+                  for (let i = 0; i < game.board.list.length; i++) {
+                     if (game.board.list[i].player === socket.id) {
+                        already = true;
+                        break;
+                     }
+                  }
+                  if (!already) {
+                     game.board.list.push({ // Add player to leaderboard
+                        player: socket.id,
+                        name: name,
+                        kills: 0,
+                        deaths: 0,
+                        score: 0,
+                        wins: 0
+                     });
+                  }
+                  orderBoard(game.board.list);
+                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  // Initialize
+                  clearInterval(title.interval);
+                  initialize(game, { spectate: true, color: undefined, skin: undefined });
+               } else {
+                  this.issue(issues);
+               }
+               socket.removeListener('Permission Granted', grantedSpectate.bind(this));
+            }
+         }
+         break;
+      case 'respawn':
+         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') // Skins
+            ok = false;
+            issues.push({ skin: 'There is an issue with the skin selection' });
+         { // Abilities
+            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+               if (!first) {
+                  ok = false;
+                  issues.push({ ['1st ability']: 'Select a first ability' });
+               } else if (first !== 'extend' && first !== 'compress') {
+                  ok = false;
+                  issues.push({ ['1st ability']: 'There is an issue with the first ability selection' });
+               }
+               if (!second) {
+                  ok = false;
+                  issues.push({ ['2nd ability']: 'Select a second ability' });
+               } else if (second !== 'immortality' && second !== 'freeze') {
+                  ok = false;
+                  issues.push({ ['2nd ability']: 'There is an issue with the second ability selection' });
+               }
+               if (!third) {
+                  ok = false;
+                  issues.push({ ['3rd ability']: 'Select a third ability' });
+               } else if (third !== 'neutralize' && third !== 'toxin') {
+                  ok = false;
+                  issues.push({ ['3rd ability']: 'There is an issue with the third ability selection' });
+               }
+            }
+         } { // Team
+            if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
+               ability.auto = auto; // auto variable is Boolean
+               if (!auto) { // If auto assign is not selected
+                  for (let i = 0; i < game.teams.length; i++) {
+                     if (i === teamColors.indexOf(team)) {
+                        continue;
+                     }
+                     if (game.teams[teamColors.indexOf(team)].length > game.teams[i].length) { // If chosen team has greater players than another team
+                        if (org && org.team === team && typeof team === 'string') { // If player is already on loaded team
+                           break; // Allow respawn
+                        } else {
+                           ok = false; // Disallow respawn
+                           issues.push({ ['team input']: 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[i] });
+                           // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
                            break;
                         }
                      }
-                     if (!already) {
-                        game.board.list.push({ // Add player to leaderboard
-                           player: socket.id,
-                           name: name,
-                           kills: 0,
-                           deaths: 0,
-                           score: 0,
-                           wins: 0
-                        });
-                     }
-                     orderBoard(game.board.list);
-                     socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
-                     // Initialize
-                     clearInterval(title.interval);
-                     initialize(game, { spectate: true, color: undefined, skin: undefined });
-                  }
-               }
-               socket.removeListener('Permission Granted', grantedSpectate);
-            }
-         }
-      }
-   },
-   respawn: {
-      header: {
-         text: 'Respawn Options'
-      },
-      button: {
-         text: 'Respawn'
-      },
-      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
-      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio'],
-      units: [],
-      editLists: function() {
-         { // Color
-            let colorInput = document.getElementById('Color Input');
-            if (game.info.mode != 'skm' && game.info.mode != 'ctf' && game.info.mode != 'inf') { // If not a team mode + inf
-               var colorNames = [];
-               var options = [];
-               var colorLength = 0;
-               for (let i in orgColors[game.world.color]) {
-                  colorLength++;
-               }
-               let i = 0;
-               for (let j in orgColors[game.world.color]) {
-                  let option;
-                  if (colorInput.options.length < colorLength) { // If options not already created
-                     option = document.createElement('option');
-                     colorInput.appendChild(option);
-                  } else { // If options already created
-                     option = colorInput.options[i];
-                  }
-                  option.style.backgroundColor = 'rgb(' + orgColors[game.world.color][j].r + ', ' + orgColors[game.world.color][j].g + ', ' + orgColors[game.world.color][j].b + ')';
-                  option.style.color = 'rgb(0, 0, 0)';
-                  option.innerHTML = j[0].toUpperCase() + j.slice(1);
-                  if (org.color != undefined) {
-                     if (orgColors[game.world.color][j].r == org.color.r && orgColors[game.world.color][j].g == org.color.g && orgColors[game.world.color][j].b == org.color.b) { // If is current org color
-                        option.selected = 'selected'; // Pre-Select current org color
-                     }
-                  }
-                  i++;
-               }
-            } else {
-               if (colorInput != undefined) { // If color input not already removed
-                  let cell = colorInput.parentNode;
-                  let row = cell.parentNode;
-                  row.parentNode.removeChild(row); // Remove color row if is a team mode
-                  let rows = document.getElementById('Menu Body').children;
-                  for (let i = 0; i < rows.length; i++) { // Reset row coloration
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               }
-            }
-         } { // Team
-            for (let j = 0; j < games.length; j++) { // Update game (Normally occurs in thesocket.js socket.on('Game')); Used for team option updates
-               if (games[j].info.host == game.info.host) { // Identify game
-                  game = games[j];
-                  break;
-               }
-            }
-            let teamInput = document.getElementById('Team Input');
-            if (teamInput != undefined) { // If team option not already removed
-               if (game.info.mode != 'skm' && game.info.mode != 'ctf' && teamInput != undefined) { // If not a team mode
-                  let cell = teamInput.parentNode;
-                  let row = cell.parentNode;
-                  row.parentNode.removeChild(row); // Remove team option
-                  let rows = document.getElementById('Menu Body').children; // Reset row coloration
-                  for (let i = 0; i < rows.length; i++) {
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               } else { // If a team mode
-                  for (let i = 0; i < game.teams.length; i++) {
-                     let option;
-                     if (teamInput.options.length < game.teams.length) { // If options not yet created
-                        option = document.createElement('option');
-                        teamInput.appendChild(option);
-                        if (i == teamColors.indexOf(org.team)) {
-                           option.selected = 'selected';
-                        }
-                     } else { // If updating previously created options
-                        option = teamInput.options[i];
-                     }
-                     option.value = teamColors[i];
-                     option.innerHTML = teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + game.teams[i].length;
-                  }
-               }
-            }
-         }
-      },
-      editRadios: function() {
-         { // Skins
-            for (let i = 0; i < skins.length; i++) { // i < number of skin options
-               let skinInput = document.getElementById('Skin Input ' + i);
-               let cell = skinInput.parentNode;
-               let name = document.createElement('p');
-               name.innerHTML = skins[i][0].toUpperCase() + skins[i].slice(1);
-               name.style.display = 'inline';
-               name.style.margin = '0px';
-               name.style.fontFamily = menus.text.font;
-               name.style.fontSize = menus.text.size - 2 + 'px';
-               name.style.color = 'rgb(' + menus.text.color.r + ', ' + menus.text.color.g + ', ' + menus.text.color.b + ')';
-               cell.insertBefore(name, cell.getElementsByTagName('div')[2 * i + 1]); // Insert name before the div line break
-               if (org.skin == skins[i]) {
-                  skinInput.value = true;
-                  skinInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-               }
-            }
-         } { // Ability Selection
-            if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-               for (let i = 0; i < 3; i++) {
-                  let ordinal;
-                  if (i == 0) {
-                     ordinal = '1st';
-                  } else if (i == 1) {
-                     ordinal = '2nd';
-                  } else if (i == 2) {
-                     ordinal = '3rd';
-                  }
-                  for (let j = 0; j < 2; j++) {
-                     let abilityInput = document.getElementById(ordinal + ' Ability Input ' + j);
-                     var cell = abilityInput.parentNode;
-                     for (let k in ability) {
-                        if (ability[k] != undefined && k != 'tag') {
-                           if (ability[k].i == i && ability[k].j == j) {
-                              let name = document.createElement('p');
-                              name.innerHTML = k[0].toUpperCase() + k.slice(1);
-                              name.style.display = 'inline';
-                              name.style.margin = '0px';
-                              name.style.fontFamily = menus.text.font;
-                              name.style.fontSize = menus.text.size - 2 + 'px';
-                              name.style.color = 'rgb(' + menus.text.color.r + ', ' + menus.text.color.g + ', ' + menus.text.color.b + ')';
-                              cell.insertBefore(name, cell.getElementsByTagName('div')[2 * j + 1]); // Insert name before the div line break
-                              if (ability[k].activated == true) { // Load previous ability configuration to default
-                                 abilityInput.value = true;
-                                 abilityInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-                              } else if (ability[k].activated == false) {
-                                 abilityInput.value = false;
-                                 abilityInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-                              }
-                           }
-                        }
-                     }
-                  }
-               }
-            } else if (game.info.mode == 'inf') { // INF uses 'tag'
-               for (let i = 0; i < 3; i++) {
-                  let ordinal;
-                  if (i == 0) {
-                     ordinal = '1st';
-                  } else if (i == 1) {
-                     ordinal = '2nd';
-                  } else if (i == 2) {
-                     ordinal = '3rd';
-                  }
-                  let row = document.getElementById(ordinal + ' Ability Input 0').parentNode.parentNode; // Input is first radio button; Input parent is cell
-                  row.parentNode.removeChild(row); // Remove ability selections
-                  let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-                  for (let i = 0; i < rows.length; i++) {
-                     let row = rows[i];
-                     row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                     if (i % 2 == 0) {
-                        row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                     }
-                  }
-               }
-            }
-         } { // Auto Assign
-            let autoInput = document.getElementById('Auto Assign Input 0');
-            if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team game
-               let cell = autoInput.parentNode;
-               let row = cell.parentNode;
-               row.parentNode.removeChild(row);
-               let rows = document.getElementById('Menu Body').children; // Reset Row Coloration
-               for (let i = 0; i < rows.length; i++) {
-                  let row = rows[i];
-                  row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                  if (i % 2 == 0) {
-                     row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                  }
-               }
-            } else { // If a team game
-               autoInput.addEventListener('click', function() {
-                  let teamInput = document.getElementById('Team Input');
-                  if (autoInput.value == true) {
-                     teamInput.disabled = true;
-                  } else {
-                     teamInput.disabled = false;
-                  }
-               });
-            }
-         }
-      },
-      submit: function() {
-         var ok = true; { // Skins
-            let skin = 'none';
-            let values = [];
-            for (let i = 0; i < skins.length; i++) {
-               if (document.getElementById('Skin Input ' + i).value == true) {
-                  for (let j = 0; j < values.length; j++) {
-                     if (values[j] == true) {
-                        ok = false;
-                        alert('Only one skin can be selected');
-                        break;
-                     }
-                  }
-                  values[i] = true;
-               } else {
-                  values[i] = false;
-               }
-            }
-         } { // Abilities
-            if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-               var extend = document.getElementById('1st Ability Input 0');
-               var compress = document.getElementById('1st Ability Input 1');
-               var immortality = document.getElementById('2nd Ability Input 0');
-               var freeze = document.getElementById('2nd Ability Input 1');
-               var neutralize = document.getElementById('3rd Ability Input 0');
-               var toxin = document.getElementById('3rd Ability Input 1');
-               if (extend.value == false && compress.value == false || immortality.value == false && freeze.value == false || neutralize.value == false && toxin.value == false) { // If both false
-                  ok = false;
-                  alert('Please select three abilities');
-               } else if (extend.value == true && compress.value == true || immortality.value == true && freeze.value == true || neutralize.value == true && toxin.value == true) { // If both true
-                  ok = false;
-                  alert('Only one ability of a type can be selected');
-               }
-            } else if (game.info.mode == 'inf') { // INF uses tag
-
-            }
-         } { // Team
-            if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
-               var team;
-               var auto = document.getElementById('Auto Assign Input 0').value;
-               if (auto != true) { // If auto assign is not selected
-                  team = document.getElementById('Team Input').value;
-                  for (let i = 0; i < game.teams.length; i++) {
-                     if (i == teamColors.indexOf(team)) {
-                        continue;
-                     }
-                     if (game.teams[teamColors.indexOf(team)].length > game.teams[i].length) {
-                        if (org.team == team && typeof team == 'string') { // If player is already on loaded team
-                           break; // Allow spawn
-                        }
-                        ok = false;
-                        alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
-                        break;
-                     }
-                     if (org && org.team !== team && game.teams[teamColors.indexOf(org.team)].length === game.teams[teamColors.indexOf(team)].length) {
-                        ok = false;
-                        alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
+                     if (org && org.team !== team && game.teams[teamColors.indexOf(org.team)].length === game.teams[teamColors.indexOf(team)].length) { // If chosen team has equal players as current team (and is not current team)
+                        ok = false; // Disallow respawn
+                        issues.push({ ['team input']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
+                        // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
                      }
                   }
                } else { // If auto assign is selected
                   let indices = [];
                   let minimum = Infinity;
-                  for (let i = 0; i < game.teams.length; i++) {
+                  for (let i = 0; i < game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within game.teams array into indices array
                      let l = game.teams[i].length;
                      if (game.teams[i].indexOf(socket.id) != -1) { // If player is on given team
                         l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
@@ -1473,7 +1693,7 @@ var menus = {
                         indices.push(i);
                      }
                   }
-                  team = teamColors[indices[floor(random(0, indices.length))]];
+                  team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
                }
             }
          } { // Game Closed
@@ -1486,42 +1706,43 @@ var menus = {
             }
             if (closed == true) {
                ok = false;
+               // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
                renderTitle();
             }
          }
-         if (ok == true) {
+         if (ok) {
             socket.emit('Spectator Spawned', game);
             // Abilities
-            if (game.info.mode == 'ffa' || game.info.mode == 'skm' || game.info.mode == 'srv' || game.info.mode == 'kth') { // FFA, SKM, SRV, and KTH all use standard ability set
-               if (extend.value == true) {
+            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+               if (first === 'extend') {
                   ability.extend.activated = true;
                   ability.extend.can = true;
                   ability.compress.activated = false;
                   ability.compress.can = false;
-               } else if (compress.value == true) {
+               } else if (first === 'compress') {
                   ability.compress.activated = true;
                   ability.compress.can = true;
                   ability.extend.activated = false;
                   ability.extend.can = false;
                }
-               if (immortality.value == true) {
+               if (second === 'immortality') {
                   ability.immortality.activated = true;
                   ability.immortality.can = true;
                   ability.freeze.activated = false;
                   ability.freeze.can = false;
-               } else if (freeze.value == true) {
+               } else if (second === 'freeze') {
                   ability.freeze.activated = true;
                   ability.freeze.can = true;
                   ability.immortality.activated = false;
                   ability.immortality.can = false;
                }
-               if (neutralize.value == true) {
+               if (third === 'neutralize') {
                   ability.neutralize.activated = true;
                   ability.neutralize.can = true;
                   ability.toxin.activated = false;
                   ability.toxin.can = false;
-               } else if (toxin.value == true) {
+               } else if (third === 'toxin') {
                   ability.toxin.activated = true;
                   ability.toxin.can = true;
                   ability.neutralize.activated = false;
@@ -1531,7 +1752,7 @@ var menus = {
                ability.spore.can = true;
                ability.secrete.activated = true;
                ability.secrete.can = false;
-            } else if (game.info.mode == 'inf') {
+            } else if (game.info.mode === 'inf') {
                ability.extend.activated = false;
                ability.extend.can = false;
                ability.compress.activated = false;
@@ -1549,15 +1770,8 @@ var menus = {
                ability.secrete.activated = false;
                ability.secrete.can = false;
             }
-            // Skin
-            let skin = 'none';
-            for (let i = 0; i < skins.length; i++) {
-               if (document.getElementById('Skin Input ' + i).value == true) {
-                  skin = skins[i];
-               }
-            }
             // Team
-            if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
+            if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
                if (org.team != team) { // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
@@ -1565,776 +1779,97 @@ var menus = {
                }
             }
             // Color
-            var color;
-            if (game.info.mode == 'inf') { // If inf mode
+            if (game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
-            } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team mode	
-               color = document.getElementById('Color Input').value.toLowerCase();
+            } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team mode 
+               color = $('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
             // Initialize
             initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+         } else {
+            this.issue(issues);
          }
-      }
-   },
-   pauseGame: {
-      header: {
-         text: 'Pause Options'
-      },
-      button: {
-         text: 'Return'
-      },
-      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
-      values: ['list', '3 radio', '1 radio', '1 radio', 'button'],
-      units: [],
-      editLists: function() {
-         { // Color
-            let colorInput = document.getElementById('Color Input');
-            if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team mode
-               var colorNames = [];
-               var options = [];
-               for (let j in orgColors[game.world.color]) {
-                  let option = document.createElement('option');
-                  colorInput.appendChild(option);
-                  option.style.backgroundColor = 'rgb(' + orgColors[game.world.color][j].r + ', ' + orgColors[game.world.color][j].g + ', ' + orgColors[game.world.color][j].b + ')';
-                  option.style.color = 'rgb(0, 0, 0)';
-                  option.innerHTML = j[0].toUpperCase() + j.slice(1);
-                  if (org.color != undefined) {
-                     if (orgColors[game.world.color][j].r == org.color.r && orgColors[game.world.color][j].g == org.color.g && orgColors[game.world.color][j].b == org.color.b) { // If is current org color
-                        option.selected = 'selected'; // Pre-Select current org color
-                     }
-                  }
-               }
-            } else {
-               let cell = colorInput.parentNode;
-               let row = cell.parentNode;
-               row.parentNode.removeChild(row); // Remove color row if is a team mode
-               let rows = document.getElementById('Menu Body').children;
-               for (let i = 0; i < rows.length; i++) { // Reset row coloration
-                  let row = rows[i];
-                  row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-                  if (i % 2 == 0) {
-                     row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-                  }
-               }
-            }
-         }
-      },
-      editRadios: function() {
-         { // Skins
-            for (let i = 0; i < skins.length; i++) { // i < number of skin options
-               let skinInput = document.getElementById('Skin Input ' + i);
-               let cell = skinInput.parentNode;
-               let name = document.createElement('p');
-               name.innerHTML = skins[i][0].toUpperCase() + skins[i].slice(1);
-               name.style.display = 'inline';
-               name.style.margin = '0px';
-               name.style.fontFamily = menus.text.font;
-               name.style.fontSize = menus.text.size - 2 + 'px';
-               name.style.color = 'rgb(' + menus.text.color.r + ', ' + menus.text.color.g + ', ' + menus.text.color.b + ')';
-               cell.insertBefore(name, cell.getElementsByTagName('div')[2 * i + 1]); // Insert name before the div line break
-               if (org.skin == skins[i]) {
-                  skinInput.value = true;
-                  skinInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-               }
-            }
-         } { // Name Labels
-            let labelsInput = document.getElementById('Name Labels Input 0');
-            if (Labels == true) {
-               labelsInput.value = true;
-               labelsInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-            } else if (Labels == false) {
-               labelsInput.value = false;
-               labelsInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-            }
-         } { // Messages
-            let messagesInput = document.getElementById('Messages Input 0');
-            if (Messages == true) {
-               messagesInput.value = true;
-               messagesInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-            } else if (Messages == false) {
-               messagesInput.value = false;
-               messagesInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-            }
-         }
-      },
-      editButtons: function() {
-         let buttonInput = document.getElementById('Leave Game Input');
-         buttonInput.addEventListener('click', function() {
-            socket.emit('Leave Game', game);
-            org.clearIntervals() // Copied from die()
-            for (let i in ability) { // Reset Ability Cooldowns
-               if (typeof ability[i] == 'object' && i !== 'shoot') { // If is a usable ability
-                  clearTimeout(ability[i].timeout);
-                  ability[i].value = false;
-                  ability[i].can = true;
-                  ability[i].cooling = false;
-                  ability[i].start = undefined;
-                  ability[i].end = undefined;
-               }
-            }
-            for (let i = 0; i < 3; i++) { // Reset shoots
-               clearTimeout(ability.shoot.timeout[i]);
-               ability.shoot.value[i] = false;
-               ability.shoot.can[i] = true;
-               ability.shoot.spore[i] = undefined;
-               ability.shoot.secrete[i] = {};
-               ability.shoot.start[i] = undefined;
-               ability.shoot.end[i] = undefined;
-            }
-            for (let i = 0; i < game.board.list.length; i++) {
-               if (game.board.list[i].player == socket.id) { // Find player in leaderboard
-                  game.board.list.splice(i, 1); // Remove player from leaderboard
-                  orderBoard(game.board.list); // Sort the list
-                  socket.emit('Board', game.board); // Send updated board to server
-                  break;
-               }
-            }
-            org = undefined;
-            renderTitle();
-         });
-      },
-      submit: function() {
-         var ok = true; { // Skins
-            let skin = 'none';
-            let values = [];
-            for (let i = 0; i < skins.length; i++) {
-               if (document.getElementById('Skin Input ' + i).value == true) {
-                  for (let j = 0; j < values.length; j++) {
-                     if (values[j] == true) {
-                        ok = false;
-                        alert('Only one skin can be selected');
-                        break;
-                     }
-                  }
-                  values[i] = true;
-               } else {
-                  values[i] = false;
-               }
-            }
-         } { // Game Closed
+         break;
+      case 'pauseGame':
+         if (skins.indexOf(capitalize(skin)) === -1 || skin === 'none') // Skins
+            issues.push({ skin: 'There is an issue with the skin selection' });
+         { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == game.info.host) {
+               if (games[i].info.host === game.info.host) {
                   closed = false;
                   break;
                }
             }
-            if (closed == true) {
+            if (closed) {
                ok = false;
+               // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
                renderTitle();
             }
          }
-         if (ok == true) {
-            { // Color
-               if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team mode
-                  var color = document.getElementById('Color Input').value.toLowerCase();
-                  org.color = orgColors[game.world.color][color];
-               } // Cannot change team in pause menu
-            } { // Skin
-               let skin = 'none';
-               for (let i = 0; i < skins.length; i++) {
-                  if (document.getElementById('Skin Input ' + i).value == true) {
-                     skin = skins[i];
-                  }
-               }
-               org.skin = skin;
-            } { // Name Labels
-               let labelsInput = document.getElementById('Name Labels Input 0');
-               Labels = labelsInput.value;
-            } { // Messages
-               let messagesInput = document.getElementById('Messages Input 0');
-               Messages = messagesInput.value;
-            }
-            // Initialize
-            var page = document.body.parentNode; // Clear Body
-            page.removeChild(document.body);
-            body = document.createElement('body');
-            page.appendChild(body);
-            body.style.overflow = 'hidden'; // Apply Canvas Styling
-            body.style.margin = '0px';
-            body.style.border = '0px';
-            body.style.padding = '0px';
-            cnv = createCanvas(window.innerWidth, window.innerHeight); // Create Canvas
-            canvas = cnv.elt; // HTML Node is stored in p5 canvas' .elt property
-            canvas.style.visibility = 'visible';
-            body.appendChild(canvas);
-            center = {
-               x: width / 2,
-               y: height / 2
-            };
-            rectMode(CENTER);
-            ellipseMode(RADIUS);
-            angleMode(DEGREES);
-            textAlign(LEFT);
+         if (ok) {
+            if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team mode
+               org.color = orgColors[game.world.color][color]; // Set org color
+            } // Cannot change team in pause menu
+            org.skin = skin; // Set org skin
+            Labels = label; // Set labels setting (Boolean)
+            Messages = message; // Set messages setting (Boolean)
             let skip = false;
             for (let i = 0; i < game.players.length; i++) {
-               if (game.players[i] == socket.id) { // If still is a player
+               if (game.players[i] === socket.id) { // If still is a player
                   state = 'game';
                   skip = true;
                   break;
                }
             }
-            if (skip == false) {
+            if (!skip) {
                for (let i = 0; i < game.spectators.length; i++) {
-                  if (game.spectators[i] == socket.id) {
-                     state = 'spectate';
+                  if (game.spectators[i] === socket.id) {
+                     state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }
                }
             }
+            ReactDOM.render(<CanvasCont />, $('cont'));
+         } else {
+            this.issue(issues);
          }
-      }
-   },
-   pauseSpectate: {
-      header: {
-         text: 'Pause Options'
-      },
-      button: {
-         text: 'Return'
-      },
-      options: ['Name Labels', 'Messages', 'Leave Game'],
-      values: ['1 radio', '1 radio', 'button'],
-      units: [],
-      editRadios: function() {
-         { // Name Labels
-            let labelsInput = document.getElementById('Name Labels Input 0');
-            if (Labels == true) {
-               labelsInput.value = true;
-               labelsInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-            } else if (Labels == false) {
-               labelsInput.value = false;
-               labelsInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-            }
-         } { // Messages
-            let messagesInput = document.getElementById('Messages Input 0');
-            if (Messages == true) {
-               messagesInput.value = true;
-               messagesInput.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-            } else if (Messages == false) {
-               messagesInput.value = false;
-               messagesInput.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-            }
-         }
-      },
-      editButtons: function() {
-         { // Leave Game
-            let buttonInput = document.getElementById('Leave Game Input');
-            buttonInput.addEventListener('click', function() {
-               socket.emit('Leave Game', game);
-               org.clearIntervals(); // Copied from die() (Ability resets not necessary for spectate leave)
-               for (let i = 0; i < game.board.list.length; i++) {
-                  if (game.board.list[i].player == socket.id) { // Find player in leaderboard
-                     game.board.list.splice(i, 1); // Remove player from leaderboard
-                     orderBoard(game.board.list); // Sort the list
-                     socket.emit('Board', game.board); // Send updated board to server
-                     break;
-                  }
-               }
-               org = undefined;
-               renderTitle();
-            });
-         }
-      },
-      submit: function() {
-         var ok = true; { // Game Closed
+         break;
+      case 'pauseSpectate':
+         { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == game.info.host) {
+               if (games[i].info.host === game.info.host) {
                   closed = false;
                   break;
                }
             }
-            if (closed == true) {
+            if (closed) {
                ok = false;
+               // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
                renderTitle();
             }
          }
-         if (ok == true) {
-            { // Name Labels
-               let labelsInput = document.getElementById('Name Labels Input 0');
-               if (labelsInput != null) {
-                  Labels = labelsInput.value;
-               }
-            } { // Messages
-               let messagesInput = document.getElementById('Messages Input 0');
-               if (messagesInput != null) {
-                  Messages = messagesInput.value;
-               }
-            }
-            // Initialize
-            var page = document.body.parentNode; // Clear Body
-            page.removeChild(document.body);
-            body = document.createElement('body');
-            page.appendChild(body);
-            body.style.overflow = 'hidden'; // Apply Canvas Styling
-            body.style.margin = '0px';
-            body.style.border = '0px';
-            body.style.padding = '0px';
-            cnv = createCanvas(window.innerWidth, window.innerHeight); // Create Canvas
-            canvas = cnv.elt; // HTML Node is stored in p5 canvas' .elt property
-            canvas.style.visibility = 'visible';
-            body.appendChild(canvas);
-            center = {
-               x: width / 2,
-               y: height / 2
-            };
-            rectMode(CENTER);
-            ellipseMode(RADIUS);
-            angleMode(DEGREES);
-            textAlign(LEFT);
+         if (ok) {
+            Labels = label; // Set name labels setting (Boolean)
+            Messages = message; // Set messages setting (Boolean)
             state = 'spectate';
-         }
-      }
-   },
-   pauseTutorial: {
-      header: {
-         text: 'Pause Options'
-      },
-      button: {
-         text: 'Return'
-      },
-      options: ['Leave Game'],
-      values: ['button'],
-      units: [],
-      editButtons: function() {
-         { // Leave Game
-            let leaveInput = document.getElementById('Leave Game Input');
-            leaveInput.addEventListener('click', function() {
-               tutorial.clear();
-               ability = new Ability({ player: socket.id }); // Reconstruct in case tutorial caused any problem in ability object
-               org = undefined;
-               renderTitle();
-            });
-         }
-      },
-      submit: function() {
-         var ok = true;
-         if (ok == true) {
-            // Initialize
-            cnvClear();
-            rectMode(CENTER);
-            ellipseMode(RADIUS);
-            angleMode(DEGREES);
-            textAlign(LEFT);
-            state = 'tutorial';
-         }
-      }
-   }
-};
-
-function renderMenu(typE, datA) {
-   var type = typE;
-   if (type == 'join' || type == 'spectate' || type == 'respawn') {
-      game = datA;
-   }
-   // Clear Body
-   var page = document.body.parentNode;
-   page.addEventListener('mouseup', function() {
-      button.down = false;
-   });
-   cnvClear(); // Removes all elements from body but for canvas elements
-   var body = document.body; {
-      state = type + 'Menu';
-      var shade = new Shade();
-      body.appendChild(shade.elt);
-      var container = document.createElement('div');
-      container.style.position = 'fixed';
-      container.style.top = '0px';
-      container.style.left = '0px';
-      container.style.width = '100%';
-      container.style.height = '100%';
-      body.appendChild(container);
-      var header = document.createElement('div');
-      container.appendChild(header);
-      header.id = type + 'Header';
-      header.style.height = menus.header.height + 'px';
-      header.style.width = '100%';
-      header.style.paddingTop = menus.header.padding + 'px';
-      header.style.paddingBottom = menus.header.padding + 'px';
-      header.style.backgroundColor = 'rgb(' + menus.header.backgroundColor.r + ', ' + menus.header.backgroundColor.g + ', ' + menus.header.backgroundColor.b + ')';
-      var headerText = document.createElement('h2');
-      header.appendChild(headerText);
-      headerText.style.margin = '0px';
-      headerText.style.position = 'relative';
-      headerText.style.top = (menus.header.height - menus.header.padding - menus.header.size * 3 / 4) / 2 + 'px';
-      headerText.style.color = 'rgb(' + menus.header.color.r + ', ' + menus.header.color.g + ', ' + menus.header.color.b + ')';
-      headerText.style.fontFamily = menus.header.font;
-      headerText.style.fontSize = menus.header.size + 'px';
-      headerText.style.textAlign = 'center';
-      headerText.style.fontWeight = menus.header.weight;
-      headerText.innerHTML = menus[type].header.text;
-      var content = document.createElement('div');
-      container.appendChild(content);
-      content.style.paddingBottom = menus.footer.height + 'px';
-      content.style.overflow = 'auto';
-      var table = document.createElement('table');
-      content.appendChild(table);
-      table.id = type + 'Table';
-      table.style.width = '100%';
-      table.style.margin = '0px';
-      table.style.marginTop = menus.top + 'px';
-      table.style.padding = menus.padding + 'px';
-      table.style.backgroundColor = 'rgb(' + menus.color.r + ', ' + menus.color.g + ', ' + menus.color.b + ')';
-      table.style.opacity = '.9';
-      table.style.borderCollapse = 'collapse';
-      table.style.borderColor = 'rgb(' + menus.border.color.r + ', ' + menus.border.color.g + ', ' + menus.border.color.b + ')';
-      table.style.borderWidth = menus.border.width + 'px';
-      table.style.borderStyle = menus.border.style;
-      var tableBody = document.createElement('tbody');
-      tableBody.id = 'Menu Body';
-      tableBody.style.fontFamily = menus.text.font;
-      tableBody.style.fontSize = menus.text.size + 'pt';
-      table.appendChild(tableBody);
-      for (let i = 0; i < menus[type].options.length; i++) {
-         let row = tableBody.insertRow(-1);
-         row.row = i;
-         row.id = i;
-         row.style.height = menus.rows.height + 'px';
-         row.style.backgroundColor = 'rgb(' + menus.rows.color.r + ', ' + menus.rows.color.g + ', ' + menus.rows.color.b + ')';
-         if (i % 2 == 0) {
-            row.style.backgroundColor = 'rgb(' + (menus.rows.color.r - 15) + ', ' + (menus.rows.color.g - 15) + ', ' + (menus.rows.color.b - 15) + ')';
-         }
-         row.style.width = 'inherit';
-         row.style.margin = menus.rows.margin + 'px';
-         row.style.padding = menus.rows.padding + 'px';
-         for (let j = 0; j < menus.cells.count; j++) {
-            let cell = row.insertCell(j);
-            cell.style.margin = menus.cells.margin + 'px';
-            cell.style.padding = menus.cells.padding + 'px';
-            cell.style.width = menus.width / 2 + 'px';
-            cell.style.borderColor = 'rgb(' + menus.cells.border.color.r + ', ' + menus.cells.border.color.g + ', ' + menus.cells.border.color.b + ')';
-            cell.style.borderWidth = menus.cells.border.width + 'px';
-            cell.style.borderStyle = menus.cells.border.style;
-            if (j == 0) {
-               cell.style.textAlign = 'right';
-               if (menus[type].values[i].indexOf(' ') == 0) { // If ' ' is first character (Empty space for entire value)
-                  cell.style.fontWeight = 'bold';
-               }
-               cell.innerHTML = menus[type].options[i];
-            } else if (j == 1) {
-               cell.id = menus[type].options[i] + ' Cell';
-               cell.style.textAlign = 'left';
-               if (menus[type].values[i] == 'text') {
-                  let textInput = (new Text(type, i)).elt;
-               } else if (menus[type].values[i] == 'number') {
-                  let numInput = (new Num(type, i)).elt;
-                  // cell.appendChild(numInput);
-               } else if (menus[type].values[i] == 'list') {
-                  let listInput = (new List(type, i)).elt;
-                  // cell.appendChild(listInput);
-               } else if (menus[type].values[i].indexOf('radio') != -1) { // If 'radio' is anywhere within string
-                  for (let k = 0; k < parseInt(menus[type].values[i]); k++) { // Creates integer of radio inputs as specified in value string
-                     let radioInput = (new Radio(type, i, k)).elt;
-                     // cell.appendChild(radioInput);
-                  }
-               } else if (menus[type].values[i] == 'button') {
-                  let buttonInput = (new Button(type, i)).elt;
-                  // cell.appendChild(buttonInput);
-               } else {
-                  cell.style.fontFamily = menus.text.font;
-                  cell.style.fontSize = menus.text.size + 'px';
-                  cell.innerHTML = menus[type].values[i];
-               }
-               if (menus[type].units[i] != undefined) {
-                  let unitText = document.createElement('span');
-                  // cell.appendChild(unitText);
-                  unitText.innerHTML = ' ' + menus[type].units[i];
-               }
-            }
-         }
-      }
-      if (typeof menus[type].editTexts == 'function') {
-         menus[type].editTexts(datA);
-      }
-      if (typeof menus[type].editNums == 'function') {
-         menus[type].editNums(datA);
-      }
-      if (typeof menus[type].editLists == 'function') {
-         menus[type].editLists(datA);
-      }
-      if (typeof menus[type].editRadios == 'function') {
-         menus[type].editRadios(datA);
-      }
-      if (typeof menus[type].editButtons == 'function') {
-         menus[type].editButtons(datA);
-      }
-      var button = document.createElement('button');
-      content.appendChild(button);
-      button.id = type + 'Button';
-      button.type = 'button';
-      button.style.cursor = 'pointer';
-      button.style.width = menus.button.width + 'px';
-      button.style.height = menus.button.height + 'px';
-      button.style.position = 'relative';
-      button.style.left = (window.innerWidth - menus.button.width) / 2 + 'px';
-      button.style.marginTop = menus.button.top + 'px';
-      button.style.backgroundColor = 'rgb(' + menus.button.backgroundColor.r + ', ' + menus.button.backgroundColor.g + ', ' + menus.button.backgroundColor.b + ')';
-      button.style.borderRadius = menus.button.borderRadius + 'px';
-      button.style.display = 'block';
-      button.style.boxSizing = 'border-box';
-      button.style.padding = '0px';
-      button.style.borderWidth = '0px';
-      button.style.borderBottomWidth = '2px';
-      button.style.borderRaidus = '4px';
-      button.style.borderColor = 'rgb(0, 0, 0)';
-      button.style.outline = 'none';
-      button.addEventListener('mouseover', function() {
-         if (button.down != true) {
-            button.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 20) + ', ' + (menus.button.backgroundColor.g - 20) + ', ' + (menus.button.backgroundColor.b - 20) + ')';
+            ReactDOM.render(<CanvasCont />, $('cont'));
          } else {
-            button.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 40) + ', ' + (menus.button.backgroundColor.g - 40) + ', ' + (menus.button.backgroundColor.b - 40) + ')';
+            this.issue(issues);
          }
-      });
-      button.addEventListener('mouseout', function() {
-         button.style.backgroundColor = 'rgb(' + menus.button.backgroundColor.r + ', ' + menus.button.backgroundColor.g + ', ' + menus.button.backgroundColor.b + ')';
-      });
-      button.addEventListener('mousedown', function() {
-         button.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 40) + ', ' + (menus.button.backgroundColor.g - 40) + ', ' + (menus.button.backgroundColor.b - 40) + ')';
-         button.down = true;
-      });
-      button.addEventListener('mouseup', function() {
-         button.style.backgroundColor = 'rgb(' + (menus.button.backgroundColor.r - 20) + ', ' + (menus.button.backgroundColor.g - 20) + ', ' + (menus.button.backgroundColor.b - 20) + ')';
-         button.down = false;
-      });
-      button.addEventListener('click', function() {
-         menus[type].submit(datA);
-      });
-      var buttonText = document.createElement('p');
-      button.appendChild(buttonText);
-      buttonText.style.margin = '0px';
-      buttonText.style.padding = '0px';
-      buttonText.style.color = 'rgb(' + menus.button.color.r + ', ' + menus.button.color.g + ', ' + menus.button.color.b + ')';
-      buttonText.style.fontFamily = menus.button.font;
-      buttonText.style.fontWeight = menus.button.weight;
-      buttonText.style.fontSize = menus.button.size + 'px';
-      buttonText.style.textAlign = 'center';
-      buttonText.innerHTML = menus[type].button.text;
+         break;
+      case 'pauseTutorial':
+         if (ok) {
+            state = 'tutorial';
+            ReactDOM.render(<CanvasCont />, $('cont'));
+         } else {
+            this.issue(issues);
+         }
+         break;
    }
-   var footerDiv = document.createElement('div');
-   container.appendChild(footerDiv);
-   footerDiv.id = 'footerDiv';
-   footerDiv.style.position = 'absolute';
-   var footer = document.createElement('footer');
-   footerDiv.appendChild(footer);
-   footer.id = 'footer';
-   footer.style.position = 'fixed';
-   footer.style.bottom = '0px';
-   footer.style.width = '100%';
-   footer.style.height = menus.footer.height + 'px';
-   footer.style.backgroundColor = 'rgb(' + menus.footer.backgroundColor.r + ', ' + menus.footer.backgroundColor.g + ', ' + menus.footer.backgroundColor.b + ')';
-   footer.style.cursor = 'pointer';
-   footer.addEventListener('click', function() { // Back link on footer so the entire height of the footer is link
-      switch (type) {
-         case 'create':
-            title.return();
-            break;
-         case 'join':
-            if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
-               socket.emit('Game Ended', game);
-               title.return();
-            } else {
-               renderBrowser();
-            }
-            break;
-         case 'spectate':
-            renderBrowser();
-            break;
-         case 'respawn':
-            menus.pauseSpectate.submit();
-            break;
-         case 'pauseGame':
-            menus.pauseGame.submit();
-            break;
-         case 'pauseSpectate':
-            menus.pauseSpectate.submit();
-            break;
-         case 'pauseTutorial':
-            menus.pauseTutorial.submit();
-            break;
-      }
-   });
-   var back = document.createElement('p');
-   footer.appendChild(back);
-   back.style.position = 'relative';
-   back.style.top = '50%';
-   back.style.transform = 'translateY(-50%)';
-   back.style.margin = '0px';
-   back.style.marginLeft = '10px';
-   back.style.color = 'rgb(' + menus.footer.color.r + ', ' + menus.footer.color.g + ', ' + menus.footer.color.b + ')';
-   back.style.fontFamily = menus.footer.font;
-   back.style.fontSize = menus.footer.size + 'px';
-   back.innerHTML = '&larr; Back';
 }
-
-var Text = function(type, i) {
-   let cell = document.getElementById('Menu Body').children[i].children[1];
-   this.elt = document.createElement('input');
-   cell.appendChild(this.elt);
-   this.elt.id = menus[type].options[i] + ' Input';
-   this.elt.style.width = menus.inputs.width + 'px';
-   this.elt.style.height = menus.inputs.height + 'px';
-   this.elt.type = 'text';
-   this.elt.value = '';
-   this.elt.style.autocomplete = 'on';
-   this.elt.style.boxSizing = 'border-box';
-   this.elt.style.textAlign = 'center';
-   this.elt.style.fontFamily = menus.inputs.font;
-   this.elt.style.fontSize = menus.inputs.size + 'px';
-   this.elt.style.outline = 'none';
-   this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
-   this.elt.style.borderWidth = '0px';
-   this.elt.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-   this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
-   this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
-   this.elt.addEventListener('focus', () => {
-      this.elt.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-   });
-   this.elt.addEventListener('focusout', () => {
-      this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
-   });
-};
-
-var Num = function(type, i) {
-   let cell = document.getElementById('Menu Body').children[i].children[1];
-   this.elt = document.createElement('input');
-   cell.appendChild(this.elt);
-   this.elt.id = menus[type].options[i] + ' Input';
-   this.elt.style.width = menus.inputs.width + 'px';
-   this.elt.style.height = menus.inputs.height + 'px';
-   this.elt.type = 'number';
-   this.elt.value = '';
-   this.elt.style.autocomplete = 'on';
-   this.elt.style.boxSizing = 'border-box';
-   this.elt.style.textAlign = 'center';
-   this.elt.style.fontFamily = menus.inputs.font;
-   this.elt.style.fontSize = menus.inputs.size + 'px';
-   this.elt.style.outline = 'none';
-   this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
-   this.elt.style.borderWidth = '0px';
-   this.elt.style.borderBottomColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-   this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
-   this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
-   this.elt.addEventListener('focus', () => {
-      this.elt.style.backgroundColor = 'rgb(' + menus.inputs.backgroundColor.r + ', ' + menus.inputs.backgroundColor.g + ', ' + menus.inputs.backgroundColor.b + ')';
-   });
-   this.elt.addEventListener('focusout', () => {
-      this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
-   });
-};
-
-var List = function(type, i) {
-   let cell = document.getElementById('Menu Body').children[i].children[1];
-   this.elt = document.createElement('select');
-   cell.appendChild(this.elt);
-   this.elt.id = menus[type].options[i] + ' Input';
-   this.elt.style.width = menus.inputs.width + 'px';
-   this.elt.style.height = menus.inputs.height + 'px';
-   this.elt.style.outline = 'none';
-   this.elt.style.borderWidth = '0px';
-   this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
-   this.elt.style.borderStyle = menus.inputs.border.style;
-   this.elt.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-   this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
-   this.elt.style.fontFamily = menus.inputs.font;
-   this.elt.style.fontSize = menus.inputs.size + 'px';
-};
-
-var Radio = function(type, i, k) {
-   this.width = 16;
-   this.height = 18;
-   this.backgroundColor = { r: 255, g: 255, b: 255 };
-   this.selectColor = { r: 190, g: 190, b: 190 };
-   let cell = document.getElementById('Menu Body').children[i].children[1];
-   this.elt = document.createElement('div');
-   cell.appendChild(this.elt);
-   this.elt.id = menus[type].options[i] + ' Input ' + k;
-   this.elt.type = 'radio';
-   this.order = k;
-   this.value = false;
-   this.elt.style.display = 'inline-block';
-   this.elt.style.boxSizing = 'border-box';
-   this.elt.style.position = 'relative';
-   this.elt.style.top = '4px';
-   this.elt.style.margin = '0px 5px 0px 5px';
-   this.elt.style.width = menus.radios.width + 'px';
-   this.elt.style.height = menus.radios.height + 'px';
-   this.elt.style.outline = 'none';
-   this.elt.style.borderWidth = '0px';
-   this.elt.style.borderBottomWidth = menus.inputs.border.width + 'px';
-   this.elt.style.borderStyle = menus.inputs.border.style;
-   this.elt.style.borderColor = 'rgb(' + menus.inputs.border.color.r + ', ' + menus.inputs.border.color.g + ', ' + menus.inputs.border.color.b + ')';
-   this.elt.style.borderRadius = menus.inputs.border.radius + 'px';
-   this.elt.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-   this.elt.addEventListener('click', () => {
-      this.elt.value = !this.elt.value;
-      if (this.elt.value == false) {
-         this.elt.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-      } else if (this.elt.value == true) {
-         this.elt.style.backgroundColor = 'rgb(' + menus.radios.selectColor.r + ', ' + menus.radios.selectColor.g + ', ' + menus.radios.selectColor.b + ')';
-      }
-      for (let l = 0; l < parseInt(menus[type].values[i]); l++) {
-         if (l == this.order) {
-            continue;
-         }
-         let other = document.getElementById(menus[type].options[i] + ' Input ' + l);
-         other.value = false;
-         other.style.backgroundColor = 'rgb(' + menus.radios.backgroundColor.r + ', ' + menus.radios.backgroundColor.g + ', ' + menus.radios.backgroundColor.b + ')';
-      }
-   });
-   let lineBreak = document.createElement('div');
-   cell.appendChild(lineBreak);
-   lineBreak.style.display = 'block';
-   if (k + 1 < parseInt(menus[type].values[i])) { // All but last
-      lineBreak.style.height = '2px';
-   } else { // Last
-      lineBreak.style.height = '6px';
-   }
-};
-
-var Button = function(type, i) {
-   this.backgroundColor = { r: 240, g: 240, b: 240 };
-   this.border = menus.inputs.border;
-   this.border = menus.inputs.border;
-   let cell = document.getElementById('Menu Body').children[i].children[1];
-   this.elt = document.createElement('button');
-   cell.appendChild(this.elt);
-   this.elt.id = menus[type].options[i] + ' Input';
-   this.elt.type = 'button';
-   this.elt.style.cursor = 'pointer';
-   this.elt.style.position = 'relative';
-   this.elt.style.top = '2px';
-   this.elt.style.width = 45 + 'px';
-   this.elt.style.height = (menus.radios.height + 4) + 'px';
-   this.elt.style.outline = 'none';
-   this.elt.style.padding = '0px';
-   this.elt.style.boxSizing = 'border-box';
-   this.elt.style.borderWidth = '0px';
-   this.elt.style.borderBottomWidth = this.border.width + 'px';
-   this.elt.style.borderStyle = this.border.style;
-   this.elt.style.borderColor = 'rgb(' + this.border.color.r + ', ' + this.border.color.g + ', ' + this.border.color.b + ')';
-   this.elt.style.borderRadius = this.border.radius + 'px';
-   this.elt.backgroundColor = { r: 240, g: 240, b: 240 };
-   this.elt.style.backgroundColor = 'rgb(' + this.backgroundColor.r + ', ' + this.backgroundColor.g + ', ' + this.backgroundColor.b + ')';
-   this.elt.addEventListener('mouseover', () => {
-      if (this.elt.down != true) {
-         this.elt.style.backgroundColor = 'rgb(' + (this.elt.backgroundColor.r - 20) + ', ' + (this.elt.backgroundColor.g - 20) + ', ' + (this.elt.backgroundColor.b - 20) + ')';
-      } else {
-         this.elt.style.backgroundColor = 'rgb(' + (this.elt.backgroundColor.r - 40) + ', ' + (this.elt.backgroundColor.g - 40) + ', ' + (this.elt.backgroundColor.b - 40) + ')';
-      }
-   });
-   this.elt.addEventListener('mouseout', () => {
-      this.elt.style.backgroundColor = 'rgb(' + this.elt.backgroundColor.r + ', ' + this.elt.backgroundColor.g + ', ' + this.elt.backgroundColor.b + ')';
-   });
-   this.elt.addEventListener('mousedown', () => {
-      this.elt.style.backgroundColor = 'rgb(' + (this.elt.backgroundColor.r - 40) + ', ' + (this.elt.backgroundColor.g - 40) + ', ' + (this.elt.backgroundColor.b - 40) + ')';
-      this.elt.down = true;
-   });
-   this.elt.addEventListener('mouseup', () => {
-      this.elt.style.backgroundColor = 'rgb(' + (this.elt.backgroundColor.r - 20) + ', ' + (this.elt.backgroundColor.g - 20) + ', ' + (this.elt.backgroundColor.b - 20) + ')';
-      this.elt.down = false;
-   });
-};

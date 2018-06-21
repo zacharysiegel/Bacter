@@ -24,7 +24,8 @@
    "scripts": {
       "start": "node server.js",
       "build": "build.sh",
-      "run": "run.sh"
+      "run": "run.sh",
+      "start": "start.sh"      
    },
    "babel": {
       "babelrc": "false",

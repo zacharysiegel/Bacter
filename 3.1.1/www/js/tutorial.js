@@ -1,7 +1,7 @@
 var tutorial;
 var Tutorial = function() {
    clearInterval(title.interval);
-   cnvClear();
+   ReactDOM.unmountComponentAtNode($('cont'));
    state = 'tutorial';
    this.src = 'tutorial';
    this.task = 'move';
@@ -106,6 +106,8 @@ var Tutorial = function() {
       clearInterval(this.ointerval);
    };
    this.resize = function(x, y, w, h) {
+      center.x = window.innerWidth / 2;
+      center.y = window.innerHeight / 2;
       let old_x = this.world.x - this.margin;
       let old_y = this.world.y - this.margin;
       for (let i = 0; i < this.orgs.length; i++) {
@@ -122,11 +124,12 @@ var Tutorial = function() {
          case 'move':
             {
                if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) { // If a directional key is pressed
+                  this.task = 'fullscreen';
                   if (this.taskTimeout == undefined) {
                      this.taskTimeout = setTimeout(() => {
                         this.taskTimeout = undefined;
                         this.task = 'survive';
-                     }, _taskdelay); // 3000ms
+                     }, 3500);
                   }
                }
                break;

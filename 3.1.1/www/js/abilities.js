@@ -2,14 +2,7 @@ var ability;
 var Ability = function(datA) { // datA: { player: }
    let data = datA;
    this.player = data.player;
-   // this.choose = {
-   // 	width: undefined, 
-   // 	height: undefined, 
-   // 	color: {
-   // 		deselected: { r: 139, g: 237, b: 173 }, 
-   // 		selected: { r: 69, g: 204, b: 113 }
-   // 	}
-   // };
+   this.auto = false;
    this.extend = {
       value: false,
       activated: false,
@@ -44,7 +37,7 @@ var Ability = function(datA) { // datA: { player: }
    // 	factor: 2, 
    // 	timeout: undefined, 
    // 	time: 5000
-   // }, 
+   // };
    // slow: { // Not updated
    // 	value: false, 
    // 	activated: false, 
@@ -53,7 +46,7 @@ var Ability = function(datA) { // datA: { player: }
    // 	factor: 2, 
    // 	timeout: undefined, 
    // 	time: 5000
-   // }, 
+   // };
    this.immortality = {
       value: false,
       activated: false,
@@ -213,56 +206,6 @@ var Ability = function(datA) { // datA: { player: }
       cooldown: 5000
    };
 };
-
-// function chooseAbilities() { // Old ability selection screen
-// 	state = 'chooseAbilities';
-// 	clear();
-// 	textSize(30);
-// 	textFont('Verdana');
-// 	textStyle(NORMAL);
-// 	fill(0);
-// 	noStroke();
-// 	rect(center.x, height / 30, textWidth('Choose Three Abilities') * 4 / 3, height / 15, 0, 0, 15, 15); // Choose Abilities Box
-// 	fill(255);
-// 	noStroke();
-// 	text('Choose Three Abilities', center.x - textWidth('Choose Three Abilities') / 2, height / 24); // Choose Abilities Text
-// 	ability.choose.width = width / 5;
-// 	ability.choose.height = height / 3.5;
-// 	for (let i = 0; i < 3; i++) {
-// 		for (let j = 0; j < 2; j++) {
-// 			for (let k in ability) {
-// 				if (ability[k].i == i && ability[k].j == j) {
-// 					if (ability[k].activated == false) {
-// 						fill(ability.choose.color.deselected.r, ability.choose.color.deselected.g, ability.choose.color.deselected.b);
-// 					} else if (ability[k].activated == true) {
-// 						fill(ability.choose.color.selected.r, ability.choose.color.selected.g, ability.choose.color.selected.b);
-// 					}
-// 				}
-// 			}
-// 			stroke(0);
-// 			strokeWeight(1);
-// 			rect(width / 4 * (i + 1), height / 3 * (j + 1) - height / 30, ability.choose.width, ability.choose.height, 5); // Draw ability selection box
-// 			for (let k in ability) {
-// 				if (ability[k].i == i && ability[k].j == j) {
-// 					fill(0);
-// 					noStroke();
-// 					textSize(24);
-// 					textFont('Verdana');
-// 					text(k[0].toUpperCase() + k.slice(1), width / 4 * (i + 1) - textWidth(k) / 2, height / 3 * (j + 1) - height / 30); // Write ability name
-// 				}
-// 			}
-// 		}
-// 	}
-// 	noFill();
-// 	stroke(0);
-// 	strokeWeight(1);
-// 	rect(center.x, height * 8 / 9, width / 9, height / 20, 6); // Spawn click box
-// 	fill(0);
-// 	noStroke();
-// 	textSize(20);
-// 	textFont('Verdana');
-// 	text('Spawn', center.x - textWidth('Spawn') / 2, height * 8 / 9 + textSize() / 3); // Spawn Text
-// }
 
 function shoot(I, J) { // Both parameters are required
    if (ability.shoot.value[I] == false && ability.shoot.can[I] == true) { // If not currently shooting and if can shoot specified ability (Should have been checked before this point)

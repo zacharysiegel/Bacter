@@ -2,15 +2,9 @@ var title; // Initialize in global scope
 var Title = function() {
    state = 'title';
    this.src = 'title';
-   this.cnv = createCanvas(window.innerWidth, window.innerHeight);
-   this.canvas = this.cnv.elt; // HTML Node is stored in p5 canvas' .elt property
-   this.canvas.style.visibility = 'visible';
-   this.canvas.style.zIndex = '-1';
-   center = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2
-   };
-   document.body.appendChild(canvas);
+   // this.cnv = createCanvas(window.innerWidth, window.innerHeight);
+   // this.canvas = this.cnv.elt; // HTML Node is stored in p5 canvas' .elt property
+   // this.canvas.style.zIndex = '-1';
    this.margin = _margin;
    this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin });
    this.orgs = [];
@@ -83,7 +77,9 @@ var Title = function() {
          }
       }
    }, _ofrequency);
-   this.resize = function(x, y, w, h) {
+   this.resize = (x, y, w, h) => {
+      center.x = window.innerWidth / 2;
+      center.y = window.innerHeight / 2;
       let old_x = this.world.x - this.margin;
       let old_y = this.world.y - this.margin;
       for (let i = 0; i < this.orgs.length; i++) {
@@ -94,128 +90,81 @@ var Title = function() {
          this.orgs[i].count = 1;
       }
       this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
-      if (state == 'title') {
-         this.menu = new TitleMenu(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2);
+      if (state === 'title') {
+         renderTitle();
+      } else if (state === 'browser') {
+         renderBrowser();
       }
-   };
-   this.return = function() {
-      cnvClear();
-      this.menu = new TitleMenu(center.x, center.y);
-      state = 'title';
+      cnv = createCanvas(window.innerWidth, window.innerHeight); // Create p5 canvas
+      cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
    };
 };
 
-var TitleMenu = function(X, Y) {
-   let former = document.getElementById('Title Menu');
-   if (former != null) {
-      document.body.removeChild(former);
+class TitleMenu extends React.Component {
+   constructor(props) {
+      super(props);
    }
-   this.x = X;
-   this.y = Y;
-   this.width = 170;
-   this.height = 150;
-   this.r = 1;
-   this.background = { r: 10, g: 10, b: 10 };
-   this.borderColor = { r: 255, g: 255, b: 255 };
-   this.elt = document.createElement('div'); // Menu Block
-   this.elt.id = 'Title Menu';
-   this.elt.style.position = 'fixed';
-   this.elt.style.left = (this.x - this.width / 2) + 'px';
-   this.elt.style.top = (this.y - this.height / 2) + 'px';
-   this.elt.style.backgroundColor = 'rgb(' + this.background.r + ', ' + this.background.g + ', ' + this.background.b + ')';
-   this.elt.style.borderColor = 'rgb(' + this.borderColor.r + ', ' + this.borderColor.g + ', ' + this.borderColor.b + ')';
-   this.elt.style.borderWidth = '1px';
-   this.elt.style.borderStyle = 'solid';
-   this.elt.style.width = this.width + 'px';
-   this.elt.style.height = this.height + 'px';
-   this.elt.style.maxWidth = this.width + 'px';
-   this.elt.style.maxHeight = this.height + 'px';
-   this.elt.style.borderRadius = this.r + 'px';
-   this.host = document.createElement('div'); // Host Button
-   this.host.id = 'Title Host Button';
-   this.host.style.cursor = 'pointer';
-   this.host.width = this.width / 3 * 2;
-   this.host.height = 25;
-   this.host.style.width = this.host.width + 'px';
-   this.host.style.height = this.host.height + 'px';
-   this.host.style.position = 'fixed';
-   this.host.style.left = (this.x - this.host.width / 2) + 'px';
-   this.host.style.top = (this.y - this.height / 2 + 29) + 'px';
-   this.host.style.backgroundColor = 'rgb(' + this.background.r + ', ' + this.background.g + ', ' + this.background.b + ')';
-   this.host.style.borderWidth = '0px';
-   this.host.style.color = 'rgb(' + this.borderColor.r + ', ' + this.borderColor.g + ', ' + this.borderColor.b + ')';
-   this.host.style.textAlign = 'center';
-   this.host.style.fontFamily = '_bacter';
-   this.host.style.fontSize = '29px';
-   this.host.innerHTML = 'Host';
-   this.host.addEventListener('click', function() {
-      renderMenu('create');
-   });
-   this.join = document.createElement('div'); // Host Button
-   this.join.id = 'Title Host Button';
-   this.join.style.cursor = 'pointer';
-   this.join.width = this.width / 3 * 2;
-   this.join.height = 25;
-   this.join.style.width = this.host.width + 'px';
-   this.join.style.height = this.host.height + 'px';
-   this.join.style.position = 'fixed';
-   this.join.style.left = (this.x - this.host.width / 2) + 'px';
-   this.join.style.top = (this.y - this.height / 2 + 29 + this.host.height * 3 / 2) + 'px';
-   this.join.style.backgroundColor = 'rgb(' + this.background.r + ', ' + this.background.g + ', ' + this.background.b + ')';
-   this.join.style.borderWidth = '0px';
-   this.join.style.color = 'rgb(' + this.borderColor.r + ', ' + this.borderColor.g + ', ' + this.borderColor.b + ')';
-   this.join.style.textAlign = 'center';
-   this.join.style.fontFamily = '_bacter';
-   this.join.style.fontSize = '29px';
-   this.join.innerHTML = 'Join';
-   this.join.addEventListener('click', function() {
-      renderBrowser();
-   });
-   this.tutorial = document.createElement('div'); // Host Button
-   this.tutorial.id = 'Title Host Button';
-   this.tutorial.style.cursor = 'pointer';
-   this.tutorial.width = this.width / 3 * 2;
-   this.tutorial.height = 25;
-   this.tutorial.style.width = this.host.width + 'px';
-   this.tutorial.style.height = this.host.height + 'px';
-   this.tutorial.style.position = 'fixed';
-   this.tutorial.style.left = (this.x - this.host.width / 2) + 'px';
-   this.tutorial.style.top = (this.y - this.height / 2 + 29 + this.host.height * 3 / 2 * 2) + 'px';
-   this.tutorial.style.backgroundColor = 'rgb(' + this.background.r + ', ' + this.background.g + ', ' + this.background.b + ')';
-   this.tutorial.style.borderWidth = '0px';
-   this.tutorial.style.color = 'rgb(' + this.borderColor.r + ', ' + this.borderColor.g + ', ' + this.borderColor.b + ')';
-   this.tutorial.style.textAlign = 'center';
-   this.tutorial.style.fontFamily = '_bacter';
-   this.tutorial.style.fontSize = '29px';
-   this.tutorial.innerHTML = 'Tutorial';
-   this.tutorial.addEventListener('click', function() {
-      tutorial = new Tutorial();
-   });
-   this.elt.appendChild(this.host);
-   this.elt.appendChild(this.join);
-   this.elt.appendChild(this.tutorial);
-   document.body.appendChild(this.elt);
+
+   handleClick(btn) {
+      switch (btn) {
+         case 'host':
+            renderMenu('create');
+            break;
+         case 'join':
+            renderBrowser();
+            break;
+         case 'tutorial':
+            tutorial = new Tutorial();
+            break;
+      }
+   };
+
+   render() {
+      let x = center.x;
+      let y = center.y;
+      let mWidth = 170; // Menu Width
+      let mHeight = 150;
+      let bWidth = mWidth * 2 / 3; // Button Width
+      let bHeight = 25;
+      let style = {
+         menu: {
+            left: (x - mWidth / 2) + 'px',
+            top: (y - mHeight / 2) + 'px'
+         },
+         host: {
+            left: (x - bWidth / 2) + 'px',
+            top: (y - mHeight / 2 + 29) + 'px'
+         },
+         join: {
+            left: (x - bWidth / 2) + 'px',
+            top: (y - mHeight / 2 + 29 + bHeight * 3 / 2) + 'px'
+         },
+         tutorial: {
+            left: (x - bWidth / 2) + 'px',
+            top: (y - mHeight / 2 + 29 + bHeight * 3 / 2 * 2) + 'px'
+         }
+      };
+      return (
+         <div id='Title Menu' style={style.menu}>
+            <div id='Title Host Button' className='Title Menu Button' onClick={() => this.handleClick('host')} style={style.host}>Host</div>
+            <div id='Title Join Button' className='Title Menu Button' onClick={() => this.handleClick('join')} style={style.join}>Join</div>
+            <div id='Title Tutorial Button' className='Title Menu Button' onClick={() => this.handleClick('tutorial')} style={style.tutorial}>Tutorial</div>
+         </div>
+      ); // handleClick does not need to be bound if arrow function is used; without using arrow function, 'host'/'join'/'tutorial' properties could not be sent
+   }
 };
 
 function renderTitle() {
-   // Initialize Title
-   if (title != undefined) {
-      clearInterval(title.interval);
-   }
-   title = new Title();
+   state = 'title';
+   let a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
+      <div id='title'>
+         <CanvasCont />
+         <TitleMenu />
+      </div>
+   , $('cont')); // TitleMenu will not retain its this. namespace
 }
 
 var Shade = function() {
-   this.elt = document.createElement('div');
-   this.elt.id = 'shade';
-   this.elt.style.position = 'fixed';
-   this.elt.style.left = '0px';
-   this.elt.style.top = '0px';
-   this.elt.style.width = '100%';
-   this.elt.style.height = '100%';
-   this.elt.style.backgroundColor = 'rgb(255, 255, 255)';
-   this.elt.style.opacity = '.5';
-   this.elt.style.zIndex = '0';
    let style = {
       position: 'fixed',
       left: '0px',
@@ -224,39 +173,9 @@ var Shade = function() {
       height: '100%',
       backgroundColor: 'rgb(255, 255, 255)',
       opacity: '.5',
-      zIndex: '0'
+      zIndex: '-1'
    };
-   // return (
-   //    <div id="shade" style={style}>
-         
-   //    </div>
-   // );
+   return (
+      <div id="shade" style={style}></div>
+   );
 };
-
-function cnvClear() { // Clears all elements in body except canvases
-   let body = document.body;
-   for (let i = 0; i < body.children.length; i++) {
-      if (body.children[i].tagName == 'CANVAS' || body.children[i].id === 'cont') {
-         continue;
-      } else {
-         ReactDOM.unmountComponentAtNode(body.children[i]);
-         if (body.children.length) {
-            body.removeChild(body.children[i]);
-         }
-         i--;
-      }
-   }
-   let cont = document.getElementById('cont');
-   for (let i = 0; i < cont.children.length; i++) {
-      if (cont.children[i].tagName == 'CANVAS') {
-         continue;
-      } else {
-         ReactDOM.unmountComponentAtNode(cont); // React component must be unmounted by ReactDOM at the component's container
-         if (cont.children.length) { // If React component was unmounted, child will already have been removed
-            cont.removeChild(cont.children[i]);
-         }
-         i--;
-      }
-   }
-   return document.getElementsByTagName('CANVAS')[0];
-}

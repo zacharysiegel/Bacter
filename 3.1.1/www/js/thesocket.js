@@ -17,17 +17,10 @@ function connectSocket() {
       }
    }, 250);
 
-   socket.on('Games', (datA) => {
+   socket.on('Games', (datA) => { // datA: { games: , connections: }
       games = datA.games;
       connections = datA.connections;
-      if (state == 'browser') {
-         // renderBrowser('games');
-         // rb();
-      } else if (state == 'joinMenu') {
-         menus.join.editLists();
-      } else if (state == 'respawnMenu') {
-         menus.respawn.editLists();
-      }
+      if (state === 'browser') renderBrowser();
    });
 
    socket.on('Enter', () => run()); // Begin growth
@@ -45,7 +38,7 @@ function connectSocket() {
          renderMenu('pauseGame', game);
          menus.pauseGame.submit();
       }
-      spawn({ color: org.color, skin: org.skin, team: org.team, spectate: false }); // Respawn all players on round start
+      spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
       org.spawn = false;
       org.ready = true; // org.ready ensures that org will only be forcibly respawned once
    });
@@ -125,7 +118,7 @@ function connectSocket() {
       renderTitle();
    });
 
-   socket.on('Spectate', () => spectate({ color: org.color, gridded: org.gridded, pos: org.pos, skin: org.skin, team: org.team }));
+   socket.on('Spectate', () => spectate({ color: org.color, pos: org.pos, skin: org.skin, team: org.team }));
 
    { // Abilities
       socket.on('Tag', () => {

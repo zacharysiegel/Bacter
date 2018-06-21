@@ -1,9 +1,10 @@
-const DEV = false;
-const HEROKU = true;
+// Socket Settings
+const DEV = true;
+const HEROKU = false;
 
 // Repertoires
 const worldColors = {
-	black:            { r: 0,     g: 0,    b: 0   }, 
+	black:            { r: 0,     g: 0,    b: 0   }, // Only black is currently in use
 	white:            { r: 230,   g: 230,  b: 230 }, 
 	blue:             { r: 247,   g: 250,  b: 255 }
 };
@@ -38,11 +39,7 @@ const orgColors = {
 		hot:           { r: 232,   g: 2,    b: 216 }
 	}
 };
-const skins = [
-	'grid', 
-	'circles', 
-	'ghost'
-];
+const skins = [ 'grid', 'circles', 'ghost' ];
 const modes = {
 	ffa: 'Free for All', 
 	skm: 'Skirmish', 
@@ -51,45 +48,36 @@ const modes = {
 	inf: 'Infection', 
 	kth: 'King of the Hill'
 };
-const teamColors = [
-	'red', 
-	'blue', 
-	'green', 
-	'pink'
-];
-const teamColorDef = {
+const teamColors = [ 'red', 'blue', 'green', 'pink' ];
+const teamColorDef = { // Conversion between team name to color name
 	red: 'fire', 
 	blue: 'sky', 
 	green: 'lime', 
 	pink: 'petal'
 };
+const firsts =  [ 'Extend',      'Compress'   ];
+const seconds = [ 'Immortality', 'Freeze'     ];
+const thirds =  [ 'Neutralize' , 'Toxin'      ];
 
 // Math
 const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
-// Defaults
-const _ofrequency = 70;
-const _rfrequency = 40;
-const _range = 50;
-const _cellwidth = 6;
-const _movespeed = 1.7;
+// Configurations
+const _ofrequency    = 70;
+const _rfrequency    = 40;
+const _range         = 50;
+const _cellwidth     = 6;
+const _movespeed     = 1.7;
 const _spectatespeed = 2.5;
-const _worldwidth = 800;
-const _worldheight = 800;
-const _playercap = 16;
-const _playermin = 4;
-const _boardlength = 10;
-const _teamcount = 2;
-const _delaytime = 10000;
-const _dummies = 10;
-const _margin = 25;
-const _taskdelay = 3000;
+const _delaytime     = 10000;
+const _dummies       = 10;
+const _margin        = 25;
 
 // Settings
-var Labels = true;
-var Messages = true;
-var Controls = {
+let Labels = true;
+let Messages = true;
+let Controls = {
 	left1:    { key: 'A',   code: 65 }, 
 	left2:    { key: '←',   code: 37 }, 
 	up1:      { key: 'W',   code: 87 }, 
@@ -104,4 +92,12 @@ var Controls = {
 	ability4: { key: ' ',   code: 32 }, 
 	respawn:  { key: 'R',   code: 82 }, 
 	pause:    { key: 'ESC', code: 27 }, 
+};
+const Defaults = {
+	worldwidth:  800,
+	worldheight: 800,
+	playercap:   16 ,
+	playermin:   4  ,
+	boardlength: 10 ,
+	teamcount:   2
 };

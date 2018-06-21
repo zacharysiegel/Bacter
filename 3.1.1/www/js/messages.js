@@ -37,69 +37,48 @@ var getMessage = function() {
    } else if (state == 'tutorial') {
       switch (tutorial.task) {
          case 'move':
-            {
-               message = 'Use W-A-S-D (recommended) or the arrow keys to move';
-               break;
-            }
+            message = 'Use W-A-S-D (Recommended) or the arrow keys to move';
+            break;
+         case 'fullscreen':
+            message = 'Press F11 to enter fullscreen mode (Recommended)';
+            break;
          case 'survive':
-            {
-               message = 'If the crosshair is too far from the organism, it will die';
-               break;
-            }
+            message = 'If the crosshair is too far from the organism, it will die';
+            break;
          case 'extend':
-            {
-               message = 'Use the EXTEND ability to increase the organism\'s size';
-               break;
-            }
+            message = 'Use the EXTEND ability to increase the organism\'s size';
+            break;
          case 'immortality':
-            {
-               message = 'The IMMORTALITY ability will stop the natural atrophe of cells';
-               break;
-            }
+            message = 'The IMMORTALITY ability will stop the natural atrophe of cells';
+            break;
          case 'neutralize':
-            {
-               message = 'NEUTRALIZE will create a bubble of safety from enemy attacks';
-               break;
-            }
+            message = 'NEUTRALIZE will create a bubble of safety from enemy attacks';
+            break;
          case 'shoot':
-            {
-               message = 'To COMPRESS or FREEZE an enemy, press the ability key to launch a spore in the direction of the cursor\nThen press it again to activate the ability';
-               break;
-            }
+            message = 'To COMPRESS or FREEZE an enemy, press the ability key to launch a spore in the direction of the cursor\nThen press it again to activate the ability';
+            break;
          case 'compress':
-            {
-               message = 'On hit, COMPRESS shrinks the size of the targeted enemy';
-               break;
-            }
+            message = 'On hit, COMPRESS shrinks the size of the targeted enemy\nCOMPRESS the bot to progress';
+            break;
          case 'freeze':
-            {
-               message = 'On hit, FREEZE halts all natural processes within the enemy organism';
-               break;
-            }
+            message = 'On hit, FREEZE halts all natural processes within the enemy organism\nFREEZE the bot to progress';
+            break;
          case 'toxin':
-            {
-               message = 'TOXIN creates a localized bubble in which only you can survive';
-               break;
-            }
+            message = 'TOXIN creates a localized bubble in which only you can survive';
+            break;
          case 'spore':
-            {
-               if (tutorial.stopped == true) {
-                  message = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
-               } else {
-                  message = 'Use SPORE to jettison outer cells in all directions (Space Bar)';
-               }
-               break;
-            }
-         case 'secrete':
-            {
+            if (tutorial.stopped == true) {
                message = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
-               break;
+            } else {
+               message = 'Use SPORE to jettison outer cells in all directions (Space Bar)';
             }
+            break;
+         case 'secrete':
+            message = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
+            break;
          case 'done':
-            {
-               message = 'Now that you\'re ready, press ESC to return to the menu';
-               break;
-            }
+            message = 'Now that you\'re ready, press ESC to return to the menu';
+            break;
       }
    }
    return message;

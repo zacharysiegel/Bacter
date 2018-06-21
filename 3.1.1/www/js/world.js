@@ -26,9 +26,6 @@ var World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
       color: undefined,
       weight: 1
    };
-   this.grid = {
-      width: 100
-   };
    this.backdrop = { r: 70, g: 70, b: 70 };
    this.border.weight = 1;
    if (this.color == 'black') {
@@ -36,15 +33,6 @@ var World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
    } else if (this.color == 'white') {
       this.border.color = { r: 0, g: 0, b: 0 };
    }
-   // dots = {
-   // 	r: {
-   // 		min: .5, 
-   // 		max: 2
-   // 	}, 
-   // 	prob: .2, 
-   // 	array: [], 
-   // 	count: 0
-   // };
 };
 
 function renderWorld() {
@@ -53,59 +41,49 @@ function renderWorld() {
 
    // Shadows
    fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
-   noStroke(); { // World
+   noStroke();
+   { // World
       if (game.world.type == 'rectangle') { // World
          rect(game.world.x + game.world.width / 2 + 7, game.world.y + game.world.height / 2 + 6, game.world.width, game.world.height);
       } else if (game.world.type == 'ellipse') {
          ellipse(game.world.x + game.world.width / 2 + 5, game.world.y + game.world.height / 2 + 4, game.world.width / 2, game.world.height / 2);
       }
-   } { // Leaderboard
+   }
+   { // Leaderboard
       translate(org.off.x, org.off.y); // Shadows in renderWorld() so it will render behind world
       rectMode(CORNER);
       game.board.y = game.board.marginTop; // Leaderboard Head
       switch (game.info.mode) {
          case 'ffa':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-               game.board.count = min(game.board.show, game.board.list.length);
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+            game.board.count = min(game.board.show, game.board.list.length);
+            break;
          case 'skm':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-               game.board.count = game.teams.length;
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+            game.board.count = game.teams.length;
+            break;
          case 'srv':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-               game.board.count = min(game.board.show, game.board.list.length);
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+            game.board.count = min(game.board.show, game.board.list.length);
+            break;
          case 'ctf':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-               game.board.count = game.teams.length;
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+            game.board.count = game.teams.length;
+            break;
          case 'inf':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
-               game.board.count = min(game.board.show, game.board.list.length);
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+            game.board.count = min(game.board.show, game.board.list.length);
+            break;
          case 'kth':
-            {
-               game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-               rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-               game.board.count = min(game.board.show, game.board.list.length);
-               break;
-            }
+            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
+            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+            game.board.count = min(game.board.show, game.board.list.length);
+            break;
       }
       var a = 0;
       for (let i = 0; i < game.board.count; i++) { // Leaderboard Body
@@ -130,35 +108,23 @@ function renderWorld() {
          }
          switch (game.info.mode) {
             case 'ffa':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+               break;
             case 'skm':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+               break;
             case 'srv':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               break;
             case 'ctf':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               break;
             case 'inf':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+               break;
             case 'kth':
-               {
-                  rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-                  break;
-               }
+               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               break;
          }
          a++;
       }
@@ -248,20 +214,4 @@ function renderWorld() {
       strokeWeight(1);
       triangle(game.flag.x - game.flag.width / 2, game.flag.y - game.flag.height / 2, game.flag.x - game.flag.width / 2, game.flag.y, game.flag.x + game.flag.width / 2, game.flag.y - game.flag.height / 4);
    }
-
-   // Dots
-   // fill(random(150, 220));
-   // noStroke();
-   // for (let i = 0; i < game.world.dots.count; i++) {
-   // 	let dot = game.world.dots.array[i];
-   // 	ellipse(dot.x, dot.y, dot.r);
-   // }
-
-   // Grid
-   // for (let i = 0; i < game.world.height / game.world.grid.width; i++) { // Same color as border so is adaptable to variable world colors
-   // 	line(game.world.x, game.world.y + i * game.world.grid.width + (game.world.height % game.world.grid.width / 2), game.world.x + game.world.width, game.world.y + i * game.world.grid.width + (game.world.height % game.world.grid.width / 2));
-   // }
-   // for (let i = 0; i < game.world.width / game.world.grid.width; i++) {
-   // 	line(game.world.x + i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.y, game.world.x + i * game.world.grid.width + (game.world.width % game.world.grid.width / 2), game.world.y + game.world.height);
-   // }
 }

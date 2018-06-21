@@ -10,9 +10,9 @@
 	Added password protection option to games
 	Added denial of movement over world border
 	Added server browser information
-	Added cannot spawn over opponent org
-	Changed frame rate (increased)
-	Fixed chooseAbilities() translation issue
+	Changed frame rate to increased frequency
+	Fixed ability selection translation issue
+	Fixed spawn over opponent org
 	Balanced ability durations and cooldowns
 
 ## a1.1.1
@@ -23,11 +23,8 @@
 ## a1.1.2
 	Added cannot spawn outside world boundary
 	Added heroku support
-	Added Procfile
-	Added app.json
-	Added .profile
-	Changed world border width (smaller)
-	Fixed npm initialization
+	Changed world border width to lesser width
+	Fixed package management
 	Fixed server browser row coloration
 
 ## a2.0.0
@@ -40,7 +37,7 @@
 	Added footer with online clients counter
 	Removed stimulate
 	Removed poison
-	Removed 'you are dead' text
+	Removed 'you are dead' alert
 	Improved org aesthetics (stroke on cells to fill gaps)
 	Improved browser aesthetics
 	Changed stunt mechanic to halt natural death as well as birth (effective freze)
@@ -181,18 +178,32 @@
 	Fixed crash on stationary mouse position use
 
 ## a3.1.1
+	Added menu issue warnings
+	Added leave game option to respawn menu
+	Added fullscreen recommendation to tutorial
 	Added escape key to go back in game browser and respawn, create, join, and spectate menus
+	Added auto-selection of smallest team in join menu team list
+	Added darker focus color to select input boxes
 	Added backwards compatibility to older browsers
 	Added black theme color to compatible browsers
+	Removed menu alerts
 	Removed targeting click box
+	Removed setting update upon exiting pause menu through back button/escape
+	Removed pixel units from create game menu
+	Improved world width/height auto-equalization response
+	Improved auto-assign algorithm
 	Improved load times with file compilation into bundle.js
+	Improved UI responsiveness and reliability
+	Changed pause menu submit button text from 'Return' to 'Apply'
 	Fixed skirmish friendly fire issue
 	Fixed skirmish team overpopulation issue
-	Fixed major host menu bug
+	Fixed host menu bug
 	Fixed rapid growth bug
 	Fixed leader board multiple issue
 	Fixed skirmish game creation issue
 	Fixed spectate menu back button
 	Fixed respawn menu pause issue
 	Fixed join game without abilities issue
+	Fixed invalid zero dimension error issue
 	Fixed minor ability bug
+	Fixed minor player cap bug

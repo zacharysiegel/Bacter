@@ -42,9 +42,7 @@ const teamColors = [
 // Start
 var connections = 0;
 io.sockets.on('connection', newConnection);
-var games = [
-	// {
-];
+var games = [];
 var passwords = [
 	// {
 	// 	title: (title of game), 

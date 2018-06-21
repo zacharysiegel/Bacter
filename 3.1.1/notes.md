@@ -63,7 +63,7 @@
 		Temporarily become invisible to opponents
 			- Usage of abilities denied while stealthed
 			- OR Usage of an ability disables cloak
-	? Lasso:
+	? Hook:
 		Send line skill shot to another to opponent
 		On hit, pulls opponent toward player
 
@@ -139,9 +139,12 @@
 		✓ Fix Double org interval
 		✓ Fix skirmish friendly fire
 		✓ Fix skirmish overpopulate team issue
-		React browser
-		Fullscreen recommendation in tutorial
-		Fix org.player does not match ability.player
+		✓ Fullscreen recommendation in tutorial
+		✓ Remove pixel units in menu
+		✓ React menus
+		✓ React browser
+		✓ Auto-select team with fewest players in join menu
+		✓ Mouse up on whole page
 	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
 			✓ Round system

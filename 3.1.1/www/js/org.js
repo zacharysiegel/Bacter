@@ -121,7 +121,7 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
    this.alive = false;
    this.hit = undefined;
    this.count = this.cells.length;
-   this.intervals = [];
+   this.intervals = []; // Store an array of intervals to be pushed to in case multiple intervals are created unintentionally, so they can be cleared
    this.clearIntervals = () => {
       for (let i = 0; i < this.intervals.length; i++) {
          clearInterval(this.intervals[i]);
