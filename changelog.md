@@ -1,5 +1,5 @@
 # BACTER Change Log
----
+
 	NOTE: Logs before version a1.1.2 are incomplete or inaccurate
 
 ## a1.0.0
