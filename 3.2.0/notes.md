@@ -1,8 +1,9 @@
 # BACTER
 
 ## Movement:
-	Target is centered in the screen
-	Org spawns on target (in center screen)
+	Crosshair is centered in the screen
+	Org spawns on the crosshair (in center screen)
+	Org is attracted to the crosshair:
 	Rate of growth increases as cells approach target
 		(Rate of growth decreases further from target)
 	Rate of death decreases as cells approach target
@@ -156,6 +157,11 @@
 			Fill color
 		Fullscreen button
 		Mouse click, in, and out behavior correction
+			Do not change background color on mouse down, only on mouse hover
+		More applicable freeze tooltip art
+		Images for tooltip art
+			Higher detail/resolution
+
 	3.3.0
 		Images for ability tooltips
 		Add controls settings menu

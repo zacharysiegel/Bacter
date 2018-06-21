@@ -107,7 +107,10 @@ class Menu extends React.Component {
                   break;
             }
             break;
-         // case 'spectate': break; // All possible optons are always used in spectate menu
+         case 'spectate':
+            if (!this.data.info.protected || this.data.info.host === socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+               insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
+            break;
          case 'respawn':
             switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
                case 'ffa':
@@ -1306,7 +1309,7 @@ function submit(menuType) {
             }
          }
          // Skins
-         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') { // If the skin value is not 'none' or any other possible skin (should never occur)
+         if (skins.indexOf(skin) === -1 && skin !== 'none') { // If the skin value is not 'none' or any other possible skin (should never occur)
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
          }
@@ -1625,7 +1628,7 @@ function submit(menuType) {
          }
          break;
       case 'respawn':
-         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') // Skins
+         if (skins.indexOf(skin) === -1 && skin !== 'none') // Skins
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
          { // Abilities
@@ -1791,7 +1794,7 @@ function submit(menuType) {
          }
          break;
       case 'pauseGame':
-         if (skins.indexOf(capitalize(skin)) === -1 || skin === 'none') // Skins
+         if (skins.indexOf(skin) === -1 || skin === 'none') // Skins
             issues.push({ skin: 'There is an issue with the skin selection' });
          { // Game Closed
             let closed = true;
