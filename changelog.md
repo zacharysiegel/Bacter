@@ -208,3 +208,5 @@
 	Fixed invalid zero dimension error issue
 	Fixed minor ability bug
 	Fixed minor player cap bug
+
+## a3.2.1
