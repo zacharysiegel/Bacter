@@ -97,7 +97,7 @@ var Tutorial = function() {
          }
          this.detect();
       }
-   }, _rfrequency); // 40ms
+   }, _renderfrequency); // 40ms
    this.clear = function() {
       clearInterval(this.ointerval);
       clearInterval(this.rinterval);

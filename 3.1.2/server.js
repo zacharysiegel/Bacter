@@ -314,7 +314,7 @@ function newConnection(socket) {
 					break;
 				}
 			}
-		}, _rfrequency));
+		}, _renderfrequency));
 	});
 
 	// Player Joined
@@ -444,16 +444,6 @@ function newConnection(socket) {
 		}, _delaytime - 1000);
 	});
 
-	// Update Server Rounds
-	socket.on('Rounds', function(roundS) {
-		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == roundS.host) { // Identify game
-				games[i].rounds = roundS;
-				break;
-			}
-		}
-	});
-
 	// Update Server Leaderboard
 	socket.on('Board', function(boarD) {
 		for (let i = 0; i < games.length; i++) {
@@ -488,11 +478,11 @@ function newConnection(socket) {
 		}
 	});
 
-	// Update Server World
-	socket.on('World', function(worlD) {
+	// Update Server-side Game
+	socket.on('Game', (datA) => { // datA: { game: {} } (datA object literal exists rather than just 'game' to allow for customization of input beyond 'game')
 		for (let i = 0; i < games.length; i++) {
-			if (games[i].info.host == worlD.host) { // Identify game
-				games[i].world = worlD;
+			if (games[i].info.host === datA.game.host) {
+				games[i] = datA.game;
 				break;
 			}
 		}
@@ -644,5 +634,5 @@ function newConnection(socket) {
 // Game Data
 const _delaytime = 10000;
 const _shrinkrate = .2;
-const _rfrequency = 40;
+const _renderfrequency = 40;
 var shrinkIntervals = [];

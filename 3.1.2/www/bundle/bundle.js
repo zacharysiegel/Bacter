@@ -1486,8 +1486,8 @@ var CanvasCont = function (_React$Component) {
 'use strict';
 
 // Socket Settings
-var DEV = false;
-var HEROKU = true;
+var DEV = true;
+var HEROKU = false;
 
 // Repertoires
 var worldColors = {
@@ -1551,15 +1551,15 @@ var cos45 = 0.70710678118;
 var root2 = 1.41421356;
 
 // Configurations
-var _ofrequency = 70;
-var _rfrequency = 40;
-var _range = 50;
-var _cellwidth = 6;
-var _movespeed = 1.7;
-var _spectatespeed = 2.5;
+var _ofrequency = 70; // Org update frequency
+var _renderfrequency = 40; // Rendering update frequency
+var _range = 50; // Org default maximum size
+var _cellwidth = 6; // Width of single cell (pixels)
+var _movespeed = 1.7; // Crosshair movement speed
+var _spectatespeed = 2.5; // Crosshair movement speed in spectate mode
 var _delaytime = 10000;
-var _dummies = 10;
-var _margin = 25;
+var _dummies = 10; // Number of dummy orgs in title screen
+var _margin = 25; // Title screen margin
 
 // Settings
 var Labels = true;
@@ -1798,9 +1798,10 @@ function keyPressed() {
          if (state == 'spectate' && org.alive == false && org.spawn == true) {
             if (game.players.length < game.info.cap) {
                socket.emit('Spectator Left', game.info);
-               renderMenu('respawn', game);
+               renderMenu('respawn', game); // Load respawn menu
             } else {
                alert('Game is at maximum player capacity');
+               // Return to spectate mode
             }
          }
          break;
@@ -1925,7 +1926,7 @@ function keyPressed() {
 
 function mouseClicked() {
    if (mouseButton == LEFT) {
-      // if (state == 'game') { // DO NOT DELETE
+      // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
       //    { // Targeting
       //       org.target = undefined; // Clear target if click not on opponent org
       //       for (let i = 0; i < game.info.count; i++) {
@@ -1958,6 +1959,7 @@ function windowResized() {
    } else if (state === 'game' || state === 'spectate') {
       org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
       org.off.y = org.pos.y - center.y;
+      ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
    } else if (state.indexOf('Menu') !== -1) {
       var type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
       var data = type === 'join' || type === 'spectate' || type === 'respawn' ? game : null; // Only join, spectate, and respawn menus use game variable as data
@@ -2047,8 +2049,8 @@ var menus = {
       values: ['text', 'text']
    },
    respawn: {
-      header: 'Respawn Options',
-      button: 'Respawn',
+      header: 'Spawn Options',
+      button: 'Spawn',
       options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
       values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
    },
@@ -2067,7 +2069,7 @@ var menus = {
    pauseTutorial: {
       header: 'Pause Options',
       button: 'Apply',
-      options: ['Leave Game'],
+      options: ['Leave Tutorial'],
       values: ['button']
    }
 };
@@ -2148,7 +2150,10 @@ var Menu = function (_React$Component) {
                      break;
                }
                break;
-            // case 'spectate': break; // All possible optons are always used in spectate menu
+            case 'spectate':
+               if (!this.data.info.protected || this.data.info.host === socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+                  insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
+               break;
             case 'respawn':
                switch (this.data.info.mode) {// Data is game object; instances of join menu are determined by game mode
                   case 'ffa':
@@ -2707,7 +2712,7 @@ var List = function (_React$Component4) {
                for (var i in modes) {
                   var mode = modes[i];
                   var disabled = false;
-                  if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true;
+                  if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true; // CTF, INF, and KTH modes are currently not available
                   info.push({ value: i, inner: modes[i], disabled: disabled });
                }
                break;
@@ -2720,9 +2725,16 @@ var List = function (_React$Component4) {
                      style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
                   });
                }
-               if (this.menuType === 'respawn') {
+               if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
                   for (var _i3 = 0; _i3 < info.length; _i3++) {
-                     if (org.color === info[_i3].value) {
+                     var _color = void 0;
+                     for (var j in orgColors[game.world.color]) {
+                        if (orgColors[game.world.color][j] === org.color) {
+                           _color = j;
+                           break;
+                        }
+                     }
+                     if (_color === info[_i3].value) {
                         this.setState({ value: info[_i3].value });
                         unset = false;
                         break;
@@ -2764,7 +2776,7 @@ var List = function (_React$Component4) {
                      this.setState({ value: info[parseInt(_i7)].value }); // i is of type string, so parseInt must be used to make type number
                      unset = false;
                   }
-               } else if (this.menuType === 'respawn') {
+               } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
                   // Team auto-selection in respawn menu
                   for (var _i8 = 0; _i8 < info.length; _i8++) {
                      if (org.team === teamColors[_i8]) {
@@ -3438,7 +3450,7 @@ function submit(menuType) {
    second = second ? second.toLowerCase() : '';
    third = third ? third.toLowerCase() : '';
    var skin = this.state.values[menus[this.type].options.indexOf('Skin')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   skin = skin ? skin : 'none'; // If no skin is selected, set value of skin to 'none'
+   skin = skin || 'none'; // If no skin is selected, set value of skin to 'none'
    var team = teamInput ? teamInput.value.toLowerCase() : null;
    var auto = this.state.values[menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    auto = auto ? true : false; // Set auto assign to Boolean value
@@ -3592,14 +3604,14 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            var _color = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
+            var _color2 = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
                title: gametitle,
                password: password,
                type: type,
                width: width,
                height: height,
-               color: _color,
+               color: _color2,
                cap: cap,
                show: show,
                mode: mode,
@@ -3632,7 +3644,7 @@ function submit(menuType) {
             }
          }
          // Skins
-         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') {
+         if (skins.indexOf(skin) === -1 && skin !== 'none') {
             // If the skin value is not 'none' or any other possible skin (should never occur)
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
@@ -3850,6 +3862,7 @@ function submit(menuType) {
                      for (var _i17 = 0; _i17 < teamColors.length; _i17++) {
                         if (team === teamColors[_i17]) {
                            game.teams[_i17].push(socket.id); // Add player to selected team
+                           console.log(state);
                            socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
@@ -3860,8 +3873,8 @@ function submit(menuType) {
                   if (game.info.mode === 'inf') {
                      // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') {
-                     // If is not a team game
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && $('color input')) {
+                     // If is not a team game and there is a color input field
                      color = $('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
@@ -3978,7 +3991,7 @@ function submit(menuType) {
          }
          break;
       case 'respawn':
-         if (skins.indexOf(capitalize(skin)) === -1 && skin !== 'none') // Skins
+         if (skins.indexOf(skin) === -1 && skin !== 'none') // Skins
             ok = false;
          issues.push({ skin: 'There is an issue with the skin selection' });
          {
@@ -4142,6 +4155,7 @@ function submit(menuType) {
                   // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
+                  console.log(state);
                   socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
                }
             }
@@ -4162,7 +4176,7 @@ function submit(menuType) {
          }
          break;
       case 'pauseGame':
-         if (skins.indexOf(capitalize(skin)) === -1 || skin === 'none') // Skins
+         if (skins.indexOf(skin) === -1 || skin === 'none') // Skins
             issues.push({ skin: 'There is an issue with the skin selection' });
          {
             // Game Closed
@@ -4250,9 +4264,9 @@ function submit(menuType) {
 
 var getMessage = function getMessage() {
    var message = void 0;
-   if (state == 'game' || state == 'spectate') {
-      if (org.alive == true) {
-         if (game.rounds.util == true) {
+   if (state === 'game' || state === 'spectate') {
+      if (org.alive) {
+         if (game.rounds.util) {
             if (game.rounds.waiting == true && game.rounds.delayed == false) {
                if (game.rounds.min - game.info.count == 1) {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
@@ -4267,29 +4281,29 @@ var getMessage = function getMessage() {
                message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          }
-      } else if (org.alive == false) {
-         if (game.rounds.util == true) {
-            if (game.rounds.waiting == true && game.rounds.delayed == false) {
+      } else if (!org.alive) {
+         if (game.rounds.util) {
+            if (game.rounds.waiting === true && game.rounds.delayed === false) {
                // Waiting for more players to join, not counting down yet
                if (game.rounds.min - game.info.count == 1) {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
                } else {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
                }
-            } else if (game.rounds.waiting == true && game.rounds.delayed == true) {
+            } else if (game.rounds.waiting === true && game.rounds.delayed === true) {
                // Enough players have joined, counting down
                message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-            } else if (game.rounds.waiting == false && game.rounds.delayed == false) {
+            } else if (game.rounds.waiting === false && game.rounds.delayed === false) {
                // Round in progress
                message = 'Wait for the round to complete';
-            } else if (game.rounds.waiting == false && game.rounds.delayed == true) {
+            } else if (game.rounds.waiting === false && game.rounds.delayed === true) {
                message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          } else {
             message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
          }
       }
-   } else if (state == 'tutorial') {
+   } else if (state === 'tutorial') {
       switch (tutorial.task) {
          case 'move':
             message = 'Use W-A-S-D (Recommended) or the arrow keys to move';
@@ -4322,7 +4336,7 @@ var getMessage = function getMessage() {
             message = 'TOXIN creates a localized bubble in which only you can survive';
             break;
          case 'spore':
-            if (tutorial.stopped == true) {
+            if (tutorial.stopped) {
                message = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
             } else {
                message = 'Use SPORE to jettison outer cells in all directions (Space Bar)';
@@ -5543,7 +5557,8 @@ function die(spectatE) {
 'use strict';
 
 var socket; // Initialize in global scope
-var gamesInterval; // Initialize in global scope
+var gamesInterval; // "
+var emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
       socket = io.connect('localhost'); // Local server (Development only)
@@ -5556,10 +5571,16 @@ function connectSocket() {
    }
 
    gamesInterval = setInterval(function () {
-      if (state != 'game' && state != 'spectate') {
+      if (state !== 'game' && state !== 'spectate') {
          socket.emit('Games Request');
       }
    }, 250);
+
+   emitGameInterval = setInterval(function () {
+      if (state === 'game' || state === 'spectate') {
+         socket.emit('Game', { game: game });
+      }
+   }, _renderfrequency);
 
    socket.on('Games', function (datA) {
       // datA: { games: , connections: }
@@ -6142,7 +6163,7 @@ var Tutorial = function Tutorial() {
          }
          _this.detect();
       }
-   }, _rfrequency); // 40ms
+   }, _renderfrequency); // 40ms
    this.clear = function () {
       clearInterval(this.ointerval);
       clearInterval(this.rinterval);

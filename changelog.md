@@ -209,4 +209,10 @@
 	Fixed minor ability bug
 	Fixed minor player cap bug
 
-## a3.2.1
+## a3.1.2
+	Added analytics by Google
+	Added Google search console verification
+	Changed text in respawn menu from 'Respawn' to 'Spawn'
+	Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'
+	Fixed current color detection in spawn and pause menus
+	Fixed in-game window resizing issue

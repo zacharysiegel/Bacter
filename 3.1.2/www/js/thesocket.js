@@ -1,5 +1,6 @@
 var socket; // Initialize in global scope
-var gamesInterval; // Initialize in global scope
+var gamesInterval; // "
+var emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
       socket = io.connect('localhost'); // Local server (Development only)
@@ -12,10 +13,16 @@ function connectSocket() {
    }
 
    gamesInterval = setInterval(() => {
-      if (state != 'game' && state != 'spectate') {
+      if (state !== 'game' && state !== 'spectate') {
          socket.emit('Games Request');
       }
    }, 250);
+
+   emitGameInterval = setInterval(() => {
+      if (state === 'game' || state === 'spectate') {
+         socket.emit('Game', { game: game });
+      }
+   }, _renderfrequency);
 
    socket.on('Games', (datA) => { // datA: { games: , connections: }
       games = datA.games;

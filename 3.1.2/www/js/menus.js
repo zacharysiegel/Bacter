@@ -18,8 +18,8 @@ var menus = {
       values:  [ 'text',        'text'     ]
    },
    respawn: {
-      header: 'Respawn Options',
-      button: 'Respawn',
+      header: 'Spawn Options',
+      button: 'Spawn',
       options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game' ],
       values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'    , 'button'     ]
    },
@@ -38,7 +38,7 @@ var menus = {
    pauseTutorial: {
       header: 'Pause Options',
       button: 'Apply',
-      options: [ 'Leave Game' ],
+      options: [ 'Leave Tutorial' ],
       values:  [ 'button'     ]
    }
 };
@@ -555,7 +555,7 @@ class List extends React.Component {
             for (let i in modes) {
                let mode = modes[i];
                let disabled = false;
-               if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true;
+               if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true; // CTF, INF, and KTH modes are currently not available
                info.push({ value: i, inner: modes[i], disabled: disabled });
             }
             break;
@@ -567,9 +567,16 @@ class List extends React.Component {
                   style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
                });
             }
-            if (this.menuType === 'respawn') {
+            if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
                for (let i = 0; i < info.length; i++) {
-                  if (org.color === info[i].value) {
+                  let color;
+                  for (let j in orgColors[game.world.color]) {
+                     if (orgColors[game.world.color][j] === org.color) {
+                        color = j;
+                        break;
+                     }
+                  }
+                  if (color === info[i].value) {
                      this.setState({ value: info[i].value });
                      unset = false;
                      break;
@@ -602,7 +609,7 @@ class List extends React.Component {
                   this.setState({ value: info[parseInt(i)].value }); // i is of type string, so parseInt must be used to make type number
                   unset = false;
                }
-            } else if (this.menuType === 'respawn') { // Team auto-selection in respawn menu
+            } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Team auto-selection in respawn menu
                for (let i = 0; i < info.length; i++) {
                   if (org.team === teamColors[i]) {
                      this.setState({ value: info[i].value });
@@ -1140,7 +1147,7 @@ function submit(menuType) {
    second = second ? second.toLowerCase() : '';
    third = third ? third.toLowerCase() : '';
    let skin = this.state.values[menus[this.type].options.indexOf('Skin')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   skin = skin ? skin : 'none'; // If no skin is selected, set value of skin to 'none'
+   skin = skin || 'none'; // If no skin is selected, set value of skin to 'none'
    let team = teamInput ? teamInput.value.toLowerCase() : null;
    let auto = this.state.values[menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    auto = auto ? true : false; // Set auto assign to Boolean value
@@ -1496,7 +1503,7 @@ function submit(menuType) {
                      }
                   }
                   // Team
-                  if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
+                  if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
                      ability.auto = auto; // auto variable is Boolean
                      if (auto) { // If auto assign is selected
                         let indices = [];
@@ -1514,6 +1521,7 @@ function submit(menuType) {
                      for (let i = 0; i < teamColors.length; i++) {
                         if (team === teamColors[i]) {
                            game.teams[i].push(socket.id); // Add player to selected team
+                           console.log(state);
                            socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
@@ -1523,7 +1531,7 @@ function submit(menuType) {
                   var color;
                   if (game.info.mode === 'inf') { // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team game
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && $('color input')) { // If is not a team game and there is a color input field
                      color = $('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
@@ -1776,6 +1784,7 @@ function submit(menuType) {
                if (org.team != team) { // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
+                  console.log(state);
                   socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
                }
             }
