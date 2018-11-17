@@ -1,8 +1,9 @@
 # BACTER
 
 ## Movement:
-	Target is centered in the screen
-	Org spawns on target (in center screen)
+	Crosshair is centered in the screen
+	Org spawns on the crosshair (in center screen)
+	Org is attracted to the crosshair:
 	Rate of growth increases as cells approach target
 		(Rate of growth decreases further from target)
 	Rate of death decreases as cells approach target
@@ -125,27 +126,17 @@
 		Players are assigned a small circular territory at spawn
 
 ## Bugs/Fixes:
-	Leaderboard flicker on new spectator bug
+	Leaderboard flicker on new spectator bug (not big deal)
 		Spectator has not yet been added to spectators array
 
 ## To-Do:
-	3.1.1 - Fixes
-		✓ Babel
-		✓ Bundle
-		✓ Add ESC to go back in browser and respawn, host, join, spectate menus
-		✓ Fix respawn menu pause issue
-		✓ Fix join game without choosing abilities
-		✓ Remove targeting
-		✓ Fix Double org interval
-		✓ Fix skirmish friendly fire
-		✓ Fix skirmish overpopulate team issue
-		✓ Fullscreen recommendation in tutorial
-		✓ Remove pixel units in menu
-		✓ React menus
-		✓ React browser
-		✓ Auto-select team with fewest players in join menu
-		✓ Mouse up on whole page
-		✓ Fix spawn with one cell
+	3.1.2 - Lag Reduction
+		✓ Google Analytics
+		✓ Fix current color detection in respawn and pause menus
+		✓ Change 'Leave Game' text in pause tutorial menu to 'Leave Tutorial'
+		Consolidate game updates to server into single emit
+			Set as interval with _renderfrequendy
+		Quick Match
 	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
 			✓ Round system
@@ -173,6 +164,11 @@
 			Fill color
 		Fullscreen button
 		Mouse click, in, and out behavior correction
+			Do not change background color on mouse down, only on mouse hover
+		More applicable freeze tooltip art
+		Images for tooltip art
+			Higher detail/resolution
+		Fix browser button inconsistent row background
 	3.3.0
 		Images for ability tooltips
 		Add controls settings menu
@@ -188,10 +184,6 @@
 		Fix ctf base world corner rendering bug
 	X.1.0 - Visual Enhancement
 		Add substance to the world (background)
-			Decoration
-				Add option to Create Game Settings Menu
-				? Grid
-				? Dots
 			Pickups that lower cooldowns
 			Pickups that increase radius
 		Spores decelerate over time (Friction)

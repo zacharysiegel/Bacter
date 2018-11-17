@@ -1,5 +1,5 @@
 # BACTER Change Log
----
+
 	NOTE: Logs before version a1.1.2 are incomplete or inaccurate
 
 ## a1.0.0
@@ -208,3 +208,11 @@
 	Fixed invalid zero dimension error issue
 	Fixed minor ability bug
 	Fixed minor player cap bug
+
+## a3.1.2
+	Added analytics by Google
+	Added Google search console verification
+	Changed text in respawn menu from 'Respawn' to 'Spawn'
+	Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'
+	Fixed current color detection in spawn and pause menus
+	Fixed in-game window resizing issue

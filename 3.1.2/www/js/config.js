@@ -1,6 +1,6 @@
 // Socket Settings
-const DEV = false;
-const HEROKU = true;
+const DEV = true;
+const HEROKU = false;
 
 // Repertoires
 const worldColors = {
@@ -55,24 +55,24 @@ const teamColorDef = { // Conversion between team name to color name
 	green: 'lime', 
 	pink: 'petal'
 };
-const firsts =  [ 'Extend',      'Compress'   ];
-const seconds = [ 'Immortality', 'Freeze'     ];
-const thirds =  [ 'Neutralize' , 'Toxin'      ];
+const firsts =  [ 'Extend',      'Compress' ];
+const seconds = [ 'Immortality', 'Freeze'   ];
+const thirds =  [ 'Neutralize' , 'Toxin'    ];
 
 // Math
 const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
 // Configurations
-const _ofrequency    = 70;
-const _rfrequency    = 40;
-const _range         = 50;
-const _cellwidth     = 6;
-const _movespeed     = 1.7;
-const _spectatespeed = 2.5;
-const _delaytime     = 10000;
-const _dummies       = 10;
-const _margin        = 25;
+const _ofrequency      = 70; // Org update frequency
+const _renderfrequency = 40; // Rendering update frequency
+const _range           = 50; // Org default maximum size
+const _cellwidth       = 6; // Width of single cell (pixels)
+const _movespeed       = 1.7; // Crosshair movement speed
+const _spectatespeed   = 2.5; // Crosshair movement speed in spectate mode
+const _delaytime       = 10000;
+const _dummies         = 10; // Number of dummy orgs in title screen
+const _margin          = 25; // Title screen margin
 
 // Settings
 let Labels = true;

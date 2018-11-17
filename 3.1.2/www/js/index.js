@@ -114,9 +114,10 @@ function keyPressed() {
          if (state == 'spectate' && org.alive == false && org.spawn == true) {
             if (game.players.length < game.info.cap) {
                socket.emit('Spectator Left', game.info);
-               renderMenu('respawn', game);
+               renderMenu('respawn', game); // Load respawn menu
             } else {
                alert('Game is at maximum player capacity');
+               // Return to spectate mode
             }
          }
          break;
@@ -232,7 +233,7 @@ function keyPressed() {
 
 function mouseClicked() {
    if (mouseButton == LEFT) {
-      // if (state == 'game') { // DO NOT DELETE
+      // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
       //    { // Targeting
       //       org.target = undefined; // Clear target if click not on opponent org
       //       for (let i = 0; i < game.info.count; i++) {
@@ -265,6 +266,7 @@ function windowResized() {
    } else if (state === 'game' || state === 'spectate') {
       org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
       org.off.y = org.pos.y - center.y;
+      ReactDOM.render(<CanvasCont />, $('cont'));
    } else if (state.indexOf('Menu') !== -1) {
       let type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
       let data = (type === 'join' || type === 'spectate' || type === 'respawn') ? game : null; // Only join, spectate, and respawn menus use game variable as data

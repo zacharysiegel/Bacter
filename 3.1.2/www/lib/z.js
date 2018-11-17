@@ -45,8 +45,7 @@ var getKeys = function(obj) { // Returns an array of strings representing keys o
 	return arr;
 };
 
-function requestFullscreen(elT) {
-	let elt = elT;
+function requestFullscreen(elt) {
 	if (elt.requestFullscreen) {
 		elt.requestFullscreen();
 	} else if (elt.mozRequestFullScreen) {
@@ -58,8 +57,7 @@ function requestFullscreen(elT) {
 	}
 }
 
-function exitFullscreen(elT) {
-	let elt = elT;
+function exitFullscreen(elt) {
 	if (elt.exitFullscreen) {
 		elt.requestFullscreen();
 	} else if (elt.mozCancelFullScreen) {
@@ -75,7 +73,7 @@ function getFullscreenElement() {
 	return (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null);
 }
 
-function isFull() {
+function isFullscreen() {
 	var fullElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
 	if (fullElement === null) { // If no element is in full-screen
 		return false;

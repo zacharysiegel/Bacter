@@ -1,8 +1,8 @@
 var getMessage = function() {
    let message;
-   if (state == 'game' || state == 'spectate') {
-      if (org.alive == true) {
-         if (game.rounds.util == true) {
+   if (state === 'game' || state === 'spectate') {
+      if (org.alive) {
+         if (game.rounds.util) {
             if (game.rounds.waiting == true && game.rounds.delayed == false) {
                if (game.rounds.min - game.info.count == 1) {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
@@ -15,26 +15,26 @@ var getMessage = function() {
                message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          }
-      } else if (org.alive == false) {
-         if (game.rounds.util == true) {
-            if (game.rounds.waiting == true && game.rounds.delayed == false) { // Waiting for more players to join, not counting down yet
+      } else if (!org.alive) {
+         if (game.rounds.util) {
+            if (game.rounds.waiting === true && game.rounds.delayed === false) { // Waiting for more players to join, not counting down yet
                if (game.rounds.min - game.info.count == 1) {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
                } else {
                   message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
                }
-            } else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Enough players have joined, counting down
+            } else if (game.rounds.waiting === true && game.rounds.delayed === true) { // Enough players have joined, counting down
                message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-            } else if (game.rounds.waiting == false && game.rounds.delayed == false) { // Round in progress
+            } else if (game.rounds.waiting === false && game.rounds.delayed === false) { // Round in progress
                message = 'Wait for the round to complete';
-            } else if (game.rounds.waiting == false && game.rounds.delayed == true) {
+            } else if (game.rounds.waiting === false && game.rounds.delayed === true) {
                message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          } else {
             message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
          }
       }
-   } else if (state == 'tutorial') {
+   } else if (state === 'tutorial') {
       switch (tutorial.task) {
          case 'move':
             message = 'Use W-A-S-D (Recommended) or the arrow keys to move';
@@ -67,7 +67,7 @@ var getMessage = function() {
             message = 'TOXIN creates a localized bubble in which only you can survive';
             break;
          case 'spore':
-            if (tutorial.stopped == true) {
+            if (tutorial.stopped) {
                message = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
             } else {
                message = 'Use SPORE to jettison outer cells in all directions (Space Bar)';
