@@ -3,12 +3,12 @@ var gamesInterval; // "
 var emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
-      socket = io.connect('localhost'); // Local server (Development only)
+      socket = io.connect('localhost:3000'); // Local server (Development only)
    } else {
       if (HEROKU) {
          socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
       } else {
-         socket = io.connect('24.55.26.67'); // Local Server
+         socket = io.connect('24.55.26.67:3000'); // Local Server
       }
    }
 
@@ -35,13 +35,13 @@ function connectSocket() {
    socket.on('Force Spawn', () => {
       die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
       for (let i = 0; i < game.spectators.length; i++) {
-         if (game.spectators[i] == socket.id) { // If player is spectator
+         if (game.spectators[i] === socket.id) { // If player is spectator
             socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
          }
       }
-      if (state == 'pauseSpectateMenu') {
+      if (state === 'pauseSpectateMenu') {
          renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
-      } else if (state == 'respawnMenu') {
+      } else if (state === 'respawnMenu') {
          renderMenu('pauseGame', game);
          menus.pauseGame.submit();
       }
@@ -52,11 +52,11 @@ function connectSocket() {
 
    socket.on('Game', (gamE) => {
       game = gamE;
-      if (ability.spore.value == true) {
+      if (ability.spore.value === true) {
          ability.spore.interval();
       }
       for (let i = 0; i < 3; i++) {
-         if (ability.shoot.value[i] == true) {
+         if (ability.shoot.value[i] === true) {
             ability.shoot.interval[i]();
          }
       }
@@ -84,7 +84,7 @@ function connectSocket() {
                translate(org.off.x, org.off.y);
             }
             renderMessages(); // Render messages outside translation
-            if (state == 'game') {
+            if (state === 'game') {
                move(); // Move goes at the end so player does not render his movements before others
             }
             break;
@@ -111,7 +111,7 @@ function connectSocket() {
                translate(org.off.x, org.off.y);
             }
             renderMessages();
-            if (state == 'spectate') {
+            if (state === 'spectate') {
                move(); // Move is after messages so everything has same offset
             }
             break;
@@ -132,7 +132,7 @@ function connectSocket() {
          ability.tag.value = true;
          clearTimeout(ability.tag.timeout);
          socket.emit('Ability', ability);
-         if (game.info.mode == '') {
+         if (game.info.mode === '') {
             ability.tag.timeout = setTimeout(() => {
                ability.tag.value = false;
                socket.emit('Ability', ability);

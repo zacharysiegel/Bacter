@@ -1,22 +1,19 @@
-var freq = function(arR, elM) { // Get the frequency of an element in an array or string
-	let arr = arR;
-	let elm = elM;
+var freq = function(arr, elt) { // Get the frequency of an element in an array or string
 	let freq = 0;
-	let index = arr.indexOf(elm);
+	let index = arr.indexOf(elt);
 	if (index == -1) {
 		return freq;
 	} else {
 		do {
 			freq++;
 			arr = arr.slice(index + 1);
-			index = arr.indexOf(elm);
+			index = arr.indexOf(elt);
 		} while (index != -1);
 		return freq;
 	}
 };
 
-var capitalize = function(stR) { // Capitalize the first character of every word in the given string
-	let str = stR;
+var capitalize = function(str) { // Capitalize the first character of every word in the given string
 	let arr = str.split('');
 	arr[0] = arr[0].toUpperCase();
 	for (let i = 0; i < arr.length; i++) {

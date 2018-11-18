@@ -2021,6 +2021,136 @@ var items = {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Button = function (_React$Component) {
+   _inherits(Button, _React$Component);
+
+   function Button(props) {
+      _classCallCheck(this, Button);
+
+      var _this = _possibleConstructorReturn(this, (Button.__proto__ || Object.getPrototypeOf(Button)).call(this, props));
+
+      _this.state = {
+         down: false, // Is mouse down?
+         backgroundColor: 'rgb(240, 240, 240)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+      };
+      _this.style = {};
+      _this.menuType = props.menuType;
+      _this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      _this.handleClick = _this.handleClick.bind(_this); // Bind this. reference value to class functions
+      _this.handleMouseOver = _this.handleMouseOver.bind(_this);
+      _this.handleMouseOut = _this.handleMouseOut.bind(_this);
+      _this.handleMouseUp = _this.handleMouseUp.bind(_this);
+      _this.handleMouseDown = _this.handleMouseDown.bind(_this);
+      return _this;
+   }
+
+   _createClass(Button, [{
+      key: 'handleClick',
+      value: function handleClick() {
+         switch (this.instance) {
+            case 'leave game':
+            case 'leave tutorial':
+               org.clearIntervals(); // Copied from die()
+               ability = new Ability({ player: socket.id }); // Reset ability object
+               if (getSrc().src === 'game') {
+                  // No game object in pause tutorial menu
+                  socket.emit('Leave Game', game);
+                  for (var i = 0; i < game.board.list.length; i++) {
+                     if (game.board.list[i].player == socket.id) {
+                        // Find player in leaderboard
+                        game.board.list.splice(i, 1); // Remove player from leaderboard
+                        orderBoard(game.board.list); // Sort the list
+                        socket.emit('Board', game.board); // Send updated board to server
+                        break;
+                     }
+                  }
+               }
+               if (getSrc().src === 'tutorial') {
+                  tutorial.clear(); // Clear tutorial intervals
+               }
+               org = undefined; // Clear org variable
+               renderTitle();
+               title = new Title();
+               break;
+         }
+      }
+   }, {
+      key: 'handleMouseOver',
+      value: function handleMouseOver() {
+         var page = document.body.parentNode;
+         if (!mouseDown || !this.state.down) {
+            // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
+            this.setState({
+               down: false,
+               backgroundColor: 'rgb(220, 220, 220)'
+            });
+         } else {
+            if (this.state.down) {
+               this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+               mouseDown = true;
+            }
+         }
+      }
+   }, {
+      key: 'handleMouseOut',
+      value: function handleMouseOut() {
+         this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
+      }
+   }, {
+      key: 'handleMouseUp',
+      value: function handleMouseUp() {
+         this.style.backgroundColor = 'rgb(220, 220, 220)';
+         this.setState({ down: false });
+      }
+   }, {
+      key: 'handleMouseDown',
+      value: function handleMouseDown() {
+         this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+         this.setState({ down: true });
+      }
+   }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+         var page = document.body.parentNode;
+         if (!mouseDown) this.setState({ down: false });
+      }
+   }, {
+      key: 'render',
+      value: function render() {
+         var style = {};
+         for (var i in this.style) {
+            style[i] = this.style[i];
+         }
+         style.backgroundColor = this.state.backgroundColor;
+
+         return React.createElement('button', {
+            id: this.instance + ' input',
+            className: 'menubutton',
+            type: 'button',
+            style: style,
+            onMouseOver: this.handleMouseOver,
+            onMouseOut: this.handleMouseOut,
+            onMouseDown: this.handleMouseDown,
+            onMouseUp: this.handleMouseUp,
+            onClick: this.handleClick
+         });
+      }
+   }]);
+
+   return Button;
+}(React.Component);
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2029,59 +2159,205 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var menus = {
-   create: {
-      header: 'Game Creation Options',
-      button: 'Create',
-      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
-      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
-   },
-   join: {
-      header: 'Join Game Options',
-      button: 'Join',
-      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
-      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
-   },
-   spectate: {
-      header: 'Spectate Game Options',
-      button: 'Spectate',
-      options: ['Screen Name', 'Password'],
-      values: ['text', 'text']
-   },
-   respawn: {
-      header: 'Spawn Options',
-      button: 'Spawn',
-      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
-      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
-   },
-   pauseGame: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
-      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
-   },
-   pauseSpectate: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Name Labels', 'Messages', 'Leave Game'],
-      values: ['1 radio', '1 radio', 'button']
-   },
-   pauseTutorial: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Leave Tutorial'],
-      values: ['button']
-   }
-};
+var List = function (_React$Component) {
+   _inherits(List, _React$Component);
 
-function renderMenu(typE, datA) {
-   if (state.indexOf('Menu') !== -1 && typE !== state.slice(0, -4)) {
-      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
-      ReactDOM.unmountComponentAtNode($('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+   function List(props) {
+      _classCallCheck(this, List);
+
+      var _this = _possibleConstructorReturn(this, (List.__proto__ || Object.getPrototypeOf(List)).call(this, props));
+
+      _this.state = {
+         value: props.value,
+         options: [],
+         focused: false,
+         backgroundColor: 'rgb(255, 255, 255)'
+      };
+      _this.style = {};
+      _this.menuType = props.menuType;
+      _this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      _this.applyInstance = _this.applyInstance.bind(_this);
+      _this.handleChange = _this.handleChange.bind(_this);
+      _this.handleFocus = _this.handleFocus.bind(_this);
+      _this.handleKeyDown = _this.handleKeyDown.bind(_this);
+      return _this;
    }
-   ReactDOM.render(React.createElement(Menu, { type: typE, data: datA }), $('cont')); // Render instance of Menu component class in container with id 'cont'
-   state = typE + 'Menu'; // Game state - not component state
-}
+
+   _createClass(List, [{
+      key: 'applyInstance',
+      value: function applyInstance() {
+         var info = []; // Info array holds meta data for option elements to be created later
+         var unset = true; // If value is unset initially, will set value to first in list
+         switch (this.instance) {
+            case 'world type':
+               info = [{ value: 'rectangle', inner: 'Square' }, { value: 'ellipse', inner: 'Circle' }];
+               break;
+            case 'game mode':
+               for (var i in modes) {
+                  var mode = modes[i];
+                  var disabled = false;
+                  if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true; // CTF, INF, and KTH modes are currently not available
+                  info.push({ value: i, inner: modes[i], disabled: disabled });
+               }
+               break;
+            case 'color':
+               for (var _i in orgColors[game.world.color]) {
+                  // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
+                  var color = _i; // Key: Color name: String
+                  var rgb = orgColors[game.world.color][_i]; // Value: RGB: Object
+                  info.push({ value: color, inner: color[0].toUpperCase() + color.slice(1),
+                     style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
+                  });
+               }
+               if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
+                  for (var _i2 = 0; _i2 < info.length; _i2++) {
+                     var _color = void 0;
+                     for (var j in orgColors[game.world.color]) {
+                        if (orgColors[game.world.color][j] === org.color) {
+                           _color = j;
+                           break;
+                        }
+                     }
+                     if (_color === info[_i2].value) {
+                        this.setState({ value: info[_i2].value });
+                        unset = false;
+                        break;
+                     }
+                  }
+               }
+               break;
+            case 'team':
+               if (getSrc().src === 'title') {
+                  // If in title, set game value to game in games array
+                  for (var _i3 = 0; _i3 < games.length; _i3++) {
+                     // Update game on-load (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
+                     if (games[_i3].info.host === game.info.host) {
+                        // Identify game
+                        game = games[_i3]; // Set game to updated game from server array
+                        break;
+                     }
+                  }
+               }
+               for (var _i4 = 0; _i4 < game.teams.length; _i4++) {
+                  // If is not a team mode, rendering should be blocked in Menu.render()
+                  info.push({ value: teamColors[_i4], inner: teamColors[_i4][0].toUpperCase() + teamColors[_i4].slice(1) + ': ' + game.teams[_i4].length });
+               }
+               if (this.menuType === 'join') {
+                  // Team auto-selection in join menu
+                  var lengths = game.teams.map(function (team) {
+                     return team.length;
+                  }); // Array which records the number of players on each team
+                  var min = _defineProperty({}, 0, lengths[0]); // min is an object whose only key is the index of the smallest team and whose value is the size of that team (start with first team by default)
+                  for (var _i5 = 0; _i5 < info.length; _i5++) {
+                     // Must keep track of index of minimum team within teams array, so index is key within min
+                     if (min[_i5] > lengths[_i5 + 1]) {
+                        delete min[_i5]; // Remove previous team key-value pair (it is not minimum size)
+                        min[_i5 + 1] = lengths[_i5 + 1];
+                     }
+                  }
+                  for (var _i6 in min) {
+                     // For-in loop only used so key in min object can be accessed
+                     this.setState({ value: info[parseInt(_i6)].value }); // i is of type string, so parseInt must be used to make type number
+                     unset = false;
+                  }
+               } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
+                  // Team auto-selection in respawn menu
+                  for (var _i7 = 0; _i7 < info.length; _i7++) {
+                     if (org.team === teamColors[_i7]) {
+                        this.setState({ value: info[_i7].value });
+                        unset = false;
+                        break;
+                     }
+                  }
+               }
+               break;
+         }
+         if (unset) this.setState({ value: info[0].value }); // If no value has been set, set first option to select element's value
+         var ops = info.map(function (inf) {
+            return React.createElement(
+               'option',
+               { key: inf.value, value: inf.value, disabled: inf.disabled, style: inf.style },
+               inf.inner
+            );
+         }); // Create option elements from info
+         this.setState({ options: ops });
+      }
+   }, {
+      key: 'handleChange',
+      value: function handleChange(e) {
+         this.props.update(this.instance, e.target.value); // Update local value and menu based on current instance and value
+      }
+   }, {
+      key: 'handleFocus',
+      value: function handleFocus(e) {
+         if (e.type === 'focus') {
+            // e.type: the type of event (focus or blur); typeof e.type is DOMString:
+            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
+         } else if (e.type === 'blur') {
+            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
+         }
+      }
+   }, {
+      key: 'handleKeyDown',
+      value: function handleKeyDown(e) {
+         if (e.keyCode === 13) // If ENTER key is down
+            this.props.submit(this.menuType);
+      }
+   }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+         // Does not run when component is merely changed, only on initial mount
+         this.applyInstance();
+      }
+   }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+         this.props.update(this.instance, this.state.value); // Update internal values of this and other inputs
+      }
+   }, {
+      key: 'componentWillReceiveProps',
+      value: function componentWillReceiveProps(next) {
+         this.setState({ value: next.value });
+      }
+   }, {
+      key: 'render',
+      value: function render() {
+         var style = {};
+         for (var i in this.style) {
+            style[i] = this.style[i];
+         }
+         style.backgroundColor = this.state.backgroundColor;
+
+         return React.createElement(
+            'select',
+            {
+               id: this.instance + ' input',
+               className: 'menuinput',
+               value: this.state.value,
+               style: style,
+               onChange: this.handleChange,
+               onFocus: this.handleFocus,
+               onBlur: this.handleFocus,
+               onKeyDown: this.handleKeyDown
+            },
+            this.state.options
+         );
+      }
+   }]);
+
+   return List;
+}(React.Component);
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Menu = function (_React$Component) {
    _inherits(Menu, _React$Component);
@@ -2285,29 +2561,28 @@ var Menu = function (_React$Component) {
       key: 'issue',
       value: function issue(issues) {
          // issues: Array[ { instance: 'message' } ]
-         var iss = issues;
-         var count = iss.length;
+         var count = issues.length;
          var stateIssues = []; // Issues array to be stored in state: Array1[ Array2[ 'message0', ..., 'messageN' ] ] (index of Array1 refers to instance as in options array) (different format than incoming issues)
          for (var i = 0; i < menus[this.type].options.length; i++) {
             var instance = menus[this.type].options[i].toLowerCase(); // Save instance value from options into instance variable
             stateIssues.push([]); // There exists an issues array for each possible option
             for (var j = 0; j < count; j++) {
-               if (getKeys(iss[j])[0] === instance) {
+               if (getKeys(issues[j])[0] === instance) {
                   // If instance of issue is instance from options array
-                  stateIssues[i].push(iss[j][instance]); // Add issue to messages array within instance index of state issues array
-                  iss.splice(j, 1); // Remove issue from inputted issues array so it is not unnecessarily looped through
-                  count--; // count must be reduced since length of iss is reduced
+                  stateIssues[i].push(issues[j][instance]); // Add issue to messages array within instance index of state issues array
+                  issues.splice(j, 1); // Remove issue from inputted issues array so it is not unnecessarily looped through
+                  count--; // count must be reduced since length of issues is reduced
                   j--; // j must be reduced since the entire array is shifted back after splicing, so j need not be incremented (always do this after splicing iterated array)
                }
             }
          }
-         if (iss.length) {
+         if (issues.length) {
             // If there are any remaining issues (issues with instance '' which do not apply to any single input)
             stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu
             for (var _i = 0; _i < count; _i++) {
                // count is the number of remaining issues
-               var key = getKeys(iss[_i])[0];
-               stateIssues[stateIssues.length - 1].push(iss[_i][key]); // Add reamining issues to last index of state issues array because they are displayed after all other issues at the bottom of the menu
+               var key = getKeys(issues[_i])[0];
+               stateIssues[stateIssues.length - 1].push(issues[_i][key]); // Add reamining issues to last index of state issues array because they are displayed after all other issues at the bottom of the menu
             }
          }
          this.setState({ issues: stateIssues });
@@ -2340,7 +2615,7 @@ var Menu = function (_React$Component) {
             } else {
                input = menus[_this2.type].values[i];
             }
-            var issues = _this2.state.issues[i].map(function (iss, ix) {
+            var issues = _this2.state.issues[i].map(function (issues, ix) {
                return React.createElement(
                   'p',
                   { key: ix,
@@ -2349,7 +2624,7 @@ var Menu = function (_React$Component) {
                         display: _this2.state.issues[i].length ? 'block' : 'none',
                         margin: '5px 0px 3px 0px'
                      } },
-                  iss
+                  issues
                );
             });
             var row = React.createElement(
@@ -2384,7 +2659,7 @@ var Menu = function (_React$Component) {
                React.createElement(
                   'td',
                   { className: 'menucell', key: 1, style: { textAlign: 'left' } },
-                  this.state.issues[this.state.issues.length - 1].map(function (iss, ix) {
+                  this.state.issues[this.state.issues.length - 1].map(function (issues, ix) {
                      return React.createElement(
                         'p',
                         { key: ix,
@@ -2393,7 +2668,7 @@ var Menu = function (_React$Component) {
                               display: 'block',
                               margin: '5px 0px 3px 0px'
                            } },
-                        iss
+                        issues
                      );
                   })
                )
@@ -2438,81 +2713,88 @@ var Menu = function (_React$Component) {
 
    return Menu;
 }(React.Component);
+'use strict';
 
-var Text = function (_React$Component2) {
-   _inherits(Text, _React$Component2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-   // Each input-type component renders a table row containing the input type
-   function Text(props) {
-      _classCallCheck(this, Text);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-      var _this3 = _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).call(this, props));
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-      _this3.state = {
-         value: props.value,
-         focused: false, // If the user is focused on the field
-         backgroundColor: 'rgb(255, 255, 255)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MenuFooter = function (_React$Component) {
+   _inherits(MenuFooter, _React$Component);
+
+   function MenuFooter(props) {
+      _classCallCheck(this, MenuFooter);
+
+      var _this = _possibleConstructorReturn(this, (MenuFooter.__proto__ || Object.getPrototypeOf(MenuFooter)).call(this, props));
+
+      _this.state = {};
+      _this.style = {
+         zIndex: '1',
+         position: 'absolute',
+         opacity: '.95'
       };
-      _this3.style = {};
-      _this3.menuType = props.menuType;
-      _this3.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      _this.menuType = props.menuType;
 
-      _this3.applyInstance = _this3.applyInstance.bind(_this3);
-      _this3.handleFocus = _this3.handleFocus.bind(_this3);
-      _this3.handleChange = _this3.handleChange.bind(_this3);
-      _this3.handleKeyDown = _this3.handleKeyDown.bind(_this3);
-      return _this3;
+      _this.handleClick = _this.handleClick.bind(_this);
+      return _this;
    }
 
-   _createClass(Text, [{
-      key: 'applyInstance',
-      value: function applyInstance() {
-         switch (this.instance) {
-            case 'password':
-               if (this.menuType === 'join') // Caution: password instance exists in create and join menus
-                  socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
+   _createClass(MenuFooter, [{
+      key: 'handleClick',
+      value: function handleClick() {
+         // Click is handled on footer rather than back text so click applies to entire footer
+         switch (this.menuType) {
+            case 'create':
+               renderTitle();
+               break;
+            case 'join':
+               if (game.info.host == socket.id) {
+                  // If player is host (If player is joining directly after creating the game)
+                  socket.emit('Game Ended', game);
+                  renderTitle();
+               } else {
+                  renderBrowser();
+               }
+               break;
+            case 'spectate':
+               renderBrowser();
+               break;
+            case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
+            case 'respawn':
+               state = 'spectate';
+               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               break;
+            case 'pauseGame':
+               {
+                  var skip = false;
+                  for (var i = 0; i < game.players.length; i++) {
+                     if (game.players[i] === socket.id) {
+                        // If still is a player
+                        state = 'game';
+                        skip = true;
+                        break;
+                     }
+                  }
+                  if (!skip) {
+                     for (var _i = 0; _i < game.spectators.length; _i++) {
+                        if (game.spectators[_i] === socket.id) {
+                           state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                           break;
+                        }
+                     }
+                  }
+                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+                  break;
+               }
+            case 'pauseTutorial':
+               state = 'tutorial';
+               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
                break;
          }
-      }
-   }, {
-      key: 'handleFocus',
-      value: function handleFocus(e) {
-         if (e.type === 'focus') {
-            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
-         } else if (e.type === 'blur') {
-            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
-         }
-      }
-   }, {
-      key: 'handleChange',
-      value: function handleChange(e) {
-         // e.target is dom element of target
-         this.props.update(this.instance, e.target.value);
-         if (this.instance === 'password' && this.menuType === 'join') {
-            socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
-         }
-      }
-   }, {
-      key: 'handleKeyDown',
-      value: function handleKeyDown(e) {
-         if (e.keyCode === 13) // If ENTER key is down
-            this.props.submit(this.menuType);
-      }
-   }, {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-         this.applyInstance();
-      }
-   }, {
-      key: 'componentDidMount',
-      value: function componentDidMount() {
-         this.props.update(this.instance, this.state.value);
-      }
-   }, {
-      key: 'componentWillReceiveProps',
-      value: function componentWillReceiveProps(next) {
-         this.setState({ value: next.value });
       }
    }, {
       key: 'render',
@@ -2521,51 +2803,176 @@ var Text = function (_React$Component2) {
          for (var i in this.style) {
             style[i] = this.style[i];
          }
-         style.backgroundColor = this.state.backgroundColor;
 
-         return React.createElement('input', {
-            id: this.instance + ' input',
-            className: 'menuinput',
-            type: 'text',
-            value: this.state.value,
-            autoComplete: 'off',
-            style: style,
-            onFocus: this.handleFocus,
-            onBlur: this.handleFocus,
-            onChange: this.handleChange,
-            onKeyDown: this.handleKeyDown
-         });
+         return React.createElement(
+            'div',
+            { id: 'footerDiv', style: style, onClick: this.handleClick },
+            React.createElement(
+               'footer',
+               { id: 'footer', className: 'menufooter' },
+               React.createElement(
+                  'p',
+                  { className: 'menufootertext' },
+                  '\u2190 Back'
+               )
+            )
+         );
       }
    }]);
 
-   return Text;
+   return MenuFooter;
 }(React.Component);
+'use strict';
 
-var Num = function (_React$Component3) {
-   _inherits(Num, _React$Component3);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var MenuSubmit = function (_React$Component) {
+   _inherits(MenuSubmit, _React$Component);
+
+   function MenuSubmit(props) {
+      _classCallCheck(this, MenuSubmit);
+
+      var _this = _possibleConstructorReturn(this, (MenuSubmit.__proto__ || Object.getPrototypeOf(MenuSubmit)).call(this, props));
+
+      _this.state = {
+         down: false, // Is mouse down?
+         backgroundColor: 'rgb(240, 240, 240)', // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+         left: (window.innerWidth - 95) / 2 + 'px' // Submit width is 95px
+      };
+      _this.menuType = props.menuType;
+
+      _this.handleClick = _this.handleClick.bind(_this);
+      _this.handleMouseOver = _this.handleMouseOver.bind(_this);
+      _this.handleMouseOut = _this.handleMouseOut.bind(_this);
+      _this.handleMouseDown = _this.handleMouseDown.bind(_this);
+      _this.handleMouseUp = _this.handleMouseUp.bind(_this);
+      return _this;
+   }
+
+   _createClass(MenuSubmit, [{
+      key: 'handleClick',
+      value: function handleClick(e) {
+         // Submit functions based upon menu type
+         this.props.submit(this.menuType);
+      }
+   }, {
+      key: 'handleMouseOver',
+      value: function handleMouseOver(e) {
+         var page = document.body.parentNode;
+         if (!mouseDown || !this.state.down) {
+            // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
+            this.setState({ down: false, backgroundColor: 'rgb(220, 220, 220)' });
+         } else {
+            if (this.state.down) {
+               this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
+               mouseDown = true;
+            }
+         }
+      }
+   }, {
+      key: 'handleMouseOut',
+      value: function handleMouseOut(e) {
+         this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
+      }
+   }, {
+      key: 'handleMouseDown',
+      value: function handleMouseDown(e) {
+         this.setState({
+            down: true,
+            backgroundColor: 'rgb(200, 200, 200)'
+         });
+      }
+   }, {
+      key: 'handleMouseUp',
+      value: function handleMouseUp(e) {
+         this.setState({
+            down: false,
+            backgroundColor: 'rgb(240, 240, 240)'
+         });
+      }
+   }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+         var page = document.body.parentNode;
+         if (!mouseDown) this.setState({ down: false });
+      }
+   }, {
+      key: 'componentWillReceiveProps',
+      value: function componentWillReceiveProps(next) {
+         this.setState({ left: (window.innerWidth - 95) / 2 + 'px' }); // Center submit button on the screen
+      }
+   }, {
+      key: 'render',
+      value: function render() {
+         var style = {};
+         style.backgroundColor = this.state.backgroundColor;
+         style.left = this.state.left;
+
+         return React.createElement(
+            'button',
+            {
+               id: this.menuType + 'Button',
+               className: 'menusubmit',
+               type: 'button',
+               style: style,
+               onClick: this.handleClick,
+               onMouseOver: this.handleMouseOver,
+               onMouseOut: this.handleMouseOut,
+               onMouseDown: this.handleMouseDown,
+               onMouseUp: this.handleMouseUp
+            },
+            React.createElement(
+               'p',
+               { style: { margin: 0 } },
+               menus[this.menuType].button
+            )
+         );
+      }
+   }]);
+
+   return MenuSubmit;
+}(React.Component);
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Num = function (_React$Component) {
+   _inherits(Num, _React$Component);
 
    function Num(props) {
       _classCallCheck(this, Num);
 
-      var _this4 = _possibleConstructorReturn(this, (Num.__proto__ || Object.getPrototypeOf(Num)).call(this, props));
+      var _this = _possibleConstructorReturn(this, (Num.__proto__ || Object.getPrototypeOf(Num)).call(this, props));
 
-      _this4.state = {
+      _this.state = {
          value: props.value, // Actuall value of the input field
          focused: false, // If the user is focused on the field
          backgroundColor: 'rgb(255, 255, 255)',
          display: 'table-row' // Indicates whether 'display: none' property will be set on the container table row
       };
-      _this4.style = {};
-      _this4.menuType = props.menuType; // Type of menu rendered inside
-      _this4.instance = props.instance; // Name of input
+      _this.style = {};
+      _this.menuType = props.menuType; // Type of menu rendered inside
+      _this.instance = props.instance; // Name of input
       // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
-      _this4.placeholder = null;
+      _this.placeholder = null;
 
-      _this4.applyInstance = _this4.applyInstance.bind(_this4);
-      _this4.handleFocus = _this4.handleFocus.bind(_this4);
-      _this4.handleChange = _this4.handleChange.bind(_this4);
-      _this4.handleKeyDown = _this4.handleKeyDown.bind(_this4);
-      return _this4;
+      _this.applyInstance = _this.applyInstance.bind(_this);
+      _this.handleFocus = _this.handleFocus.bind(_this);
+      _this.handleChange = _this.handleChange.bind(_this);
+      _this.handleKeyDown = _this.handleKeyDown.bind(_this);
+      return _this;
    }
 
    _createClass(Num, [{
@@ -2672,165 +3079,34 @@ var Num = function (_React$Component3) {
 
    return Num;
 }(React.Component);
+'use strict';
 
-var List = function (_React$Component4) {
-   _inherits(List, _React$Component4);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-   function List(props) {
-      _classCallCheck(this, List);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-      var _this5 = _possibleConstructorReturn(this, (List.__proto__ || Object.getPrototypeOf(List)).call(this, props));
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-      _this5.state = {
-         value: props.value,
-         options: [],
-         focused: false,
-         backgroundColor: 'rgb(255, 255, 255)'
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Radio = function (_React$Component) {
+   _inherits(Radio, _React$Component);
+
+   function Radio(props) {
+      _classCallCheck(this, Radio);
+
+      var _this = _possibleConstructorReturn(this, (Radio.__proto__ || Object.getPrototypeOf(Radio)).call(this, props));
+
+      _this.state = {
+         value: props.value
       };
-      _this5.style = {};
-      _this5.menuType = props.menuType;
-      _this5.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
-
-      _this5.applyInstance = _this5.applyInstance.bind(_this5);
-      _this5.handleChange = _this5.handleChange.bind(_this5);
-      _this5.handleFocus = _this5.handleFocus.bind(_this5);
-      _this5.handleKeyDown = _this5.handleKeyDown.bind(_this5);
-      return _this5;
+      _this.style = {};
+      _this.instance = props.instance;
+      _this.order = props.order; // Index of radio within radio group (for identification purposes)
+      return _this;
    }
 
-   _createClass(List, [{
-      key: 'applyInstance',
-      value: function applyInstance() {
-         var info = []; // Info array holds meta data for option elements to be created later
-         var unset = true; // If value is unset initially, will set value to first in list
-         switch (this.instance) {
-            case 'world type':
-               info = [{ value: 'rectangle', inner: 'Square' }, { value: 'ellipse', inner: 'Circle' }];
-               break;
-            case 'game mode':
-               for (var i in modes) {
-                  var mode = modes[i];
-                  var disabled = false;
-                  if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true; // CTF, INF, and KTH modes are currently not available
-                  info.push({ value: i, inner: modes[i], disabled: disabled });
-               }
-               break;
-            case 'color':
-               for (var _i2 in orgColors[game.world.color]) {
-                  // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
-                  var color = _i2; // Key: Color name: String
-                  var rgb = orgColors[game.world.color][_i2]; // Value: RGB: Object
-                  info.push({ value: color, inner: color[0].toUpperCase() + color.slice(1),
-                     style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
-                  });
-               }
-               if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
-                  for (var _i3 = 0; _i3 < info.length; _i3++) {
-                     var _color = void 0;
-                     for (var j in orgColors[game.world.color]) {
-                        if (orgColors[game.world.color][j] === org.color) {
-                           _color = j;
-                           break;
-                        }
-                     }
-                     if (_color === info[_i3].value) {
-                        this.setState({ value: info[_i3].value });
-                        unset = false;
-                        break;
-                     }
-                  }
-               }
-               break;
-            case 'team':
-               if (getSrc().src === 'title') {
-                  // If in title, set game value to game in games array
-                  for (var _i4 = 0; _i4 < games.length; _i4++) {
-                     // Update game on-load (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
-                     if (games[_i4].info.host === game.info.host) {
-                        // Identify game
-                        game = games[_i4]; // Set game to updated game from server array
-                        break;
-                     }
-                  }
-               }
-               for (var _i5 = 0; _i5 < game.teams.length; _i5++) {
-                  // If is not a team mode, rendering should be blocked in Menu.render()
-                  info.push({ value: teamColors[_i5], inner: teamColors[_i5][0].toUpperCase() + teamColors[_i5].slice(1) + ': ' + game.teams[_i5].length });
-               }
-               if (this.menuType === 'join') {
-                  // Team auto-selection in join menu
-                  var lengths = game.teams.map(function (team) {
-                     return team.length;
-                  }); // Array which records the number of players on each team
-                  var min = _defineProperty({}, 0, lengths[0]); // min is an object whose only key is the index of the smallest team and whose value is the size of that team (start with first team by default)
-                  for (var _i6 = 0; _i6 < info.length; _i6++) {
-                     // Must keep track of index of minimum team within teams array, so index is key within min
-                     if (min[_i6] > lengths[_i6 + 1]) {
-                        delete min[_i6]; // Remove previous team key-value pair (it is not minimum size)
-                        min[_i6 + 1] = lengths[_i6 + 1];
-                     }
-                  }
-                  for (var _i7 in min) {
-                     // For-in loop only used so key in min object can be accessed
-                     this.setState({ value: info[parseInt(_i7)].value }); // i is of type string, so parseInt must be used to make type number
-                     unset = false;
-                  }
-               } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
-                  // Team auto-selection in respawn menu
-                  for (var _i8 = 0; _i8 < info.length; _i8++) {
-                     if (org.team === teamColors[_i8]) {
-                        this.setState({ value: info[_i8].value });
-                        unset = false;
-                        break;
-                     }
-                  }
-               }
-               break;
-         }
-         if (unset) this.setState({ value: info[0].value }); // If no value has been set, set first option to select element's value
-         var ops = info.map(function (inf) {
-            return React.createElement(
-               'option',
-               { key: inf.value, value: inf.value, disabled: inf.disabled, style: inf.style },
-               inf.inner
-            );
-         }); // Create option elements from info
-         this.setState({ options: ops });
-      }
-   }, {
-      key: 'handleChange',
-      value: function handleChange(e) {
-         this.props.update(this.instance, e.target.value); // Update local value and menu based on current instance and value
-      }
-   }, {
-      key: 'handleFocus',
-      value: function handleFocus(e) {
-         if (e.type === 'focus') {
-            // e.type: the type of event (focus or blur); typeof e.type is DOMString:
-            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
-         } else if (e.type === 'blur') {
-            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
-         }
-      }
-   }, {
-      key: 'handleKeyDown',
-      value: function handleKeyDown(e) {
-         if (e.keyCode === 13) // If ENTER key is down
-            this.props.submit(this.menuType);
-      }
-   }, {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-         // Does not run when component is merely changed, only on initial mount
-         this.applyInstance();
-      }
-   }, {
-      key: 'componentDidMount',
-      value: function componentDidMount() {
-         this.props.update(this.instance, this.state.value); // Update internal values of this and other inputs
-      }
-   }, {
+   _createClass(Radio, [{
       key: 'componentWillReceiveProps',
       value: function componentWillReceiveProps(next) {
          this.setState({ value: next.value });
@@ -2839,50 +3115,48 @@ var List = function (_React$Component4) {
       key: 'render',
       value: function render() {
          var style = {};
-         for (var i in this.style) {
-            style[i] = this.style[i];
-         }
-         style.backgroundColor = this.state.backgroundColor;
-
-         return React.createElement(
-            'select',
-            {
-               id: this.instance + ' input',
-               className: 'menuinput',
-               value: this.state.value,
-               style: style,
-               onChange: this.handleChange,
-               onFocus: this.handleFocus,
-               onBlur: this.handleFocus,
-               onKeyDown: this.handleKeyDown
-            },
-            this.state.options
-         );
+         if (this.state.value) style.backgroundColor = 'rgb(190, 190, 190)';else style.backgroundColor = 'rgb(255, 255, 255)';
+         return React.createElement('div', {
+            id: this.instance + ' input ' + this.order,
+            className: 'menuradio',
+            type: 'radio',
+            style: style,
+            onClick: this.props.onClick
+         });
       }
    }]);
 
-   return List;
+   return Radio;
 }(React.Component);
+'use strict';
 
-var Radios = function (_React$Component5) {
-   _inherits(Radios, _React$Component5);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Radios = function (_React$Component) {
+   _inherits(Radios, _React$Component);
 
    function Radios(props) {
       _classCallCheck(this, Radios);
 
-      var _this6 = _possibleConstructorReturn(this, (Radios.__proto__ || Object.getPrototypeOf(Radios)).call(this, props));
+      var _this = _possibleConstructorReturn(this, (Radios.__proto__ || Object.getPrototypeOf(Radios)).call(this, props));
 
-      _this6.state = {
+      _this.state = {
          value: props.value, // Value is represented as index of radio which is selected (only one is selected at once) (null if none are selected)
          selections: Array(props.count).fill(false) // Boolean array to show selection state of radios
       };
-      _this6.count = props.count;
-      _this6.menuType = props.menuType;
-      _this6.instance = props.instance;
+      _this.count = props.count;
+      _this.menuType = props.menuType;
+      _this.instance = props.instance;
       // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
 
-      _this6.applyInstance = _this6.applyInstance.bind(_this6);
-      return _this6;
+      _this.applyInstance = _this.applyInstance.bind(_this);
+      return _this;
    }
 
    _createClass(Radios, [{
@@ -2994,29 +3268,29 @@ var Radios = function (_React$Component5) {
    }, {
       key: 'render',
       value: function render() {
-         var _this7 = this;
+         var _this2 = this;
 
          var radios = [];
 
-         var _loop2 = function _loop2(i) {
-            radios.push(React.createElement(Radio, { key: i, instance: _this7.instance, order: i, value: _this7.state.selections[i], onClick: function onClick() {
-                  return _this7.handleClick(i);
+         var _loop = function _loop(i) {
+            radios.push(React.createElement(Radio, { key: i, instance: _this2.instance, order: i, value: _this2.state.selections[i], onClick: function onClick() {
+                  return _this2.handleClick(i);
                } })); // Uses arrow function syntax so 'i' can be passed rather than event parameter
          };
 
          for (var i = 0; i < this.count; i++) {
-            _loop2(i);
+            _loop(i);
          }
          var elts = radios.map(function (radio, index) {
             return (// Add spacers under radio buttons; Last spacer is twice as high
                React.createElement(
                   'div',
-                  { key: index, onKeyDown: _this7.handleKeyDown },
+                  { key: index, onKeyDown: _this2.handleKeyDown },
                   radio,
                   React.createElement(
                      'p',
                      { className: 'menuradiotext' },
-                     _this7.set[index] ? _this7.set[index][0].toUpperCase() + _this7.set[index].slice(1) : null
+                     _this2.set[index] ? _this2.set[index][0].toUpperCase() + _this2.set[index].slice(1) : null
                   ),
                   React.createElement('div', { style: { display: 'block', height: index === radios.length - 1 ? '6px' : '3px' } })
                )
@@ -3033,25 +3307,87 @@ var Radios = function (_React$Component5) {
 
    return Radios;
 }(React.Component);
+'use strict';
 
-var Radio = function (_React$Component6) {
-   _inherits(Radio, _React$Component6);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-   function Radio(props) {
-      _classCallCheck(this, Radio);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-      var _this8 = _possibleConstructorReturn(this, (Radio.__proto__ || Object.getPrototypeOf(Radio)).call(this, props));
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-      _this8.state = {
-         value: props.value
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Text = function (_React$Component) {
+   _inherits(Text, _React$Component);
+
+   // Each input-type component renders a table row containing the input type
+   function Text(props) {
+      _classCallCheck(this, Text);
+
+      var _this = _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).call(this, props));
+
+      _this.state = {
+         value: props.value,
+         focused: false, // If the user is focused on the field
+         backgroundColor: 'rgb(255, 255, 255)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
       };
-      _this8.style = {};
-      _this8.instance = props.instance;
-      _this8.order = props.order; // Index of radio within radio group (for identification purposes)
-      return _this8;
+      _this.style = {};
+      _this.menuType = props.menuType;
+      _this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      _this.applyInstance = _this.applyInstance.bind(_this);
+      _this.handleFocus = _this.handleFocus.bind(_this);
+      _this.handleChange = _this.handleChange.bind(_this);
+      _this.handleKeyDown = _this.handleKeyDown.bind(_this);
+      return _this;
    }
 
-   _createClass(Radio, [{
+   _createClass(Text, [{
+      key: 'applyInstance',
+      value: function applyInstance() {
+         switch (this.instance) {
+            case 'password':
+               if (this.menuType === 'join') // Caution: password instance exists in create and join menus
+                  socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
+               break;
+         }
+      }
+   }, {
+      key: 'handleFocus',
+      value: function handleFocus(e) {
+         if (e.type === 'focus') {
+            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
+         } else if (e.type === 'blur') {
+            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
+         }
+      }
+   }, {
+      key: 'handleChange',
+      value: function handleChange(e) {
+         // e.target is dom element of target
+         this.props.update(this.instance, e.target.value);
+         if (this.instance === 'password' && this.menuType === 'join') {
+            socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
+         }
+      }
+   }, {
+      key: 'handleKeyDown',
+      value: function handleKeyDown(e) {
+         if (e.keyCode === 13) // If ENTER key is down
+            this.props.submit(this.menuType);
+      }
+   }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+         this.applyInstance();
+      }
+   }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+         this.props.update(this.instance, this.state.value);
+      }
+   }, {
       key: 'componentWillReceiveProps',
       value: function componentWillReceiveProps(next) {
          this.setState({ value: next.value });
@@ -3060,360 +3396,31 @@ var Radio = function (_React$Component6) {
       key: 'render',
       value: function render() {
          var style = {};
-         if (this.state.value) style.backgroundColor = 'rgb(190, 190, 190)';else style.backgroundColor = 'rgb(255, 255, 255)';
-         return React.createElement('div', {
-            id: this.instance + ' input ' + this.order,
-            className: 'menuradio',
-            type: 'radio',
-            style: style,
-            onClick: this.props.onClick
-         });
-      }
-   }]);
-
-   return Radio;
-}(React.Component);
-
-var Button = function (_React$Component7) {
-   _inherits(Button, _React$Component7);
-
-   function Button(props) {
-      _classCallCheck(this, Button);
-
-      var _this9 = _possibleConstructorReturn(this, (Button.__proto__ || Object.getPrototypeOf(Button)).call(this, props));
-
-      _this9.state = {
-         down: false, // Is mouse down?
-         backgroundColor: 'rgb(240, 240, 240)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
-      };
-      _this9.style = {};
-      _this9.menuType = props.menuType;
-      _this9.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
-
-      _this9.handleClick = _this9.handleClick.bind(_this9); // Bind this. reference value to class functions
-      _this9.handleMouseOver = _this9.handleMouseOver.bind(_this9);
-      _this9.handleMouseOut = _this9.handleMouseOut.bind(_this9);
-      _this9.handleMouseUp = _this9.handleMouseUp.bind(_this9);
-      _this9.handleMouseDown = _this9.handleMouseDown.bind(_this9);
-      return _this9;
-   }
-
-   _createClass(Button, [{
-      key: 'handleClick',
-      value: function handleClick() {
-         switch (this.instance) {
-            case 'leave game':
-               org.clearIntervals(); // Copied from die()
-               ability = new Ability({ player: socket.id }); // Reset ability object
-               if (getSrc().src === 'game') {
-                  // No game object in pause tutorial menu
-                  socket.emit('Leave Game', game);
-                  for (var i = 0; i < game.board.list.length; i++) {
-                     if (game.board.list[i].player == socket.id) {
-                        // Find player in leaderboard
-                        game.board.list.splice(i, 1); // Remove player from leaderboard
-                        orderBoard(game.board.list); // Sort the list
-                        socket.emit('Board', game.board); // Send updated board to server
-                        break;
-                     }
-                  }
-               }
-               if (getSrc().src === 'tutorial') {
-                  tutorial.clear(); // Clear tutorial intervals
-               }
-               org = undefined; // Clear org variable
-               renderTitle();
-               title = new Title();
-               break;
-         }
-      }
-   }, {
-      key: 'handleMouseOver',
-      value: function handleMouseOver() {
-         var page = document.body.parentNode;
-         if (!mouseDown || !this.state.down) {
-            // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
-            this.setState({
-               down: false,
-               backgroundColor: 'rgb(220, 220, 220)'
-            });
-         } else {
-            if (this.state.down) {
-               this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
-               mouseDown = true;
-            }
-         }
-      }
-   }, {
-      key: 'handleMouseOut',
-      value: function handleMouseOut() {
-         this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
-      }
-   }, {
-      key: 'handleMouseUp',
-      value: function handleMouseUp() {
-         this.style.backgroundColor = 'rgb(220, 220, 220)';
-         this.setState({ down: false });
-      }
-   }, {
-      key: 'handleMouseDown',
-      value: function handleMouseDown() {
-         this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
-         this.setState({ down: true });
-      }
-   }, {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-         var page = document.body.parentNode;
-         if (!mouseDown) this.setState({ down: false });
-      }
-   }, {
-      key: 'render',
-      value: function render() {
-         var style = {};
          for (var i in this.style) {
             style[i] = this.style[i];
          }
          style.backgroundColor = this.state.backgroundColor;
 
-         return React.createElement('button', {
+         return React.createElement('input', {
             id: this.instance + ' input',
-            className: 'menubutton',
-            type: 'button',
+            className: 'menuinput',
+            type: 'text',
+            value: this.state.value,
+            autoComplete: 'off',
             style: style,
-            onMouseOver: this.handleMouseOver,
-            onMouseOut: this.handleMouseOut,
-            onMouseDown: this.handleMouseDown,
-            onMouseUp: this.handleMouseUp,
-            onClick: this.handleClick
+            onFocus: this.handleFocus,
+            onBlur: this.handleFocus,
+            onChange: this.handleChange,
+            onKeyDown: this.handleKeyDown
          });
       }
    }]);
 
-   return Button;
+   return Text;
 }(React.Component);
+'use strict';
 
-var MenuSubmit = function (_React$Component8) {
-   _inherits(MenuSubmit, _React$Component8);
-
-   function MenuSubmit(props) {
-      _classCallCheck(this, MenuSubmit);
-
-      var _this10 = _possibleConstructorReturn(this, (MenuSubmit.__proto__ || Object.getPrototypeOf(MenuSubmit)).call(this, props));
-
-      _this10.state = {
-         down: false, // Is mouse down?
-         backgroundColor: 'rgb(240, 240, 240)', // Initialize backgroundColor style in state so it can be edited and re-rendered with React
-         left: (window.innerWidth - 95) / 2 + 'px' // Submit width is 95px
-      };
-      _this10.menuType = props.menuType;
-
-      _this10.handleClick = _this10.handleClick.bind(_this10);
-      _this10.handleMouseOver = _this10.handleMouseOver.bind(_this10);
-      _this10.handleMouseOut = _this10.handleMouseOut.bind(_this10);
-      _this10.handleMouseDown = _this10.handleMouseDown.bind(_this10);
-      _this10.handleMouseUp = _this10.handleMouseUp.bind(_this10);
-      return _this10;
-   }
-
-   _createClass(MenuSubmit, [{
-      key: 'handleClick',
-      value: function handleClick(e) {
-         // Submit functions based upon menu type
-         this.props.submit(this.menuType);
-      }
-   }, {
-      key: 'handleMouseOver',
-      value: function handleMouseOver(e) {
-         var page = document.body.parentNode;
-         if (!mouseDown || !this.state.down) {
-            // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
-            this.setState({ down: false, backgroundColor: 'rgb(220, 220, 220)' });
-         } else {
-            if (this.state.down) {
-               this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
-               mouseDown = true;
-            }
-         }
-      }
-   }, {
-      key: 'handleMouseOut',
-      value: function handleMouseOut(e) {
-         this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
-      }
-   }, {
-      key: 'handleMouseDown',
-      value: function handleMouseDown(e) {
-         this.setState({
-            down: true,
-            backgroundColor: 'rgb(200, 200, 200)'
-         });
-      }
-   }, {
-      key: 'handleMouseUp',
-      value: function handleMouseUp(e) {
-         this.setState({
-            down: false,
-            backgroundColor: 'rgb(240, 240, 240)'
-         });
-      }
-   }, {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-         var page = document.body.parentNode;
-         if (!mouseDown) this.setState({ down: false });
-      }
-   }, {
-      key: 'componentWillReceiveProps',
-      value: function componentWillReceiveProps(next) {
-         this.setState({ left: (window.innerWidth - 95) / 2 + 'px' }); // Center submit button on the screen
-      }
-   }, {
-      key: 'render',
-      value: function render() {
-         var style = {};
-         style.backgroundColor = this.state.backgroundColor;
-         style.left = this.state.left;
-
-         return React.createElement(
-            'button',
-            {
-               id: this.menuType + 'Button',
-               className: 'menusubmit',
-               type: 'button',
-               style: style,
-               onClick: this.handleClick,
-               onMouseOver: this.handleMouseOver,
-               onMouseOut: this.handleMouseOut,
-               onMouseDown: this.handleMouseDown,
-               onMouseUp: this.handleMouseUp
-            },
-            React.createElement(
-               'p',
-               { style: { margin: 0 } },
-               menus[this.menuType].button
-            )
-         );
-      }
-   }]);
-
-   return MenuSubmit;
-}(React.Component);
-
-var MenuFooter = function (_React$Component9) {
-   _inherits(MenuFooter, _React$Component9);
-
-   function MenuFooter(props) {
-      _classCallCheck(this, MenuFooter);
-
-      var _this11 = _possibleConstructorReturn(this, (MenuFooter.__proto__ || Object.getPrototypeOf(MenuFooter)).call(this, props));
-
-      _this11.state = {};
-      _this11.style = {
-         zIndex: '1',
-         position: 'absolute',
-         opacity: '.95'
-      };
-      _this11.menuType = props.menuType;
-
-      _this11.handleClick = _this11.handleClick.bind(_this11);
-      return _this11;
-   }
-
-   _createClass(MenuFooter, [{
-      key: 'handleClick',
-      value: function handleClick() {
-         // Click is handled on footer rather than back text so click applies to entire footer
-         switch (this.menuType) {
-            case 'create':
-               renderTitle();
-               break;
-            case 'join':
-               if (game.info.host == socket.id) {
-                  // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
-                  renderTitle();
-               } else {
-                  renderBrowser();
-               }
-               break;
-            case 'spectate':
-               renderBrowser();
-               break;
-            case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
-            case 'respawn':
-               state = 'spectate';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
-               break;
-            case 'pauseGame':
-               {
-                  var skip = false;
-                  for (var i = 0; i < game.players.length; i++) {
-                     if (game.players[i] === socket.id) {
-                        // If still is a player
-                        state = 'game';
-                        skip = true;
-                        break;
-                     }
-                  }
-                  if (!skip) {
-                     for (var _i9 = 0; _i9 < game.spectators.length; _i9++) {
-                        if (game.spectators[_i9] === socket.id) {
-                           state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
-                           break;
-                        }
-                     }
-                  }
-                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
-                  break;
-               }
-            case 'pauseTutorial':
-               state = 'tutorial';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
-               break;
-         }
-      }
-   }, {
-      key: 'render',
-      value: function render() {
-         var style = {};
-         for (var i in this.style) {
-            style[i] = this.style[i];
-         }
-
-         return React.createElement(
-            'div',
-            { id: 'footerDiv', style: style, onClick: this.handleClick },
-            React.createElement(
-               'footer',
-               { id: 'footer', className: 'menufooter' },
-               React.createElement(
-                  'p',
-                  { className: 'menufootertext' },
-                  '\u2190 Back'
-               )
-            )
-         );
-      }
-   }]);
-
-   return MenuFooter;
-}(React.Component);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////// SUBMIT ///////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-////////                                                                                                                                                      ////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function submit(menuType) {
    var issues = []; // Array of objects [ { [instance]: 'error message' } ] (instance of input to render error message next to)
@@ -3604,14 +3611,14 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            var _color2 = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
+            var _color = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
                title: gametitle,
                password: password,
                type: type,
                width: width,
                height: height,
-               color: _color2,
+               color: _color,
                cap: cap,
                show: show,
                mode: mode,
@@ -3632,9 +3639,9 @@ function submit(menuType) {
                issues.push(_defineProperty({}, 'screen name', 'Screen name cannot be left empty'));
                // alert('Screen name cannot be left empty');
             }
-            for (var _i10 = 0; _i10 < game.info.count; _i10++) {
+            for (var _i = 0; _i < game.info.count; _i++) {
                // Requires game to be updated (in renderMenu(datA))
-               if (name == game.board.list[_i10].name) {
+               if (name == game.board.list[_i].name) {
                   // Name cannot match another player's name
                   ok = false;
                   issues.push(_defineProperty({}, 'screen name', 'Name matches that of another player'));
@@ -3680,19 +3687,19 @@ function submit(menuType) {
             if (game.info.mode == 'skm' || game.info.mode == 'ctf') {
                // If is a team game
                if (!auto) {
-                  for (var _i11 = 0; _i11 < game.teams.length; _i11++) {
-                     if (_i11 === teamColors.indexOf(team)) {
+                  for (var _i2 = 0; _i2 < game.teams.length; _i2++) {
+                     if (_i2 === teamColors.indexOf(team)) {
                         // If i is selected team
                         continue;
                      }
-                     if (game.teams[teamColors.indexOf(team)].length > game.teams[_i11].length) {
+                     if (game.teams[teamColors.indexOf(team)].length > game.teams[_i2].length) {
                         // If there are more players on selected team than another
                         if (org && typeof team === 'string' && org.team === team) {
                            // If player is already on selected team
                            break; // Allow spawn
                         }
                         ok = false;
-                        issues.push(_defineProperty({}, 'auto assign', 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[_i11]));
+                        issues.push(_defineProperty({}, 'auto assign', 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[_i2]));
                         // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
                         break;
                      }
@@ -3714,8 +3721,8 @@ function submit(menuType) {
          }{
             // Game Closed
             var closed = true;
-            for (var _i12 = 0; _i12 < games.length; _i12++) {
-               if (games[_i12].info.host == game.info.host) {
+            for (var _i3 = 0; _i3 < games.length; _i3++) {
+               if (games[_i3].info.host == game.info.host) {
                   closed = false;
                   break;
                }
@@ -3747,8 +3754,8 @@ function submit(menuType) {
                   // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   var already = false;
-                  for (var _i13 = 0; _i13 < game.board.list.length; _i13++) {
-                     if (game.board.list[_i13].player == socket.id) {
+                  for (var _i4 = 0; _i4 < game.board.list.length; _i4++) {
+                     if (game.board.list[_i4].player == socket.id) {
                         already = true;
                         break;
                      }
@@ -3807,9 +3814,9 @@ function submit(menuType) {
                      ability.spore.can = true;
                      ability.secrete.activated = true;
                      ability.secrete.can = false;
-                     for (var _i14 = 0; _i14 < ability.shoot.value.length; _i14++) {
-                        ability.shoot.can[_i14] = true;
-                        ability.shoot.value[_i14] = false;
+                     for (var _i5 = 0; _i5 < ability.shoot.value.length; _i5++) {
+                        ability.shoot.can[_i5] = true;
+                        ability.shoot.value[_i5] = false;
                      }
                   } else if (game.info.mode === 'inf') {
                      ability.tag.activated = true;
@@ -3830,38 +3837,38 @@ function submit(menuType) {
                      ability.spore.can = false;
                      ability.secrete.activated = false;
                      ability.secrete.can = false;
-                     for (var _i15 = 0; _i15 < ability.shoot.value.length; _i15++) {
-                        if (_i15 == ability.tag.i) {
-                           ability.shoot.can[_i15] = true;
+                     for (var _i6 = 0; _i6 < ability.shoot.value.length; _i6++) {
+                        if (_i6 == ability.tag.i) {
+                           ability.shoot.can[_i6] = true;
                         } else {
-                           ability.shoot.can[_i15] = false;
+                           ability.shoot.can[_i6] = false;
                         }
-                        ability.shoot.value[_i15] = false;
+                        ability.shoot.value[_i6] = false;
                      }
                   }
                   // Team
-                  if (game.info.mode == 'skm' || game.info.mode == 'ctf') {
+                  if (game.info.mode === 'skm' || game.info.mode === 'ctf') {
                      // If is a team game
                      ability.auto = auto; // auto variable is Boolean
                      if (auto) {
                         // If auto assign is selected
                         var indices = [];
                         var _minimum = Infinity;
-                        for (var _i16 = 0; _i16 < game.teams.length; _i16++) {
+                        for (var _i7 = 0; _i7 < game.teams.length; _i7++) {
                            // Find team(s) with the fewest players and store their indices within game.teams array into indices array
-                           if (game.teams[_i16].length < _minimum) {
+                           if (game.teams[_i7].length < _minimum) {
                               // If length is less than minimum
-                              _minimum = game.teams[_i16].length; // Set length as new minimum
-                              indices = [_i16]; // Clear indices and push i
-                           } else if (game.teams[_i16].length == _minimum) {
-                              indices.push(_i16);
+                              _minimum = game.teams[_i7].length; // Set length as new minimum
+                              indices = [_i7]; // Clear indices and push i
+                           } else if (game.teams[_i7].length == _minimum) {
+                              indices.push(_i7);
                            }
                         }
                         team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
                      }
-                     for (var _i17 = 0; _i17 < teamColors.length; _i17++) {
-                        if (team === teamColors[_i17]) {
-                           game.teams[_i17].push(socket.id); // Add player to selected team
+                     for (var _i8 = 0; _i8 < teamColors.length; _i8++) {
+                        if (team === teamColors[_i8]) {
+                           game.teams[_i8].push(socket.id); // Add player to selected team
                            console.log(state);
                            socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
@@ -3907,8 +3914,8 @@ function submit(menuType) {
          {
             // Game Closed
             var _closed = true;
-            for (var _i18 = 0; _i18 < games.length; _i18++) {
-               if (games[_i18].info.host === game.info.host) {
+            for (var _i9 = 0; _i9 < games.length; _i9++) {
+               if (games[_i9].info.host === game.info.host) {
                   _closed = false;
                   break;
                }
@@ -3926,9 +3933,9 @@ function submit(menuType) {
                issues.push(_defineProperty({}, 'screen name', 'Screen name cannot be left empty'));
                // alert('Screen name cannot be left empty');
             }
-            for (var _i19 = 0; _i19 < game.info.count; _i19++) {
+            for (var _i10 = 0; _i10 < game.info.count; _i10++) {
                // Requires game to be updated (in renderMenu(datA))
-               if (name === game.board.list[_i19].name) {
+               if (name === game.board.list[_i10].name) {
                   // Name cannot match another player's name
                   ok = false;
                   issues.push(_defineProperty({}, 'screen name', 'Name matches that of another player'));
@@ -3957,8 +3964,8 @@ function submit(menuType) {
                   // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   var already = false;
-                  for (var _i20 = 0; _i20 < game.board.list.length; _i20++) {
-                     if (game.board.list[_i20].player === socket.id) {
+                  for (var _i11 = 0; _i11 < game.board.list.length; _i11++) {
+                     if (game.board.list[_i11].player === socket.id) {
                         already = true;
                         break;
                      }
@@ -4027,18 +4034,18 @@ function submit(menuType) {
                ability.auto = auto; // auto variable is Boolean
                if (!auto) {
                   // If auto assign is not selected
-                  for (var _i21 = 0; _i21 < game.teams.length; _i21++) {
-                     if (_i21 === teamColors.indexOf(team)) {
+                  for (var _i12 = 0; _i12 < game.teams.length; _i12++) {
+                     if (_i12 === teamColors.indexOf(team)) {
                         continue;
                      }
-                     if (game.teams[teamColors.indexOf(team)].length > game.teams[_i21].length) {
+                     if (game.teams[teamColors.indexOf(team)].length > game.teams[_i12].length) {
                         // If chosen team has greater players than another team
                         if (org && org.team === team && typeof team === 'string') {
                            // If player is already on loaded team
                            break; // Allow respawn
                         } else {
                            ok = false; // Disallow respawn
-                           issues.push(_defineProperty({}, 'team input', 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[_i21]));
+                           issues.push(_defineProperty({}, 'team input', 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[_i12]));
                            // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
                            break;
                         }
@@ -4054,19 +4061,19 @@ function submit(menuType) {
                   // If auto assign is selected
                   var indices = [];
                   var _minimum2 = Infinity;
-                  for (var _i22 = 0; _i22 < game.teams.length; _i22++) {
+                  for (var _i13 = 0; _i13 < game.teams.length; _i13++) {
                      // Find team(s) with the fewest players and store their indices within game.teams array into indices array
-                     var l = game.teams[_i22].length;
-                     if (game.teams[_i22].indexOf(socket.id) != -1) {
+                     var l = game.teams[_i13].length;
+                     if (game.teams[_i13].indexOf(socket.id) != -1) {
                         // If player is on given team
                         l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
                      }
                      if (l < _minimum2) {
                         // If length is less than minimum
                         _minimum2 = l; // Set length as new minimum
-                        indices = [_i22]; // Clear indices and push i
+                        indices = [_i13]; // Clear indices and push i
                      } else if (l == _minimum2) {
-                        indices.push(_i22);
+                        indices.push(_i13);
                      }
                   }
                   team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
@@ -4075,8 +4082,8 @@ function submit(menuType) {
          }{
             // Game Closed
             var _closed2 = true;
-            for (var _i23 = 0; _i23 < games.length; _i23++) {
-               if (games[_i23].info.host == game.info.host) {
+            for (var _i14 = 0; _i14 < games.length; _i14++) {
+               if (games[_i14].info.host == game.info.host) {
                   _closed2 = false;
                   break;
                }
@@ -4181,8 +4188,8 @@ function submit(menuType) {
          {
             // Game Closed
             var _closed3 = true;
-            for (var _i24 = 0; _i24 < games.length; _i24++) {
-               if (games[_i24].info.host === game.info.host) {
+            for (var _i15 = 0; _i15 < games.length; _i15++) {
+               if (games[_i15].info.host === game.info.host) {
                   _closed3 = false;
                   break;
                }
@@ -4203,8 +4210,8 @@ function submit(menuType) {
             Labels = label; // Set labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             var skip = false;
-            for (var _i25 = 0; _i25 < game.players.length; _i25++) {
-               if (game.players[_i25] === socket.id) {
+            for (var _i16 = 0; _i16 < game.players.length; _i16++) {
+               if (game.players[_i16] === socket.id) {
                   // If still is a player
                   state = 'game';
                   skip = true;
@@ -4212,8 +4219,8 @@ function submit(menuType) {
                }
             }
             if (!skip) {
-               for (var _i26 = 0; _i26 < game.spectators.length; _i26++) {
-                  if (game.spectators[_i26] === socket.id) {
+               for (var _i17 = 0; _i17 < game.spectators.length; _i17++) {
+                  if (game.spectators[_i17] === socket.id) {
                      state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }
@@ -4228,8 +4235,8 @@ function submit(menuType) {
          {
             // Game Closed
             var _closed4 = true;
-            for (var _i27 = 0; _i27 < games.length; _i27++) {
-               if (games[_i27].info.host === game.info.host) {
+            for (var _i18 = 0; _i18 < games.length; _i18++) {
+               if (games[_i18].info.host === game.info.host) {
                   _closed4 = false;
                   break;
                }
@@ -4259,6 +4266,61 @@ function submit(menuType) {
          }
          break;
    }
+}
+'use strict';
+
+var menus = {
+   create: {
+      header: 'Game Creation Options',
+      button: 'Create',
+      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
+      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
+   },
+   join: {
+      header: 'Join Game Options',
+      button: 'Join',
+      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
+      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
+   },
+   spectate: {
+      header: 'Spectate Game Options',
+      button: 'Spectate',
+      options: ['Screen Name', 'Password'],
+      values: ['text', 'text']
+   },
+   respawn: {
+      header: 'Spawn Options',
+      button: 'Spawn',
+      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
+      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
+   },
+   pauseGame: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
+      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
+   },
+   pauseSpectate: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Name Labels', 'Messages', 'Leave Game'],
+      values: ['1 radio', '1 radio', 'button']
+   },
+   pauseTutorial: {
+      header: 'Pause Options',
+      button: 'Back',
+      options: ['Leave Tutorial'],
+      values: ['button']
+   }
+};
+
+function renderMenu(typE, datA) {
+   if (state.indexOf('Menu') !== -1 && typE !== state.slice(0, -4)) {
+      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+      ReactDOM.unmountComponentAtNode($('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+   }
+   ReactDOM.render(React.createElement(Menu, { type: typE, data: datA }), $('cont')); // Render instance of Menu component class in container with id 'cont'
+   state = typE + 'Menu'; // Game state - not component state
 }
 'use strict';
 
@@ -5561,12 +5623,12 @@ var gamesInterval; // "
 var emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
-      socket = io.connect('localhost'); // Local server (Development only)
+      socket = io.connect('localhost:3000'); // Local server (Development only)
    } else {
       if (HEROKU) {
          socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
       } else {
-         socket = io.connect('24.55.26.67'); // Local Server
+         socket = io.connect('24.55.26.67:3000'); // Local Server
       }
    }
 
@@ -5596,14 +5658,14 @@ function connectSocket() {
    socket.on('Force Spawn', function () {
       die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
       for (var i = 0; i < game.spectators.length; i++) {
-         if (game.spectators[i] == socket.id) {
+         if (game.spectators[i] === socket.id) {
             // If player is spectator
             socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
          }
       }
-      if (state == 'pauseSpectateMenu') {
+      if (state === 'pauseSpectateMenu') {
          renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
-      } else if (state == 'respawnMenu') {
+      } else if (state === 'respawnMenu') {
          renderMenu('pauseGame', game);
          menus.pauseGame.submit();
       }
@@ -5614,11 +5676,11 @@ function connectSocket() {
 
    socket.on('Game', function (gamE) {
       game = gamE;
-      if (ability.spore.value == true) {
+      if (ability.spore.value === true) {
          ability.spore.interval();
       }
       for (var i = 0; i < 3; i++) {
-         if (ability.shoot.value[i] == true) {
+         if (ability.shoot.value[i] === true) {
             ability.shoot.interval[i]();
          }
       }
@@ -5646,7 +5708,7 @@ function connectSocket() {
                translate(org.off.x, org.off.y);
             }
             renderMessages(); // Render messages outside translation
-            if (state == 'game') {
+            if (state === 'game') {
                move(); // Move goes at the end so player does not render his movements before others
             }
             break;
@@ -5673,7 +5735,7 @@ function connectSocket() {
                translate(org.off.x, org.off.y);
             }
             renderMessages();
-            if (state == 'spectate') {
+            if (state === 'spectate') {
                move(); // Move is after messages so everything has same offset
             }
             break;
@@ -5698,7 +5760,7 @@ function connectSocket() {
          ability.tag.value = true;
          clearTimeout(ability.tag.timeout);
          socket.emit('Ability', ability);
-         if (game.info.mode == '') {
+         if (game.info.mode === '') {
             ability.tag.timeout = setTimeout(function () {
                ability.tag.value = false;
                socket.emit('Ability', ability);

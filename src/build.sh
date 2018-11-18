@@ -1,6 +1,6 @@
-cd ./www/bundle
-rm bundle.js
+cd ./public/bundle
+rm bundle.js # Delete old bundle.js and source map before creating new ones
 rm bundle.js.map
 cd ../../
-npx babel ./www/js -o ./www/bundle/bundle.js -s
-# npx eslint ./www/bundle/bundle.js
+npx babel ./public/js -o ./public/bundle/bundle.js -s # Package all files in /js directory into bundle.js file with source map in /bundle directory
+# npx eslint ./public/bundle/bundle.js

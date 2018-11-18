@@ -19,7 +19,7 @@ io.engine.clients returns an array of the socket.id strings of all connected cli
 */
 
 // Express
-var port = process.env.PORT || 80;
+var port = process.env.PORT || 3000;
 var express = require('express');
 var app = express();
 var server = app.listen(port);
@@ -29,7 +29,7 @@ var socketio = require('socket.io');
 var io = socketio(server);
 
 // Send Static Data
-app.use(express.static('./www'));
+app.use(express.static('./public'));
 
 // Game Config Data (Must be exactly as found in config.js)
 const teamColors = [
