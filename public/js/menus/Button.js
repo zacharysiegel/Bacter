@@ -20,6 +20,7 @@ class Button extends React.Component {
    handleClick() {
       switch (this.instance) {
          case 'leave game':
+         case 'leave tutorial':
             org.clearIntervals(); // Copied from die()
             ability = new Ability({ player: socket.id }); // Reset ability object
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
