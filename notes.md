@@ -134,8 +134,11 @@
 		✓ Google Analytics
 		✓ Fix current color detection in respawn and pause menus
 		✓ Change 'Leave Game' text in pause tutorial menu to 'Leave Tutorial'
-		Consolidate game updates to server into single emit
-			Set as interval with _renderfrequendy
+		✓ File system overhaul
+		Replace $() (in z.js) with full JQuery
+		Lag Reduction
+			Consolidate game updates to server into single emit
+				Set as interval with _renderfrequency
 		Quick Match
 	3.2.0 - Capture the Flag + Infection + King of the Hill
 		CTF
