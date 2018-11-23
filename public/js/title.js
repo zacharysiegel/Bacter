@@ -157,7 +157,7 @@ function renderTitle() {
          <CanvasCont />
          <TitleMenu />
       </div>
-   , $('cont')); // TitleMenu will not retain its this. namespace
+   , eid('cont')); // TitleMenu will not retain its this. namespace
    ability = new Ability({ player: socket.id });
 }
 

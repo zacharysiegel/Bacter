@@ -1,19 +1,19 @@
 function submit(menuType) {
    let issues = []; // Array of objects [ { [instance]: 'error message' } ] (instance of input to render error message next to)
    let ok = true; // Check for inputs' validities
-   let tInput = $('game title input');
-   let pInput = $('password input');
-   let typeInput = $('world type input');
-   let widthInput = $('world width input');
-   let heightInput = $('world height input');
-   let pcInput = $('player cap input');
-   let pmInput = $('player minimum input');
-   let boardLengthInput = $('leaderboard length input');
-   let tcInput = $('team count input');
-   let modeInput = $('game mode input');
-   let snInput = $('screen name input');
-   let cInput = $('color input');
-   let teamInput = $('team input');
+   let tInput = eid('game title input');
+   let pInput = eid('password input');
+   let typeInput = eid('world type input');
+   let widthInput = eid('world width input');
+   let heightInput = eid('world height input');
+   let pcInput = eid('player cap input');
+   let pmInput = eid('player minimum input');
+   let boardLengthInput = eid('leaderboard length input');
+   let tcInput = eid('team count input');
+   let modeInput = eid('game mode input');
+   let snInput = eid('screen name input');
+   let cInput = eid('color input');
+   let teamInput = eid('team input');
    let gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
    let password = pInput ? pInput.value : null;
    let type = typeInput ? typeInput.value.toLowerCase() : null;
@@ -166,7 +166,7 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            let color = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
+            let color = 'black'; // eid('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
                title: gametitle,
                password: password,
@@ -417,8 +417,8 @@ function submit(menuType) {
                   var color;
                   if (game.info.mode === 'inf') { // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && $('color input')) { // If is not a team game and there is a color input field
-                     color = $('color input').value.toLowerCase();
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && eid('color input')) { // If is not a team game and there is a color input field
+                     color = eid('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
                   }
@@ -678,7 +678,7 @@ function submit(menuType) {
             if (game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
             } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team mode 
-               color = $('color input').value.toLowerCase();
+               color = eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
@@ -729,7 +729,7 @@ function submit(menuType) {
                   }
                }
             }
-            ReactDOM.render(<CanvasCont />, $('cont'));
+            ReactDOM.render(<CanvasCont />, eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -754,7 +754,7 @@ function submit(menuType) {
             Labels = label; // Set name labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             state = 'spectate';
-            ReactDOM.render(<CanvasCont />, $('cont'));
+            ReactDOM.render(<CanvasCont />, eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -762,7 +762,7 @@ function submit(menuType) {
       case 'pauseTutorial':
          if (ok) {
             state = 'tutorial';
-            ReactDOM.render(<CanvasCont />, $('cont'));
+            ReactDOM.render(<CanvasCont />, eid('cont'));
          } else {
             this.issue(issues);
          }

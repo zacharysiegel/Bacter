@@ -1,6 +1,7 @@
 // Socket Settings
 const DEV = true;
-const HEROKU = false;
+const HEROKU = true;
+const PORT = 80;
 
 // Repertoires
 const worldColors = {
@@ -64,15 +65,15 @@ const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
 // Configurations
-const _ofrequency      = 70; // Org update frequency
-const _renderfrequency = 40; // Rendering update frequency
-const _range           = 50; // Org default maximum size
-const _cellwidth       = 6; // Width of single cell (pixels)
-const _movespeed       = 1.7; // Crosshair movement speed
-const _spectatespeed   = 2.5; // Crosshair movement speed in spectate mode
-const _delaytime       = 10000;
-const _dummies         = 10; // Number of dummy orgs in title screen
-const _margin          = 25; // Title screen margin
+const _ofrequency      = 70;    // Org update frequency
+const _renderfrequency = 40;    // Rendering update frequency
+const _range           = 50;    // Org default maximum size
+const _cellwidth       = 6;     // Width of single cell (pixels)
+const _movespeed       = 1.7;   // Crosshair movement speed
+const _spectatespeed   = 2.5;   // Crosshair movement speed in spectate mode
+const _rounddelay       = 10000; // Delay time (in milliseconds) before survival round starts
+const _dummies         = 10;    // Number of dummy orgs in title screen
+const _margin          = 25;    // Title screen margin
 
 // Settings
 let Labels = true;

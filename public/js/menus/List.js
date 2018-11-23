@@ -2,15 +2,15 @@ class List extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         value: props.value,
+         value: props.value, // Currently selected list item
          options: [],
-         focused: false,
+         focused: false, // focused by cursor
          backgroundColor: 'rgb(255, 255, 255)'
       };
       this.style = {};
       this.menuType = props.menuType;
       this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Gets index of input within menu - Not currently in use
 
       this.applyInstance = this.applyInstance.bind(this);
       this.handleChange = this.handleChange.bind(this);
@@ -19,7 +19,7 @@ class List extends React.Component {
    }
 
    applyInstance() {
-      let info = []; // Info array holds meta data for option elements to be created later
+      let info = []; // Info array holds config data for option elements to be created later
       let unset = true; // If value is unset initially, will set value to first in list
       switch (this.instance) {
          case 'world type':
@@ -63,7 +63,7 @@ class List extends React.Component {
             break;
          case 'team':
             if (getSrc().src === 'title') { // If in title, set game value to game in games array
-               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
+               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in socket.js @ socket.on('Game')); Used for team option updates
                   if (games[i].info.host === game.info.host) { // Identify game
                      game = games[i]; // Set game to updated game from server array
                      break;

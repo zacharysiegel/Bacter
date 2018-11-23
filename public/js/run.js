@@ -373,7 +373,7 @@ function runLoop() {
          if (game.rounds.waiting == true && game.rounds.delayed == false && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
             socket.emit('Round Delay', game);
             game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.delaytime - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
+         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
             socket.emit('Force Spawn', game.info);
          }
       }

@@ -135,7 +135,7 @@ function renderWorld() {
       if (Messages == true) {
          textFont('Helvetica');
          textStyle(NORMAL);
-         let message = getMessage();
+         let message = currentMessage();
          if (message != undefined) {
             let breaks = freq(message, '\n');
             let width = messageWidth(message);

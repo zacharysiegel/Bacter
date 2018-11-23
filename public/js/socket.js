@@ -1,14 +1,14 @@
-var socket; // Initialize in global scope
-var gamesInterval; // "
-var emitGameInterval; // "
+let socket; // Initialize in global scope
+let gamesInterval; // "
+let emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
-      socket = io.connect('localhost:3000'); // Local server (Development only)
+      socket = io.connect('localhost:' + PORT); // Local server (Development only)
    } else {
       if (HEROKU) {
-         socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
+         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
       } else {
-         socket = io.connect('24.55.26.67:3000'); // Local Server
+         socket = io.connect('24.55.26.67:' + PORT); // Local Server
       }
    }
 
@@ -24,9 +24,9 @@ function connectSocket() {
       }
    }, _renderfrequency);
 
-   socket.on('Games', (datA) => { // datA: { games: , connections: }
-      games = datA.games;
-      connections = datA.connections;
+   socket.on('Games', (data) => { // data: { games: , connections: }
+      games = data.games;
+      connections = data.connections;
       if (state === 'browser') renderBrowser();
    });
 

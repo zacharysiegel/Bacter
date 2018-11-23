@@ -1,2 +1,2 @@
 sh ./src/build.sh
-node ./src/server.js
+node ./src/app.js

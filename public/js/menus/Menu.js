@@ -104,12 +104,12 @@ class Menu extends React.Component {
       let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set local instances to lowercase options
       let vals = this.state.values;
       let index = menus[this.type].options.indexOf(capitalize(instance));
-      let elt = $(instance + ' input'); // DOM node of instance input
-      let wInput = $('world width input'); // Width input DOM node
-      let hInput = $('world height input'); // Height input DOM node
-      let pmInput = $('player minimum input'); // Player minimum input DOM node
-      let tcInput = $('team count input'); // Team count input DOM node
-      let teamInput = $('team input'); // Team selections input DOM node
+      let elt = eid(instance + ' input'); // DOM node of instance input
+      let wInput = eid('world width input'); // Width input DOM node
+      let hInput = eid('world height input'); // Height input DOM node
+      let pmInput = eid('player minimum input'); // Player minimum input DOM node
+      let tcInput = eid('team count input'); // Team count input DOM node
+      let teamInput = eid('team input'); // Team selections input DOM node
       let wI = menus[this.type].options.indexOf('World Width'); // Width input index (options and state values)
       let hI = menus[this.type].options.indexOf('World Height'); // Height input index (options and state values)
       let pmI = menus[this.type].options.indexOf('Player Minimum'); // Player minimum input index (options and state values)

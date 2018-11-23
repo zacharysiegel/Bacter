@@ -1,3 +1,7 @@
+let eid = function(str) {
+	return document.getElementById(str);
+}
+
 var freq = function(arr, elt) { // Get the frequency of an element in an array or string
 	let freq = 0;
 	let index = arr.indexOf(elt);
@@ -23,15 +27,6 @@ var capitalize = function(str) { // Capitalize the first character of every word
 	}
 	str = arr.join('');
 	return str;
-};
-
-var $ = function(a) { // JQuery-esque
-   switch (a[0]) { // Get the type of input
-      default: return document.getElementById(a); // If no special character is provided, input is interpreted as an id
-      case '#': return document.getElementById(a.slice(1)); // An element id follows the # symbol (convention)
-      case '.': return document.getElementsByClassName(a.slice(1)); // An element class follows the . symbol (convention)
-      case '%': return document.getElementsByTagName(a.slice(1));  // An element tag name follows the % symbol
-   }
 };
 
 var getKeys = function(obj) { // Returns an array of strings representing keys of an object

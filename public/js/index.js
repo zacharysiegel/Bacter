@@ -33,7 +33,7 @@ function setup() {
 }
 
 function initialize(gamE, datA) {
-   ReactDOM.render(<CanvasCont />, $('cont'));
+   ReactDOM.render(<CanvasCont />, eid('cont'));
    game = gamE;
    if (datA.spectate != true) { // Field can be left undefined
       spawn({ color: datA.color, skin: datA.skin, team: datA.team });
@@ -150,7 +150,7 @@ function keyPressed() {
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
                state = 'spectate';
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
             case 'pauseGameMenu':
                let skip = false;
@@ -169,11 +169,11 @@ function keyPressed() {
                      }
                   }
                }
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
             case 'pauseTutorialMenu':
                state = 'tutorial';
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
          }
          break;
@@ -201,7 +201,7 @@ function keyPressed() {
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
                state = 'spectate';
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
             case 'pauseGameMenu':
                let skip = false;
@@ -220,11 +220,11 @@ function keyPressed() {
                      }
                   }
                }
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
             case 'pauseTutorialMenu':
                state = 'tutorial';
-               ReactDOM.render(<CanvasCont />, $('cont'));
+               ReactDOM.render(<CanvasCont />, eid('cont'));
                break;
          }
          break;
@@ -266,7 +266,7 @@ function windowResized() {
    } else if (state === 'game' || state === 'spectate') {
       org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
       org.off.y = org.pos.y - center.y;
-      ReactDOM.render(<CanvasCont />, $('cont'));
+      ReactDOM.render(<CanvasCont />, eid('cont'));
    } else if (state.indexOf('Menu') !== -1) {
       let type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
       let data = (type === 'join' || type === 'spectate' || type === 'respawn') ? game : null; // Only join, spectate, and respawn menus use game variable as data

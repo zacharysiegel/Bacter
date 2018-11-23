@@ -1402,7 +1402,7 @@ var TableButton = function (_React$Component3) {
 
 function renderBrowser() {
    state = 'browser';
-   ReactDOM.render(React.createElement(Browser, { games: games }), $('cont'));
+   ReactDOM.render(React.createElement(Browser, { games: games }), eid('cont'));
 }
 'use strict';
 
@@ -1711,7 +1711,7 @@ function setup() {
 }
 
 function initialize(gamE, datA) {
-   ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
    game = gamE;
    if (datA.spectate != true) {
       // Field can be left undefined
@@ -1838,7 +1838,7 @@ function keyPressed() {
                case 'respawnMenu':
                   // Respawn is included because 'back' for respawn should return to spectate
                   state = 'spectate';
-                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                   break;
                case 'pauseGameMenu':
                   var skip = false;
@@ -1858,11 +1858,11 @@ function keyPressed() {
                         }
                      }
                   }
-                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                   break;
                case 'pauseTutorialMenu':
                   state = 'tutorial';
-                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                   break;
             }
             break;
@@ -1893,7 +1893,7 @@ function keyPressed() {
             case 'respawnMenu':
                // Respawn is included because 'back' for respawn should return to spectate
                state = 'spectate';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                break;
             case 'pauseGameMenu':
                var _skip = false;
@@ -1913,11 +1913,11 @@ function keyPressed() {
                      }
                   }
                }
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                break;
             case 'pauseTutorialMenu':
                state = 'tutorial';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                break;
          }
          break;
@@ -1959,7 +1959,7 @@ function windowResized() {
    } else if (state === 'game' || state === 'spectate') {
       org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
       org.off.y = org.pos.y - center.y;
-      ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+      ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
    } else if (state.indexOf('Menu') !== -1) {
       var type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
       var data = type === 'join' || type === 'spectate' || type === 'respawn' ? game : null; // Only join, spectate, and respawn menus use game variable as data
@@ -2168,15 +2168,15 @@ var List = function (_React$Component) {
       var _this = _possibleConstructorReturn(this, (List.__proto__ || Object.getPrototypeOf(List)).call(this, props));
 
       _this.state = {
-         value: props.value,
+         value: props.value, // Currently selected list item
          options: [],
-         focused: false,
+         focused: false, // focused by cursor
          backgroundColor: 'rgb(255, 255, 255)'
       };
       _this.style = {};
       _this.menuType = props.menuType;
       _this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Gets index of input within menu - Not currently in use
 
       _this.applyInstance = _this.applyInstance.bind(_this);
       _this.handleChange = _this.handleChange.bind(_this);
@@ -2188,7 +2188,7 @@ var List = function (_React$Component) {
    _createClass(List, [{
       key: 'applyInstance',
       value: function applyInstance() {
-         var info = []; // Info array holds meta data for option elements to be created later
+         var info = []; // Info array holds config data for option elements to be created later
          var unset = true; // If value is unset initially, will set value to first in list
          switch (this.instance) {
             case 'world type':
@@ -2232,7 +2232,7 @@ var List = function (_React$Component) {
                if (getSrc().src === 'title') {
                   // If in title, set game value to game in games array
                   for (var _i3 = 0; _i3 < games.length; _i3++) {
-                     // Update game on-load (Normally occurs in thesocket.js @ socket.on('Game')); Used for team option updates
+                     // Update game on-load (Normally occurs in socket.js @ socket.on('Game')); Used for team option updates
                      if (games[_i3].info.host === game.info.host) {
                         // Identify game
                         game = games[_i3]; // Set game to updated game from server array
@@ -2481,12 +2481,12 @@ var Menu = function (_React$Component) {
          }); // Set local instances to lowercase options
          var vals = this.state.values;
          var index = menus[this.type].options.indexOf(capitalize(instance));
-         var elt = $(instance + ' input'); // DOM node of instance input
-         var wInput = $('world width input'); // Width input DOM node
-         var hInput = $('world height input'); // Height input DOM node
-         var pmInput = $('player minimum input'); // Player minimum input DOM node
-         var tcInput = $('team count input'); // Team count input DOM node
-         var teamInput = $('team input'); // Team selections input DOM node
+         var elt = eid(instance + ' input'); // DOM node of instance input
+         var wInput = eid('world width input'); // Width input DOM node
+         var hInput = eid('world height input'); // Height input DOM node
+         var pmInput = eid('player minimum input'); // Player minimum input DOM node
+         var tcInput = eid('team count input'); // Team count input DOM node
+         var teamInput = eid('team input'); // Team selections input DOM node
          var wI = menus[this.type].options.indexOf('World Width'); // Width input index (options and state values)
          var hI = menus[this.type].options.indexOf('World Height'); // Height input index (options and state values)
          var pmI = menus[this.type].options.indexOf('Player Minimum'); // Player minimum input index (options and state values)
@@ -2766,7 +2766,7 @@ var MenuFooter = function (_React$Component) {
             case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
             case 'respawn':
                state = 'spectate';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                break;
             case 'pauseGame':
                {
@@ -2787,12 +2787,12 @@ var MenuFooter = function (_React$Component) {
                         }
                      }
                   }
-                  ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                   break;
                }
             case 'pauseTutorial':
                state = 'tutorial';
-               ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
                break;
          }
       }
@@ -3420,24 +3420,79 @@ var Text = function (_React$Component) {
 }(React.Component);
 'use strict';
 
+var menus = {
+   create: {
+      header: 'Game Creation Options',
+      button: 'Create',
+      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
+      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
+   },
+   join: {
+      header: 'Join Game Options',
+      button: 'Join',
+      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
+      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
+   },
+   spectate: {
+      header: 'Spectate Game Options',
+      button: 'Spectate',
+      options: ['Screen Name', 'Password'],
+      values: ['text', 'text']
+   },
+   respawn: {
+      header: 'Spawn Options',
+      button: 'Spawn',
+      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
+      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
+   },
+   pauseGame: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
+      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
+   },
+   pauseSpectate: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Name Labels', 'Messages', 'Leave Game'],
+      values: ['1 radio', '1 radio', 'button']
+   },
+   pauseTutorial: {
+      header: 'Pause Options',
+      button: 'Back',
+      options: ['Leave Tutorial'],
+      values: ['button']
+   }
+};
+
+function renderMenu(type, data) {
+   if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) {
+      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+      ReactDOM.unmountComponentAtNode(eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+   }
+   ReactDOM.render(React.createElement(Menu, { type: type, data: data }), eid('cont')); // Render instance of Menu component class in container with id 'cont'
+   state = type + 'Menu'; // Game state - not component state
+}
+'use strict';
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function submit(menuType) {
    var issues = []; // Array of objects [ { [instance]: 'error message' } ] (instance of input to render error message next to)
    var ok = true; // Check for inputs' validities
-   var tInput = $('game title input');
-   var pInput = $('password input');
-   var typeInput = $('world type input');
-   var widthInput = $('world width input');
-   var heightInput = $('world height input');
-   var pcInput = $('player cap input');
-   var pmInput = $('player minimum input');
-   var boardLengthInput = $('leaderboard length input');
-   var tcInput = $('team count input');
-   var modeInput = $('game mode input');
-   var snInput = $('screen name input');
-   var cInput = $('color input');
-   var teamInput = $('team input');
+   var tInput = eid('game title input');
+   var pInput = eid('password input');
+   var typeInput = eid('world type input');
+   var widthInput = eid('world width input');
+   var heightInput = eid('world height input');
+   var pcInput = eid('player cap input');
+   var pmInput = eid('player minimum input');
+   var boardLengthInput = eid('leaderboard length input');
+   var tcInput = eid('team count input');
+   var modeInput = eid('game mode input');
+   var snInput = eid('screen name input');
+   var cInput = eid('color input');
+   var teamInput = eid('team input');
    var gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
    var password = pInput ? pInput.value : null;
    var type = typeInput ? typeInput.value.toLowerCase() : null;
@@ -3611,7 +3666,7 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            var _color = 'black'; // $('World color input').value.toLowerCase(); // Only black world is enabled
+            var _color = 'black'; // eid('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
                title: gametitle,
                password: password,
@@ -3880,9 +3935,9 @@ function submit(menuType) {
                   if (game.info.mode === 'inf') {
                      // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && $('color input')) {
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && eid('color input')) {
                      // If is not a team game and there is a color input field
-                     color = $('color input').value.toLowerCase();
+                     color = eid('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
                   }
@@ -4172,7 +4227,7 @@ function submit(menuType) {
                color = teamColorDef.green; // All players healthy by default
             } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') {
                // If is not a team mode 
-               color = $('color input').value.toLowerCase();
+               color = eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
@@ -4226,7 +4281,7 @@ function submit(menuType) {
                   }
                }
             }
-            ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+            ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -4252,7 +4307,7 @@ function submit(menuType) {
             Labels = label; // Set name labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             state = 'spectate';
-            ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+            ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -4260,7 +4315,7 @@ function submit(menuType) {
       case 'pauseTutorial':
          if (ok) {
             state = 'tutorial';
-            ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+            ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -4269,62 +4324,7 @@ function submit(menuType) {
 }
 'use strict';
 
-var menus = {
-   create: {
-      header: 'Game Creation Options',
-      button: 'Create',
-      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
-      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
-   },
-   join: {
-      header: 'Join Game Options',
-      button: 'Join',
-      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
-      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
-   },
-   spectate: {
-      header: 'Spectate Game Options',
-      button: 'Spectate',
-      options: ['Screen Name', 'Password'],
-      values: ['text', 'text']
-   },
-   respawn: {
-      header: 'Spawn Options',
-      button: 'Spawn',
-      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
-      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
-   },
-   pauseGame: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
-      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
-   },
-   pauseSpectate: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Name Labels', 'Messages', 'Leave Game'],
-      values: ['1 radio', '1 radio', 'button']
-   },
-   pauseTutorial: {
-      header: 'Pause Options',
-      button: 'Back',
-      options: ['Leave Tutorial'],
-      values: ['button']
-   }
-};
-
-function renderMenu(typE, datA) {
-   if (state.indexOf('Menu') !== -1 && typE !== state.slice(0, -4)) {
-      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
-      ReactDOM.unmountComponentAtNode($('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
-   }
-   ReactDOM.render(React.createElement(Menu, { type: typE, data: datA }), $('cont')); // Render instance of Menu component class in container with id 'cont'
-   state = typE + 'Menu'; // Game state - not component state
-}
-'use strict';
-
-var getMessage = function getMessage() {
+var currentMessage = function currentMessage() {
    var message = void 0;
    if (state === 'game' || state === 'spectate') {
       if (org.alive) {
@@ -4417,7 +4417,7 @@ var getMessage = function getMessage() {
 
 function renderMessages() {
    if (Messages == true) {
-      var message = getMessage();
+      var message = currentMessage();
       if (message != undefined) {
          var src = getSrc();
          fill(src.world.background.r, src.world.background.g, src.world.background.b); // Message shadows are rendered in renderWorld()
@@ -4440,8 +4440,7 @@ function renderMessages() {
    }
 }
 
-var messageWidth = function messageWidth(messagE) {
-   var message = messagE;
+var messageWidth = function messageWidth(message) {
    var lines = message.split('\n');
    var count = lines.length;
    var lengths = [];
@@ -5623,12 +5622,12 @@ var gamesInterval; // "
 var emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
-      socket = io.connect('localhost:3000'); // Local server (Development only)
+      socket = io.connect('localhost:80'); // Local server (Development only)
    } else {
       if (HEROKU) {
          socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
       } else {
-         socket = io.connect('24.55.26.67:3000'); // Local Server
+         socket = io.connect('24.55.26.67:80'); // Local Server
       }
    }
 
@@ -6100,7 +6099,7 @@ function renderTitle() {
       { id: 'title' },
       React.createElement(CanvasCont, null),
       React.createElement(TitleMenu, null)
-   ), $('cont')); // TitleMenu will not retain its this. namespace
+   ), eid('cont')); // TitleMenu will not retain its this. namespace
    ability = new Ability({ player: socket.id });
 }
 
@@ -6123,7 +6122,7 @@ var tutorial;
 
 function renderTutorial() {
    clearInterval(title.interval);
-   ReactDOM.render(React.createElement(CanvasCont, null), $('cont'));
+   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
    state = 'tutorial';
 }
 
@@ -6176,7 +6175,7 @@ var Tutorial = function Tutorial() {
             if (Messages == true) {
                textFont('Helvetica');
                textStyle(NORMAL);
-               var message = getMessage();
+               var message = currentMessage();
                if (message != undefined) {
                   var breaks = freq(message, '\n');
                   var width = messageWidth(message);
@@ -6603,7 +6602,7 @@ function renderWorld() {
       if (Messages == true) {
          textFont('Helvetica');
          textStyle(NORMAL);
-         var message = getMessage();
+         var message = currentMessage();
          if (message != undefined) {
             var breaks = freq(message, '\n');
             var _width = messageWidth(message);

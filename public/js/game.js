@@ -34,7 +34,7 @@ var Game = function(datA) {
          waiting: true,
          delayed: false,
          delaystart: undefined,
-         delaytime: _delaytime,
+         rounddelay: _rounddelay,
          start: undefined,
          min: undefined, // Min players
          winner: undefined
