@@ -1487,7 +1487,8 @@ var CanvasCont = function (_React$Component) {
 
 // Socket Settings
 var DEV = true;
-var HEROKU = false;
+var HEROKU = true;
+var PORT = 80;
 
 // Repertoires
 var worldColors = {
@@ -1557,7 +1558,7 @@ var _range = 50; // Org default maximum size
 var _cellwidth = 6; // Width of single cell (pixels)
 var _movespeed = 1.7; // Crosshair movement speed
 var _spectatespeed = 2.5; // Crosshair movement speed in spectate mode
-var _delaytime = 10000;
+var _rounddelay = 10000; // Delay time (in milliseconds) before survival round starts
 var _dummies = 10; // Number of dummy orgs in title screen
 var _margin = 25; // Title screen margin
 
@@ -1640,7 +1641,7 @@ var Game = function Game(datA) {
          waiting: true,
          delayed: false,
          delaystart: undefined,
-         delaytime: _delaytime,
+         rounddelay: _rounddelay,
          start: undefined,
          min: undefined, // Min players
          winner: undefined
@@ -2068,7 +2069,7 @@ var Button = function (_React$Component) {
                         // Find player in leaderboard
                         game.board.list.splice(i, 1); // Remove player from leaderboard
                         orderBoard(game.board.list); // Sort the list
-                        socket.emit('Board', game.board); // Send updated board to server
+                        socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
                         break;
                      }
                   }
@@ -3826,7 +3827,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Abilities
                   if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') {
                      // FFA, SKM, SRV, CTF, and KTH all use standard ability set
@@ -4036,7 +4037,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Initialize
                   clearInterval(title.interval);
                   initialize(game, { spectate: true, color: undefined, skin: undefined });
@@ -4337,10 +4338,10 @@ var currentMessage = function currentMessage() {
                }
             } else if (game.rounds.waiting == true && game.rounds.delayed == true) {
                // Delay at round start
-               message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+               message = 'Round begins in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             } else if (game.rounds.waiting == false && game.rounds.delayed == true) {
                // Delay at round end
-               message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+               message = 'Round ends in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          }
       } else if (!org.alive) {
@@ -4354,12 +4355,12 @@ var currentMessage = function currentMessage() {
                }
             } else if (game.rounds.waiting === true && game.rounds.delayed === true) {
                // Enough players have joined, counting down
-               message = 'Round begins in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+               message = 'Round begins in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             } else if (game.rounds.waiting === false && game.rounds.delayed === false) {
                // Round in progress
                message = 'Wait for the round to complete';
             } else if (game.rounds.waiting === false && game.rounds.delayed === true) {
-               message = 'Round ends in: ' + (1 + floor((game.rounds.delaytime - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+               message = 'Round ends in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          } else {
             message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
@@ -4570,33 +4571,33 @@ var Org = function Org(datA) {
       x: this.pos.x - center.x,
       y: this.pos.y - center.y
    };
-   this.col = 10; // Collision radius (square) for crosshair
-   this.target = undefined; // ID of player which this org is currently targeting
-   this.clickbox = { // Targeting box for other orgs to click
-      width: undefined,
-      height: undefined,
-      x: undefined,
-      y: undefined,
-      left: this.pos.x,
-      right: this.pos.x,
-      top: this.pos.y,
-      bottom: this.pos.y,
-      buffer: _cellwidth / 2,
-      color: this.color
-   };
-   this.coefficient = -27.5;
+   this.col = 10; // Collision radius (square) for crosshair (used in collision detection with flag)
+   // this.target = undefined; // ID of player which this org is currently targeting (NOT IN USE)
+   // this.clickbox = { // Targeting box for other orgs to click (NOT IN USE)
+   //    width: undefined,
+   //    height: undefined,
+   //    x: undefined,
+   //    y: undefined,
+   //    left: this.pos.x,
+   //    right: this.pos.x,
+   //    top: this.pos.y,
+   //    bottom: this.pos.y,
+   //    buffer: _cellwidth / 2,
+   //    color: this.color
+   // };
+   this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
    this.range = 50;
    this.alive = false;
    this.hit = undefined;
    this.count = this.cells.length;
-   this.intervals = []; // Store an array of intervals to be pushed to in case multiple intervals are created unintentionally, so they can be cleared
+   this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
    this.clearIntervals = function () {
       for (var _i2 = 0; _i2 < _this.intervals.length; _i2++) {
          clearInterval(_this.intervals[_i2]);
       }
       _this.intervals = [];
    };
-   this.tracker = {
+   this.tracker = { // Used to ensure no double org growth intervals
       start: undefined,
       end: undefined,
       elap: undefined
@@ -4765,19 +4766,17 @@ function renderUI() {
       line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
    }
 
-   // Targeting
-   if (org.target != undefined) {
-      // If org is targenting a player
-      for (var i = 0; i < src.orgs.length; i++) {
-         if (src.orgs[i].player == org.target) {
-            // Find targeted org
-            noFill();
-            stroke(src.orgs[i].clickbox.color.r, src.orgs[i].clickbox.color.g, src.orgs[i].clickbox.color.b);
-            strokeWeight(1);
-            rect(src.orgs[i].clickbox.x, src.orgs[i].clickbox.y, src.orgs[i].clickbox.width, src.orgs[i].clickbox.height, 2); // Draw Target Box
-         }
-      }
-   }
+   // // Targeting
+   // if (org.target) { // If org is targenting a player (NOT IN USE)
+   //    for (let i = 0; i < src.orgs.length; i++) {
+   //       if (src.orgs[i].player == org.target) { // Find targeted org
+   //          noFill();
+   //          stroke(src.orgs[i].clickbox.color.r, src.orgs[i].clickbox.color.g, src.orgs[i].clickbox.color.b);
+   //          strokeWeight(1);
+   //          rect(src.orgs[i].clickbox.x, src.orgs[i].clickbox.y, src.orgs[i].clickbox.width, src.orgs[i].clickbox.height, 2); // Draw Target Box
+   //       }
+   //    }
+   // }
 
    // Screen Name Labels
    if (Labels == true && src.src == 'game') {
@@ -4791,53 +4790,53 @@ function renderUI() {
       }
       textSize(10);
 
-      var _loop = function _loop(_i) {
+      var _loop = function _loop(i) {
          for (var j = 0; j < game.board.list.length; j++) {
-            if (game.orgs[_i].player == game.board.list[j].player) {
+            if (game.orgs[i].player == game.board.list[j].player) {
                var x = function x() {
                   // x() and y() cannot be accessed through orgs array, so code is copied and edited from org file
                   var sum = 0;
-                  for (var k = 0; k < game.orgs[_i].count; k++) {
-                     sum += game.orgs[_i].cells[k].x;
+                  for (var k = 0; k < game.orgs[i].count; k++) {
+                     sum += game.orgs[i].cells[k].x;
                   }
-                  var average = sum / game.orgs[_i].count;
+                  var average = sum / game.orgs[i].count;
                   return average;
                };
                var y = function y() {
                   var sum = 0;
-                  for (var k = 0; k < game.orgs[_i].count; k++) {
-                     sum += game.orgs[_i].cells[k].y;
+                  for (var k = 0; k < game.orgs[i].count; k++) {
+                     sum += game.orgs[i].cells[k].y;
                   }
-                  var average = sum / game.orgs[_i].count;
+                  var average = sum / game.orgs[i].count;
                   return average;
                };
                if (game.board.list[j].name.length <= 30) {
-                  text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[_i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+                  text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                } else {
-                  text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[_i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+                  text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                }
             }
          }
       };
 
-      for (var _i = 0; _i < game.info.count; _i++) {
-         _loop(_i);
+      for (var i = 0; i < game.info.count; i++) {
+         _loop(i);
       }
    }
 
    // Ability Cooldowns
    if (src.stopped != true) {
-      for (var _i2 in ability) {
+      for (var i in ability) {
          // Regular Cooldowns
-         if (_typeof(ability[_i2]) == 'object' && _i2 !== 'shoot') {
-            if (ability[_i2].cooling == true) {
-               cooldown(ability[_i2]);
+         if (_typeof(ability[i]) == 'object' && i !== 'shoot') {
+            if (ability[i].cooling == true) {
+               cooldown(ability[i]);
             }
          }
       }
-      for (var _i3 = 0; _i3 < ability.shoot.value.length; _i3++) {
+      for (var _i = 0; _i < ability.shoot.value.length; _i++) {
          // Shoot Cooldown
-         if (ability.shoot.cooling[_i3] == true) {
+         if (ability.shoot.cooling[_i] == true) {
             cooldown(ability.shoot);
             break;
          }
@@ -4853,10 +4852,10 @@ function renderUI() {
       current = new Date(); // Set current time
    }
    if (ability.tag.activated == false) {
-      for (var _i4 = 0; _i4 < 4; _i4++) {
+      for (var _i2 = 0; _i2 < 4; _i2++) {
          for (var j in ability) {
             if (_typeof(ability[j]) == 'object') {
-               if (ability[j].i == _i4) {
+               if (ability[j].i == _i2) {
                   // Find corresponding ability set to tooltip
                   if (ability[j].activated == true) {
                      // Find corresponding activated ability to tooltip
@@ -4869,15 +4868,15 @@ function renderUI() {
                      fill(215);
                      stroke(0);
                      strokeWeight(1);
-                     rect(center.x - 150 + _i4 * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+                     rect(center.x - 150 + _i2 * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
                      var letter = void 0;
-                     if (_i4 == 0) {
+                     if (_i2 == 0) {
                         letter = Controls.ability1.key;
-                     } else if (_i4 == 1) {
+                     } else if (_i2 == 1) {
                         letter = Controls.ability2.key;
-                     } else if (_i4 == 2) {
+                     } else if (_i2 == 2) {
                         letter = Controls.ability3.key;
-                     } else if (_i4 == 3) {
+                     } else if (_i2 == 3) {
                         if (Controls.ability4.key == ' ') {
                            letter = '_'; // Display space bar as underscore
                         } else {
@@ -4889,11 +4888,11 @@ function renderUI() {
                      textSize(14);
                      textFont('Consolas');
                      textStyle(BOLD);
-                     text(letter, center.x - 150 + _i4 * 100 - textWidth(letter) / 2, height * 9 / 10 + 30 + 13);
+                     text(letter, center.x - 150 + _i2 * 100 - textWidth(letter) / 2, height * 9 / 10 + 30 + 13);
                      fill(0);
                      stroke(0);
                      strokeWeight(1);
-                     ellipse(center.x - 150 + _i4 * 100, height * 9 / 10, 30); // Background ellipse; Necessary to cover the key tip
+                     ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 30); // Background ellipse; Necessary to cover the key tip
                      fill(215);
                      noStroke();
                      if (ability[j].j == 0) {
@@ -4901,13 +4900,13 @@ function renderUI() {
                         // Ability
                         if (ability[j].value == true) {
                            // If during ability
-                           arc(center.x - 150 + _i4 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
                         } else if (ability[j].value == false && ability[j].can == false) {
                            // If during cooldown
-                           arc(center.x - 150 + _i4 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
                         } else if (ability[j].value == false && ability[j].can == true) {
                            // If idling
-                           ellipse(center.x - 150 + _i4 * 100, height * 9 / 10, 29);
+                           ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
                         }
                      } else if (ability[j].j == 1) {
                         // If offensive ability
@@ -4917,43 +4916,43 @@ function renderUI() {
                            // Ability
                            if (ability[j].can == true) {
                               // Idle
-                              ellipse(center.x - 150 + _i4 * 100, height * 9 / 10, 29);
+                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
                            } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) {
                               // If during ability
-                              arc(center.x - 150 + _i4 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
                            } else if (ability[j].can == false && current - ability[j].start > ability[j].time) {
                               // If during cooldown
-                              arc(center.x - 150 + _i4 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
                            }
                            // Shoot
                            if (j != 'toxin') {
                               // Toxin does not shoot
                               stroke(0);
-                              if (ability.shoot.value[_i4] == false && ability.shoot.can[_i4] == true) {
+                              if (ability.shoot.value[_i2] == false && ability.shoot.can[_i2] == true) {
                                  // Idle
-                                 ellipse(center.x - 150 + _i4 * 100 - 41, height * 9 / 10, 8);
-                              } else if (ability.shoot.value[_i4] == true && ability.shoot.can[_i4] == false) {
+                                 ellipse(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8);
+                              } else if (ability.shoot.value[_i2] == true && ability.shoot.can[_i2] == false) {
                                  // If is shooting
-                                 arc(center.x - 150 + _i4 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[_i4]) / ability.shoot.time * 360); // Ability timeout timer
-                              } else if (ability.shoot.secrete[_i4].value == true) {
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[_i2]) / ability.shoot.time * 360); // Ability timeout timer
+                              } else if (ability.shoot.secrete[_i2].value == true) {
                                  // If is secreting
-                                 arc(center.x - 150 + _i4 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[_i4] - ability.shoot.start[_i4]) / ability.shoot.time * 360 - (current - ability.shoot.secrete[_i4].start) / ability.secrete.time * (360 - (ability.shoot.end[_i4] - ability.shoot.start[_i4]) / ability.shoot.time * 360)); // Secretion timer
-                              } else if (current - ability.shoot.secrete[_i4].end < ability.shoot.cooldown[_i4]) {
-                                 arc(center.x - 150 + _i4 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + (current - ability.shoot.secrete[_i4].end) / ability.shoot.cooldown[_i4] * 360); // Shoot cooldown timer (if no hit)
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360 - (current - ability.shoot.secrete[_i2].start) / ability.secrete.time * (360 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360)); // Secretion timer
+                              } else if (current - ability.shoot.secrete[_i2].end < ability.shoot.cooldown[_i2]) {
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + (current - ability.shoot.secrete[_i2].end) / ability.shoot.cooldown[_i2] * 360); // Shoot cooldown timer (if no hit)
                               }
                            }
                         } else if (ability[j].i == 3) {
                            // Secrete
                            if (ability[j].can == true) {
                               // Idle
-                              ellipse(center.x - 150 + _i4 * 100, height * 9 / 10, 29);
+                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
                            } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) {
                               // If during ability
-                              arc(center.x - 150 + _i4 * 100, height * 9 / 10, 29, 29, -90, -90 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360 - (current - ability[j].start) / ability[j].time * (360 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360)); // Ability cooldown timer
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360 - (current - ability[j].start) / ability[j].time * (360 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360)); // Ability cooldown timer
                            }
                         }
                      }
-                     itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + _i4 * 100, height * 9 / 10);
+                     itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + _i2 * 100, height * 9 / 10);
                   }
                   if (ability[j].value == true && ability[j].i < 3) {
                      // Ability Activated Tooltip (Not for spore/secrete)
@@ -4961,12 +4960,12 @@ function renderUI() {
                         // If defensive ability (+ secrete)
                         fill(66, 244, 176); // Green
                         noStroke();
-                        ellipse(center.x - 150 + _i4 * 100 - 9, height * 9 / 10 - 37, 5, 5);
+                        ellipse(center.x - 150 + _i2 * 100 - 9, height * 9 / 10 - 37, 5, 5);
                      } else if (ability[j].j == 1 && ability[j].i != 3) {
                         // If offensive ability (No secrete)
                         fill(255, 141, 135); // Red
                         noStroke();
-                        ellipse(center.x - 150 + _i4 * 100 + 9, height * 9 / 10 - 37, 5, 5);
+                        ellipse(center.x - 150 + _i2 * 100 + 9, height * 9 / 10 - 37, 5, 5);
                      }
                   }
                   // fill(215);
@@ -5158,7 +5157,7 @@ function runLoop() {
             // If waiting, not delayed, and have minimum players
             socket.emit('Round Delay', game);
             game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.delaytime - 1000 && org.ready == false) {
+         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) {
             // Only host; If 1 second left in round-begin delay
             socket.emit('Force Spawn', game.info);
          }
@@ -5172,7 +5171,7 @@ function runLoop() {
                   socket.emit('Round End', game.info);
                   game.board.list[i].wins++;
                   orderBoard(game.board.list);
-                  socket.emit('Board', game.board);
+                  socket.emit('Board', { list: game.board.list, host: game.board.host });
                }
             }
          }
@@ -5220,24 +5219,34 @@ function runLoop() {
       }
    }
 
-   socket.emit('Org', org);
-   if (org.count == 0) {
-      for (var _i5 = 0; _i5 < game.board.list.length; _i5++) {
-         if (game.board.list[_i5].player == socket.id) {
+   socket.emit('Org Update', {
+      alive: org.alive, // Only the following attributes of org need to be updated
+      cells: org.cells, // Latency is decreased by only sending necessary data
+      off: org.off,
+      pos: org.pos,
+      color: org.color,
+      skin: org.skin,
+      team: org.team,
+      coefficient: org.coefficient,
+      range: org.range
+   });
+   if (org.count === 0) {
+      for (var _i3 = 0; _i3 < game.board.list.length; _i3++) {
+         if (game.board.list[_i3].player === socket.id) {
             // Add death to leaderboard
-            game.board.list[_i5].deaths++; // Add 1 to deaths counter
+            game.board.list[_i3].deaths++; // Add 1 to deaths counter
             orderBoard(game.board.list); // Sort the list by kills then deaths
-            socket.emit('Board', game.board); // Send updated board to server
+            socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
          }
       }
-      if (org.hit != org.player) {
+      if (org.hit !== org.player) {
          // Cannot gain kill for suicide
-         for (var _i6 = 0; _i6 < game.board.list.length; _i6++) {
-            if (game.board.list[_i6].player == org.hit) {
+         for (var _i4 = 0; _i4 < game.board.list.length; _i4++) {
+            if (game.board.list[_i4].player === org.hit) {
                // Find killer in leaderboard list
-               game.board.list[_i6].kills++;
+               game.board.list[_i4].kills++;
                orderBoard(game.board.list);
-               socket.emit('Board', game.board);
+               socket.emit('Board', { list: game.board.list, host: game.board.host });
                break;
             }
          }
@@ -5283,38 +5292,38 @@ function grow(orG) {
       // 		continue;
       // 	}
       // }
-      for (var _i7 = 0; _i7 < regions.adjacent.length; _i7++) {
+      for (var _i5 = 0; _i5 < regions.adjacent.length; _i5++) {
          // Only Adjacent Regions Can Produce New Cells
          // Don't birth new cell outside world boundary
          if (src.world != undefined) {
             if (src.world.type == 'rectangle') {
-               if (regions.adjacent[_i7].x - _cellwidth / 2 <= src.world.x || regions.adjacent[_i7].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[_i7].y - _cellwidth / 2 <= src.world.x || regions.adjacent[_i7].y + _cellwidth / 2 >= src.world.y + src.world.height) {
+               if (regions.adjacent[_i5].x - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[_i5].y - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].y + _cellwidth / 2 >= src.world.y + src.world.height) {
                   // If new cell would be outside world boundary
                   continue;
                }
             } else if (src.world.type == 'ellipse') {
                var a = src.world.width / 2;
                var b = src.world.height / 2;
-               var x = regions.adjacent[_i7].x - _cellwidth / 2 - a;
-               var y = regions.adjacent[_i7].y - _cellwidth / 2 - b;
+               var x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
+               var y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
                if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
                   // If top-left corner is outside ellipse
                   continue;
                }
-               x = regions.adjacent[_i7].x + _cellwidth / 2 - a;
-               y = regions.adjacent[_i7].y - _cellwidth / 2 - b;
+               x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
+               y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
                if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
                   // If top-right corner is outside ellipse
                   continue;
                }
-               x = regions.adjacent[_i7].x + _cellwidth / 2 - a;
-               y = regions.adjacent[_i7].y + _cellwidth / 2 - b;
+               x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
+               y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
                if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
                   // If bottom-right corner is outside ellipse
                   continue;
                }
-               x = regions.adjacent[_i7].x - _cellwidth / 2 - a;
-               y = regions.adjacent[_i7].y + _cellwidth / 2 - b;
+               x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
+               y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
                if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
                   // If bottom-left corner is outside ellipse
                   continue;
@@ -5329,21 +5338,21 @@ function grow(orG) {
                continue;
             }
             for (var k = 0; k < src.orgs[j].count; k++) {
-               if (regions.adjacent[_i7].x + _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i7].x + _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
+               if (regions.adjacent[_i5].x + _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x + _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
                   // If right side collides
-                  if (regions.adjacent[_i7].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i7].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
+                  if (regions.adjacent[_i5].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
                      // If bottom side collides
                      overlap = true;
-                  } else if (regions.adjacent[_i7].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i7].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
+                  } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
                      // If top side collides
                      overlap = true;
                   }
-               } else if (regions.adjacent[_i7].x - _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i7].x - _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
+               } else if (regions.adjacent[_i5].x - _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x - _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
                   // If left side collides
-                  if (regions.adjacent[_i7].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i7].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
+                  if (regions.adjacent[_i5].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
                      // If bottom side collides
                      overlap = true;
-                  } else if (regions.adjacent[_i7].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i7].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
+                  } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
                      // If top side collides
                      overlap = true;
                   }
@@ -5365,17 +5374,17 @@ function grow(orG) {
             org.coefficient = -25.5;
             org.range = _range + 20;
          }
-         var chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[_i7].x - org.pos.x) + sq(regions.adjacent[_i7].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
+         var chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[_i5].x - org.pos.x) + sq(regions.adjacent[_i5].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
          if (random(0, 100) <= chance) {
             var repeat = false;
             for (var _j = 0; _j < org.count; _j++) {
-               if (regions.adjacent[_i7].x == org.cells[_j].x && regions.adjacent[_i7].y == org.cells[_j].y) {
+               if (regions.adjacent[_i5].x == org.cells[_j].x && regions.adjacent[_i5].y == org.cells[_j].y) {
                   repeat = true;
                   break;
                }
             }
             if (repeat == false) {
-               org.cells.push(new Cell(regions.adjacent[_i7].x, regions.adjacent[_i7].y, org));
+               org.cells.push(new Cell(regions.adjacent[_i5].x, regions.adjacent[_i5].y, org));
                org.count++;
             }
          }
@@ -5387,45 +5396,45 @@ function grow(orG) {
       // If org is not Frozen (cannot birth or die naturally)
       if (ability.immortality.value == false) {
          // If org is not Immortal
-         for (var _i8 = 0; _i8 < regions.exposed.length; _i8++) {
+         for (var _i6 = 0; _i6 < regions.exposed.length; _i6++) {
             // Only Exposed Cells Can Die
-            var _chance = org.coefficient * Math.log(-regions.exposed[_i8].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
-            if (regions.exposed[_i8].d(org) > org.range) {
+            var _chance = org.coefficient * Math.log(-regions.exposed[_i6].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
+            if (regions.exposed[_i6].d(org) > org.range) {
                // If exposed cell is outside maximum radius
                for (var _j2 = 0; _j2 < org.count; _j2++) {
-                  if (regions.exposed[_i8].x == org.cells[_j2].x && regions.exposed[_i8].y == org.cells[_j2].y) {
+                  if (regions.exposed[_i6].x == org.cells[_j2].x && regions.exposed[_i6].y == org.cells[_j2].y) {
                      // Find exposed cell within org cells array
                      org.cells.splice(_j2, 1);
                      org.count--;
-                     regions.exposed.splice(_i8, 1);
-                     _i8--;
+                     regions.exposed.splice(_i6, 1);
+                     _i6--;
                      _j2--;
                      break;
                   }
                }
                continue;
             }
-            if (src.world.type == 'rectangle' && (regions.exposed[_i8].x < src.world.x || regions.exposed[_i8].x > src.world.x + src.world.width || regions.exposed[_i8].y < src.world.y || regions.exposed[_i8].y > src.world.y + src.world.height)) {
+            if (src.world.type == 'rectangle' && (regions.exposed[_i6].x < src.world.x || regions.exposed[_i6].x > src.world.x + src.world.width || regions.exposed[_i6].y < src.world.y || regions.exposed[_i6].y > src.world.y + src.world.height)) {
                // If cell is outside rectangular world
                for (var _j3 = 0; _j3 < org.count; _j3++) {
-                  if (regions.exposed[_i8].x == org.cells[_j3].x && regions.exposed[_i8].y == org.cells[_j3].y) {
+                  if (regions.exposed[_i6].x == org.cells[_j3].x && regions.exposed[_i6].y == org.cells[_j3].y) {
                      org.cells.splice(_j3, 1);
                      org.count--;
-                     regions.exposed.splice(_i8, 1);
-                     _i8--;
+                     regions.exposed.splice(_i6, 1);
+                     _i6--;
                      _j3--;
                      break;
                   }
                }
-            } else if (src.world.type == 'ellipse' && sq(regions.exposed[_i8].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i8].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
+            } else if (src.world.type == 'ellipse' && sq(regions.exposed[_i6].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i6].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
                // If outside elliptical world
                for (var _j4 = 0; _j4 < org.count; _j4++) {
-                  if (regions.exposed[_i8].x == org.cells[_j4].x && regions.exposed[_i8].y == org.cells[_j4].y) {
+                  if (regions.exposed[_i6].x == org.cells[_j4].x && regions.exposed[_i6].y == org.cells[_j4].y) {
                      // Identify cell
                      org.cells.splice(_j4, 1);
                      org.count--;
-                     regions.exposed.splice(_i8, 1);
-                     _i8--;
+                     regions.exposed.splice(_i6, 1);
+                     _i6--;
                      _j4--;
                      break;
                   }
@@ -5433,11 +5442,11 @@ function grow(orG) {
             }
             if (random(0, 100) <= _chance) {
                for (var _j5 = 0; _j5 < org.count; _j5++) {
-                  if (regions.exposed[_i8].x == org.cells[_j5].x && regions.exposed[_i8].y == org.cells[_j5].y) {
+                  if (regions.exposed[_i6].x == org.cells[_j5].x && regions.exposed[_i6].y == org.cells[_j5].y) {
                      org.cells.splice(_j5, 1);
                      org.count--;
-                     regions.exposed.splice(_i8, 1);
-                     _i8--;
+                     regions.exposed.splice(_i6, 1);
+                     _i6--;
                      _j5--;
                      break;
                   }
@@ -5448,16 +5457,16 @@ function grow(orG) {
    }
 
    // Abilities
-   for (var _i9 = 0; _i9 < src.orgs.length; _i9++) {
-      if (src.orgs[_i9].team == org.team && typeof team == 'string' && src.orgs[_i9].player != socket.id) {
+   for (var _i7 = 0; _i7 < src.orgs.length; _i7++) {
+      if (src.orgs[_i7].team == org.team && typeof team == 'string' && src.orgs[_i7].player != socket.id) {
          // If is friendly org but not own org
          continue; // No friendly fire but can hurt self
       }
-      if (src.abilities[_i9].secrete.value == true) {
+      if (src.abilities[_i7].secrete.value == true) {
          // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
          for (var _j6 = 0; _j6 < org.count; _j6++) {
-            for (var _k = 0; _k < src.abilities[_i9].spore.count; _k++) {
-               if (sqrt(sq(org.cells[_j6].x - src.abilities[_i9].spore.spores[_k].x) + sq(org.cells[_j6].y - src.abilities[_i9].spore.spores[_k].y)) <= src.abilities[_i9].secrete.radius) {
+            for (var _k = 0; _k < src.abilities[_i7].spore.count; _k++) {
+               if (sqrt(sq(org.cells[_j6].x - src.abilities[_i7].spore.spores[_k].x) + sq(org.cells[_j6].y - src.abilities[_i7].spore.spores[_k].y)) <= src.abilities[_i7].secrete.radius) {
                   // If center of cell is within secrete circle (subject to change)
                   var skip = false;
                   for (var l = 0; l < src.abilities.length; l++) {
@@ -5470,7 +5479,7 @@ function grow(orG) {
                   if (skip == true) {
                      continue; // Acid is ineffectual when neutralized
                   }
-                  org.hit = src.abilities[_i9].player;
+                  org.hit = src.abilities[_i7].player;
                   if (src.src === 'game' && org.hit !== org.player) {
                      // Only for game; Only for other player hits
                      for (var _l = 0; _l < src.teams.length; _l++) {
@@ -5495,9 +5504,9 @@ function grow(orG) {
       }
       for (var _j7 = 0; _j7 < 3; _j7++) {
          // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
-         if (src.abilities[_i9].shoot.secrete[_j7].value == true) {
+         if (src.abilities[_i7].shoot.secrete[_j7].value == true) {
             for (var _k2 = 0; _k2 < org.count; _k2++) {
-               if (sqrt(sq(org.cells[_k2].x - src.abilities[_i9].shoot.spore[_j7].x) + sq(org.cells[_k2].y - src.abilities[_i9].shoot.spore[_j7].y)) <= src.abilities[_i9].shoot.secrete[_j7].radius) {
+               if (sqrt(sq(org.cells[_k2].x - src.abilities[_i7].shoot.spore[_j7].x) + sq(org.cells[_k2].y - src.abilities[_i7].shoot.spore[_j7].y)) <= src.abilities[_i7].shoot.secrete[_j7].radius) {
                   // If center of cell is within shoot circle (subject to change)
                   var _skip = false;
                   for (var _l2 = 0; _l2 < src.abilities.length; _l2++) {
@@ -5510,7 +5519,7 @@ function grow(orG) {
                   if (_skip == true) {
                      continue; // Acid is ineffectual when neutralized
                   }
-                  org.hit = src.abilities[_i9].player;
+                  org.hit = src.abilities[_i7].player;
                   if (src.src === 'game' && org.hit !== org.player) {
                      // Only for game; Only for other player hits
                      for (var _l3 = 0; _l3 < src.teams.length; _l3++) {
@@ -5533,14 +5542,14 @@ function grow(orG) {
             }
          }
       }
-      if (src.abilities[_i9].toxin.value == true) {
+      if (src.abilities[_i7].toxin.value == true) {
          // Toxin
          for (var _j8 = 0; _j8 < org.count; _j8++) {
-            if (org.player == src.abilities[_i9].player) {
+            if (org.player == src.abilities[_i7].player) {
                // If is own org's toxin
                continue; // Do not kill own cells
             }
-            if (sqrt(sq(org.cells[_j8].x - src.abilities[_i9].toxin.x) + sq(org.cells[_j8].y - src.abilities[_i9].toxin.y)) <= src.abilities[_i9].toxin.radius) {
+            if (sqrt(sq(org.cells[_j8].x - src.abilities[_i7].toxin.x) + sq(org.cells[_j8].y - src.abilities[_i7].toxin.y)) <= src.abilities[_i7].toxin.radius) {
                // If center of cell is within toxin circle
                var _skip2 = false;
                for (var _l4 = 0; _l4 < src.abilities.length; _l4++) {
@@ -5553,7 +5562,7 @@ function grow(orG) {
                if (_skip2 == true) {
                   continue; // Acid is ineffectual when neutralized
                }
-               org.hit = src.abilities[_i9].player;
+               org.hit = src.abilities[_i7].player;
                if (src.src === 'game' && org.hit !== org.player) {
                   // Only for game; Only for other player hits
                   for (var _l5 = 0; _l5 < src.teams.length; _l5++) {
@@ -5603,31 +5612,31 @@ function die(spectatE) {
          }
       }
    }
-   for (var _i10 = 0; _i10 < 3; _i10++) {
+   for (var _i8 = 0; _i8 < 3; _i8++) {
       // Reset shoots
-      clearTimeout(ability.shoot.timeout[_i10]);
-      ability.shoot.value[_i10] = false;
-      ability.shoot.can[_i10] = true;
-      ability.shoot.spore[_i10] = undefined;
-      ability.shoot.secrete[_i10] = {};
-      ability.shoot.start[_i10] = undefined;
-      ability.shoot.end[_i10] = undefined;
+      clearTimeout(ability.shoot.timeout[_i8]);
+      ability.shoot.value[_i8] = false;
+      ability.shoot.can[_i8] = true;
+      ability.shoot.spore[_i8] = undefined;
+      ability.shoot.secrete[_i8] = {};
+      ability.shoot.start[_i8] = undefined;
+      ability.shoot.end[_i8] = undefined;
    }
    socket.emit('Ability', ability);
 }
 'use strict';
 
-var socket; // Initialize in global scope
-var gamesInterval; // "
-var emitGameInterval; // "
+var socket = void 0; // Initialize in global scope
+var gamesInterval = void 0; // "
+var emitGameInterval = void 0; // "
 function connectSocket() {
    if (DEV) {
-      socket = io.connect('localhost:80'); // Local server (Development only)
+      socket = io.connect('localhost:' + PORT); // Local server (Development only)
    } else {
       if (HEROKU) {
-         socket = io.connect('https://bacter.herokuapp.com/'); // Heroku Server
+         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
       } else {
-         socket = io.connect('24.55.26.67:80'); // Local Server
+         socket = io.connect('24.55.26.67:' + PORT); // Local Server
       }
    }
 
@@ -5643,10 +5652,10 @@ function connectSocket() {
       }
    }, _renderfrequency);
 
-   socket.on('Games', function (datA) {
-      // datA: { games: , connections: }
-      games = datA.games;
-      connections = datA.connections;
+   socket.on('Games', function (data) {
+      // data: { games: , connections: }
+      games = data.games;
+      connections = data.connections;
       if (state === 'browser') renderBrowser();
    });
 

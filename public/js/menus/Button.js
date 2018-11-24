@@ -29,7 +29,7 @@ class Button extends React.Component {
                   if (game.board.list[i].player == socket.id) { // Find player in leaderboard
                      game.board.list.splice(i, 1); // Remove player from leaderboard
                      orderBoard(game.board.list); // Sort the list
-                     socket.emit('Board', game.board); // Send updated board to server
+                     socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
                      break;
                   }
                }

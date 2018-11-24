@@ -102,33 +102,33 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
       x: this.pos.x - center.x,
       y: this.pos.y - center.y
    };
-   this.col = 10; // Collision radius (square) for crosshair
-   this.target = undefined; // ID of player which this org is currently targeting
-   this.clickbox = { // Targeting box for other orgs to click
-      width: undefined,
-      height: undefined,
-      x: undefined,
-      y: undefined,
-      left: this.pos.x,
-      right: this.pos.x,
-      top: this.pos.y,
-      bottom: this.pos.y,
-      buffer: _cellwidth / 2,
-      color: this.color
-   };
-   this.coefficient = -27.5;
+   this.col = 10; // Collision radius (square) for crosshair (used in collision detection with flag)
+   // this.target = undefined; // ID of player which this org is currently targeting (NOT IN USE)
+   // this.clickbox = { // Targeting box for other orgs to click (NOT IN USE)
+   //    width: undefined,
+   //    height: undefined,
+   //    x: undefined,
+   //    y: undefined,
+   //    left: this.pos.x,
+   //    right: this.pos.x,
+   //    top: this.pos.y,
+   //    bottom: this.pos.y,
+   //    buffer: _cellwidth / 2,
+   //    color: this.color
+   // };
+   this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
    this.range = 50;
    this.alive = false;
    this.hit = undefined;
    this.count = this.cells.length;
-   this.intervals = []; // Store an array of intervals to be pushed to in case multiple intervals are created unintentionally, so they can be cleared
+   this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
    this.clearIntervals = () => {
       for (let i = 0; i < this.intervals.length; i++) {
          clearInterval(this.intervals[i]);
       }
       this.intervals = [];
    };
-   this.tracker = {
+   this.tracker = { // Used to ensure no double org growth intervals
       start: undefined, 
       end: undefined, 
       elap: undefined

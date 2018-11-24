@@ -314,7 +314,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Abilities
                   if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                      ability.tag.activated = false;
@@ -510,7 +510,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Initialize
                   clearInterval(title.interval);
                   initialize(game, { spectate: true, color: undefined, skin: undefined });
@@ -667,7 +667,7 @@ function submit(menuType) {
             }
             // Team
             if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
-               if (org.team != team) { // Only add player to team if not already on team
+               if (org.team !== team) { // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
                   console.log(state);
@@ -677,7 +677,7 @@ function submit(menuType) {
             // Color
             if (game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
-            } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If is not a team mode 
+            } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team mode 
                color = eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team

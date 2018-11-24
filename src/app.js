@@ -17,7 +17,7 @@ io.engine.clients returns an array of the socket.id strings of all connected cli
 */
 
 // Express
-let port = process.env.PORT || 80;
+let port = process.env.PORT || 80; // process.env.PORT is fed by Heroku
 let express = require('express');
 let app = express();
 let server = app.listen(port);
@@ -316,9 +316,9 @@ io.sockets.on('connection', socket => {
          if (games[i].info.host == datA.info.host) {
             socket.leave('Lobby'); // Leave 'Lobby' Room
             socket.join(datA.info.title); // Join 'Game' Room
-            games[i].players.push(socket.id);
-            games[i].orgs.push(datA.org);
-            games[i].abilities.push(datA.ability);
+            games[i].players.push(socket.id); // Add player to server's list of players in game
+            games[i].orgs.push(datA.org); // Create server instance of org
+            games[i].abilities.push(datA.ability); // Create server instance of ability
             games[i].info.count = games[i].orgs.length;
             socket.emit('Enter');
             console.log('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
@@ -438,24 +438,51 @@ io.sockets.on('connection', socket => {
    });
 
    // Update Server Leaderboard
-   socket.on('Board', (board) => {
+   socket.on('Board', (data) => { // data: { list: board.list, host: game.board.host }
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == board.host) { // Find board's game
-            games[i].board.list = board.list; // Update server leaderboard list
+         if (games[i].info.host == data.host) { // Find board's game
+            games[i].board.list = data.list; // Update server leaderboard list
             break;
          }
       }
    });
 
-   // Update Server Org
-   socket.on('Org', (org) => {
+   /*
+      * Update Server Org
+      *
+      * @param data: [
+      *     org.alive,
+      *     org.cells,
+      *     org.off,
+      *     org.pos,
+      *     org.color,
+      *     org.skin,
+      *     org.team,
+      *     org.coefficient,
+      *     org.range
+      *  ]
+   */
+   socket.on('Org Update', (data) => { // data: {}
+      let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].orgs.length; j++) {
             if (games[i].orgs[j].player == socket.id) {
-               games[i].orgs[j] = org;
+               // games[i].orgs[j] = org;
+               games[i].orgs[j].alive = data[0]; // Only the following attributes of org need to be updated
+               games[i].orgs[j].cells = data[1]; // Latency is decreased by only sending necessary data
+               games[i].orgs[j].count = data[1].length;
+               games[i].orgs[j].off = data[2];
+               games[i].orgs[j].pos = data[3];
+               games[i].orgs[j].color = data[4];
+               games[i].orgs[j].skin = data[5];
+               games[i].orgs[j].team = data[6];
+               games[i].orgs[j].coefficient = data[7];
+               games[i].orgs[j].range = data[8];
+               done = true;
                break;
             }
          }
+         if (done) break;
       }
    });
 
@@ -464,7 +491,7 @@ io.sockets.on('connection', socket => {
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].info.count; j++) {
             if (games[i].abilities[j].player == socket.id) { // Find ability of socket
-               games[i].abilities[j] = ability; // Replace ability with received
+               games[i].abilities[j] = ability;
                break;
             }
          }
@@ -482,10 +509,10 @@ io.sockets.on('connection', socket => {
    });
 
    // Update Server Teams
-   socket.on('Teams', (data) => {
+   socket.on('Teams', (data) => { // data: { teams: game.teams, host: game.info.host }
       for (let i = 0; i < games.length; i++) {
          if (games[i].info.host == data.host) { // Identify game
-            games[i].teams = data.teams;
+            games[i].teams = data.teams; // All data in teams array must be updated
             break;
          }
       }
