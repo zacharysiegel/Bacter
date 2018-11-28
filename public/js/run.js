@@ -422,16 +422,16 @@ function runLoop() {
    // org.clickbox.y = org.clickbox.top + org.clickbox.height / 2;
 
    // CTF
-   if (game.info.mode == 'ctf') {
+   if (game.info.mode === 'ctf') {
       if (!game.flag.carried) {
          if (org.pos.x - org.col > game.flag.x - game.flag.width / 2 && org.pos.x + org.col < game.flag.x + game.flag.width / 2 && org.pos.y - org.col > game.flag.y - game.flag.height / 2 && org.pos.y + org.col < game.flag.y + game.flag.height / 2) {
             game.flag.carried = true;
             game.flag.carrier = socket.id;
-            socket.emit('Flag', game);
+            socket.emit('Flag', { flag: game.flag, host: game.info.host });
          }
       }
    }
-
+   
    socket.emit('Org Update', {
       alive: org.alive, // Only the following attributes of org need to be updated
       cells: org.cells, // Latency is decreased by only sending necessary data

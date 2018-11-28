@@ -462,7 +462,7 @@ io.sockets.on('connection', socket => {
       *     org.range
       *  ]
    */
-   socket.on('Org Update', (data) => { // data: {}
+   socket.on('Org Update', (data) => {
       let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].orgs.length; j++) {
@@ -518,7 +518,13 @@ io.sockets.on('connection', socket => {
       }
    });
 
-   // Update Server Flag
+   /**
+    * Update the server's instance of game's flag
+    * @param Object data {
+    *       flag: game.flag,
+    *       host: game.info.host
+    *    }
+    */
    socket.on('Flag', (game) => {
       for (let i = 0; i < games.length; i++) {
          if (games[i].info.host == game.info.host) {
