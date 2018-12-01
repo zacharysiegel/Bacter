@@ -236,8 +236,8 @@ function connectSocket() {
          ability.neutralize.value = true;
          ability.neutralize.start = new Date();
          clearTimeout(ability.neutralize.timeout);
-         ability.neutralize.x = org.x();
-         ability.neutralize.y = org.y();
+         ability.neutralize.x = org.pos.x;
+         ability.neutralize.y = org.pos.y;
          socket.emit('Ability', ability);
          ability.neutralize.timeout = setTimeout(() => {
             ability.neutralize.value = false;
@@ -251,8 +251,8 @@ function connectSocket() {
          ability.toxin.value = true;
          ability.toxin.start = new Date();
          clearTimeout(ability.toxin.timeout);
-         ability.toxin.x = org.x();
-         ability.toxin.y = org.y();
+         ability.toxin.x = org.pos.x;
+         ability.toxin.y = org.pos.y;
          socket.emit('Ability', ability);
          ability.toxin.timeout = setTimeout(() => {
             ability.toxin.value = false;
