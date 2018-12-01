@@ -432,17 +432,17 @@ function runLoop() {
       }
    }
    
-   socket.emit('Org Update', {
-      alive: org.alive, // Only the following attributes of org need to be updated
-      cells: org.cells, // Latency is decreased by only sending necessary data
-      off: org.off,
-      pos: org.pos,
-      color: org.color,
-      skin: org.skin,
-      team: org.team,
-      coefficient: org.coefficient,
-      range: org.range
-   });
+   socket.emit('Org Update', [
+      org.alive, // Only the following attributes of org need to be updated
+      org.cells, // Latency is decreased by only sending necessary data
+      org.off,
+      org.pos,
+      org.color,
+      org.skin,
+      org.team,
+      org.coefficient,
+      org.range
+   ]);
    if (org.count === 0) {
       for (let i = 0; i < game.board.list.length; i++) {
          if (game.board.list[i].player === socket.id) { // Add death to leaderboard

@@ -462,7 +462,7 @@ io.sockets.on('connection', socket => {
       *     org.range
       *  ]
    */
-   socket.on('Org Update', (data) => {
+   socket.on('Org Update', (data) => { // data is an array in order to decrease json data sent over web socket
       let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].orgs.length; j++) {

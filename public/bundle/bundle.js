@@ -4214,7 +4214,7 @@ function submit(menuType) {
             // Team
             if (game.info.mode === 'skm' || game.info.mode === 'ctf') {
                // If is a team game
-               if (org.team != team) {
+               if (org.team !== team) {
                   // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
@@ -4226,7 +4226,7 @@ function submit(menuType) {
             if (game.info.mode === 'inf') {
                // If inf mode
                color = teamColorDef.green; // All players healthy by default
-            } else if (game.info.mode != 'skm' && game.info.mode != 'ctf') {
+            } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') {
                // If is not a team mode 
                color = eid('color input').value.toLowerCase();
             } else {
@@ -4604,21 +4604,21 @@ var Org = function Org(datA) {
    };
 };
 
-var Cell = function Cell(X, Y, orG) {
-   this.player = orG.player;
+var Cell = function Cell(x, y, org) {
+   this.player = org.player;
    this.width = _cellwidth; // or 3x3
    this.height = _cellwidth;
-   this.x = X;
-   this.y = Y;
-   this.color = orG.color;
+   this.x = x;
+   this.y = y;
+   this.color = org.color;
    this.r = function () {
       // Distance from org center
       var distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
       return distance;
    };
-   this.d = function (orG) {
+   this.d = function (org) {
       // Distance from target (Position in world)
-      var distance = sqrt(sq(this.x - orG.pos.x) + sq(this.y - orG.pos.y));
+      var distance = sqrt(sq(this.x - org.pos.x) + sq(this.y - org.pos.y));
       return distance;
    };
 };
@@ -5209,27 +5209,19 @@ function runLoop() {
    // org.clickbox.y = org.clickbox.top + org.clickbox.height / 2;
 
    // CTF
-   if (game.info.mode == 'ctf') {
+   if (game.info.mode === 'ctf') {
       if (!game.flag.carried) {
          if (org.pos.x - org.col > game.flag.x - game.flag.width / 2 && org.pos.x + org.col < game.flag.x + game.flag.width / 2 && org.pos.y - org.col > game.flag.y - game.flag.height / 2 && org.pos.y + org.col < game.flag.y + game.flag.height / 2) {
             game.flag.carried = true;
             game.flag.carrier = socket.id;
-            socket.emit('Flag', game);
+            socket.emit('Flag', { flag: game.flag, host: game.info.host });
          }
       }
    }
 
-   socket.emit('Org Update', {
-      alive: org.alive, // Only the following attributes of org need to be updated
-      cells: org.cells, // Latency is decreased by only sending necessary data
-      off: org.off,
-      pos: org.pos,
-      color: org.color,
-      skin: org.skin,
-      team: org.team,
-      coefficient: org.coefficient,
-      range: org.range
-   });
+   socket.emit('Org Update', [org.alive, // Only the following attributes of org need to be updated
+   org.cells, // Latency is decreased by only sending necessary data
+   org.off, org.pos, org.color, org.skin, org.team, org.coefficient, org.range]);
    if (org.count === 0) {
       for (var _i3 = 0; _i3 < game.board.list.length; _i3++) {
          if (game.board.list[_i3].player === socket.id) {
@@ -5295,13 +5287,13 @@ function grow(orG) {
       for (var _i5 = 0; _i5 < regions.adjacent.length; _i5++) {
          // Only Adjacent Regions Can Produce New Cells
          // Don't birth new cell outside world boundary
-         if (src.world != undefined) {
-            if (src.world.type == 'rectangle') {
+         if (src.world) {
+            if (src.world.type === 'rectangle') {
                if (regions.adjacent[_i5].x - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[_i5].y - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].y + _cellwidth / 2 >= src.world.y + src.world.height) {
                   // If new cell would be outside world boundary
                   continue;
                }
-            } else if (src.world.type == 'ellipse') {
+            } else if (src.world.type === 'ellipse') {
                var a = src.world.width / 2;
                var b = src.world.height / 2;
                var x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
@@ -5333,7 +5325,7 @@ function grow(orG) {
          // Don't birth new cell on top of an opponent org
          var overlap = false;
          for (var j = 0; j < src.orgs.length; j++) {
-            if (src.orgs[j].player == org.player) {
+            if (src.orgs[j].player === org.player) {
                // If org is player's org
                continue;
             }
@@ -5359,7 +5351,7 @@ function grow(orG) {
                }
             }
          }
-         if (overlap == true) {
+         if (overlap === true) {
             continue;
          }
          // Birth new cell accordingly
@@ -5383,7 +5375,7 @@ function grow(orG) {
                   break;
                }
             }
-            if (repeat == false) {
+            if (repeat === false) {
                org.cells.push(new Cell(regions.adjacent[_i5].x, regions.adjacent[_i5].y, org));
                org.count++;
             }
@@ -5392,9 +5384,9 @@ function grow(orG) {
    }
 
    // Natural Death
-   if (ability.freeze.value == false) {
+   if (ability.freeze.value === false) {
       // If org is not Frozen (cannot birth or die naturally)
-      if (ability.immortality.value == false) {
+      if (ability.immortality.value === false) {
          // If org is not Immortal
          for (var _i6 = 0; _i6 < regions.exposed.length; _i6++) {
             // Only Exposed Cells Can Die
@@ -5402,7 +5394,7 @@ function grow(orG) {
             if (regions.exposed[_i6].d(org) > org.range) {
                // If exposed cell is outside maximum radius
                for (var _j2 = 0; _j2 < org.count; _j2++) {
-                  if (regions.exposed[_i6].x == org.cells[_j2].x && regions.exposed[_i6].y == org.cells[_j2].y) {
+                  if (regions.exposed[_i6].x === org.cells[_j2].x && regions.exposed[_i6].y === org.cells[_j2].y) {
                      // Find exposed cell within org cells array
                      org.cells.splice(_j2, 1);
                      org.count--;
@@ -5417,7 +5409,7 @@ function grow(orG) {
             if (src.world.type == 'rectangle' && (regions.exposed[_i6].x < src.world.x || regions.exposed[_i6].x > src.world.x + src.world.width || regions.exposed[_i6].y < src.world.y || regions.exposed[_i6].y > src.world.y + src.world.height)) {
                // If cell is outside rectangular world
                for (var _j3 = 0; _j3 < org.count; _j3++) {
-                  if (regions.exposed[_i6].x == org.cells[_j3].x && regions.exposed[_i6].y == org.cells[_j3].y) {
+                  if (regions.exposed[_i6].x === org.cells[_j3].x && regions.exposed[_i6].y === org.cells[_j3].y) {
                      org.cells.splice(_j3, 1);
                      org.count--;
                      regions.exposed.splice(_i6, 1);
@@ -5426,10 +5418,10 @@ function grow(orG) {
                      break;
                   }
                }
-            } else if (src.world.type == 'ellipse' && sq(regions.exposed[_i6].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i6].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
+            } else if (src.world.type === 'ellipse' && sq(regions.exposed[_i6].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i6].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
                // If outside elliptical world
                for (var _j4 = 0; _j4 < org.count; _j4++) {
-                  if (regions.exposed[_i6].x == org.cells[_j4].x && regions.exposed[_i6].y == org.cells[_j4].y) {
+                  if (regions.exposed[_i6].x === org.cells[_j4].x && regions.exposed[_i6].y === org.cells[_j4].y) {
                      // Identify cell
                      org.cells.splice(_j4, 1);
                      org.count--;
@@ -5442,7 +5434,7 @@ function grow(orG) {
             }
             if (random(0, 100) <= _chance) {
                for (var _j5 = 0; _j5 < org.count; _j5++) {
-                  if (regions.exposed[_i6].x == org.cells[_j5].x && regions.exposed[_i6].y == org.cells[_j5].y) {
+                  if (regions.exposed[_i6].x === org.cells[_j5].x && regions.exposed[_i6].y === org.cells[_j5].y) {
                      org.cells.splice(_j5, 1);
                      org.count--;
                      regions.exposed.splice(_i6, 1);
@@ -5458,11 +5450,11 @@ function grow(orG) {
 
    // Abilities
    for (var _i7 = 0; _i7 < src.orgs.length; _i7++) {
-      if (src.orgs[_i7].team == org.team && typeof team == 'string' && src.orgs[_i7].player != socket.id) {
+      if (src.orgs[_i7].team === org.team && typeof team === 'string' && src.orgs[_i7].player !== socket.id) {
          // If is friendly org but not own org
          continue; // No friendly fire but can hurt self
       }
-      if (src.abilities[_i7].secrete.value == true) {
+      if (src.abilities[_i7].secrete.value === true) {
          // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
          for (var _j6 = 0; _j6 < org.count; _j6++) {
             for (var _k = 0; _k < src.abilities[_i7].spore.count; _k++) {
@@ -5470,7 +5462,7 @@ function grow(orG) {
                   // If center of cell is within secrete circle (subject to change)
                   var skip = false;
                   for (var l = 0; l < src.abilities.length; l++) {
-                     if (src.abilities[l].neutralize.value == true && sqrt(sq(org.cells[_j6].x - src.abilities[l].neutralize.x) + sq(org.cells[_j6].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) {
+                     if (src.abilities[l].neutralize.value === true && sqrt(sq(org.cells[_j6].x - src.abilities[l].neutralize.x) + sq(org.cells[_j6].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) {
                         // If center of cell is within neutralize circle
                         skip = true;
                         break;
@@ -5628,7 +5620,7 @@ function die(spectatE) {
 
 var socket = void 0; // Initialize in global scope
 var gamesInterval = void 0; // "
-var emitGameInterval = void 0; // "
+// let emitGameInterval; // "
 function connectSocket() {
    if (DEV) {
       socket = io.connect('localhost:' + PORT); // Local server (Development only)
@@ -5646,11 +5638,11 @@ function connectSocket() {
       }
    }, 250);
 
-   emitGameInterval = setInterval(function () {
-      if (state === 'game' || state === 'spectate') {
-         socket.emit('Game', { game: game });
-      }
-   }, _renderfrequency);
+   // emitGameInterval = setInterval(() => {
+   //    if (state === 'game' || state === 'spectate') {
+   //       socket.emit('Game', { game: game });
+   //    }
+   // }, _renderfrequency);
 
    socket.on('Games', function (data) {
       // data: { games: , connections: }
@@ -5875,8 +5867,8 @@ function connectSocket() {
          ability.neutralize.value = true;
          ability.neutralize.start = new Date();
          clearTimeout(ability.neutralize.timeout);
-         ability.neutralize.x = org.x();
-         ability.neutralize.y = org.y();
+         ability.neutralize.x = org.pos.x;
+         ability.neutralize.y = org.pos.y;
          socket.emit('Ability', ability);
          ability.neutralize.timeout = setTimeout(function () {
             ability.neutralize.value = false;
@@ -5890,8 +5882,8 @@ function connectSocket() {
          ability.toxin.value = true;
          ability.toxin.start = new Date();
          clearTimeout(ability.toxin.timeout);
-         ability.toxin.x = org.x();
-         ability.toxin.y = org.y();
+         ability.toxin.x = org.pos.x;
+         ability.toxin.y = org.pos.y;
          socket.emit('Ability', ability);
          ability.toxin.timeout = setTimeout(function () {
             ability.toxin.value = false;

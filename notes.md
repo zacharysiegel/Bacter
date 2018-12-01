@@ -136,9 +136,11 @@
       ✓ Change 'Leave Game' text in pause tutorial menu to 'Leave Tutorial'
       ✓ File system overhaul
       ✓ Replace $() with eid() (in z.js)
-      Lag Reduction
-         Consolidate game updates to server into single emit
-            Set as interval with _renderfrequency
+      ✓ Lag Reduction
+         ? Consolidate game updates to server into single emit
+            ? Set as interval with _renderfrequency
+         ✓ Send less superfluous data
+      ✓ Change toxin to center on crosshair
       Fix survival bug if multiple last players die on same tick
       Fix password bug
    a3.2.0 - Capture the Flag + Infection + King of the Hill

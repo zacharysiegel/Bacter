@@ -135,19 +135,19 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
    };
 };
 
-var Cell = function(X, Y, orG) {
-   this.player = orG.player;
+var Cell = function(x, y, org) {
+   this.player = org.player;
    this.width = _cellwidth; // or 3x3
    this.height = _cellwidth;
-   this.x = X;
-   this.y = Y;
-   this.color = orG.color;
+   this.x = x;
+   this.y = y;
+   this.color = org.color;
    this.r = function() { // Distance from org center
       let distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
       return distance;
    };
-   this.d = function(orG) { // Distance from target (Position in world)
-      let distance = sqrt(sq(this.x - orG.pos.x) + sq(this.y - orG.pos.y));
+   this.d = function(org) { // Distance from target (Position in world)
+      let distance = sqrt(sq(this.x - org.pos.x) + sq(this.y - org.pos.y));
       return distance;
    };
 };
