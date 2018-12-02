@@ -125,7 +125,7 @@
    ? Territories (TRT)
       Players are assigned a small circular territory at spawn
 
-## Bugs/Fixes:
+## Issues:
    Leaderboard flicker on new spectator bug (not big deal)
       Spectator has not yet been added to spectators array
 
@@ -135,13 +135,16 @@
       ✓ Fix current color detection in respawn and pause menus
       ✓ Change 'Leave Game' text in pause tutorial menu to 'Leave Tutorial'
       ✓ File system overhaul
-      ✓ Replace $() with eid() (in z.js)
+      ✓ Replace $() with eid() (defined in z.js)
       ✓ Lag Reduction
          ? Consolidate game updates to server into single emit
             ? Set as interval with _renderfrequency
          ✓ Send less superfluous data
       ✓ Change toxin to center on crosshair
+      ✓ Fix return to menu no-org bug
+      ✓ Fix subsequent game (in single session) spawn bug
       Fix survival bug if multiple last players die on same tick
+      Fix survival bug where rounds after first have increased shrink frequency
       Fix password bug
    a3.2.0 - Capture the Flag + Infection + King of the Hill
       CTF

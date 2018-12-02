@@ -1,4 +1,4 @@
-class MenuSubmit extends React.Component {
+class MenuSubmit extends React.Component { // Button for submitting menu information
    constructor(props) {
       super(props);
       this.state = {

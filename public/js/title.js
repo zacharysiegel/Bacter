@@ -50,6 +50,11 @@ var Title = function() {
       this.abilities[i] = new Ability({ player: i });
    }
    this.menu = new TitleMenu(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2);
+
+   /**
+    * Interval to run title screen animations
+    * @return void
+    */
    this.interval = setInterval(() => {
       { // Render
          // Background
@@ -74,6 +79,15 @@ var Title = function() {
          }
       }
    }, _ofrequency);
+
+   /**
+    * Resize the title screen to fit the window dimensions
+    * @param  number x offset in x-direction from left of window
+    * @param  number y offset in y-direction from top of window
+    * @param  number w screen width (pixels)
+    * @param  number h screen height (pixels)
+    * @return void
+    */
    this.resize = (x, y, w, h) => {
       center.x = window.innerWidth / 2;
       center.y = window.innerHeight / 2;
@@ -113,7 +127,7 @@ class TitleMenu extends React.Component {
             tutorial = new Tutorial();
             break;
       }
-   };
+   }
 
    render() {
       let x = center.x;
@@ -148,20 +162,21 @@ class TitleMenu extends React.Component {
          </div>
       ); // handleClick does not need to be bound if arrow function is used; without using arrow function, 'host'/'join'/'tutorial' properties could not be sent
    }
-};
+}
 
 function renderTitle() {
    state = 'title';
+   if (org) org.clearIntervals(); // If global org variable exists (such as after exiting a game) clear its interval(s) so as to not interfere with title animations
+   ability = new Ability({ player: socket.id });
    let a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
       <div id='title'>
          <CanvasCont />
          <TitleMenu />
       </div>
    , eid('cont')); // TitleMenu will not retain its this. namespace
-   ability = new Ability({ player: socket.id });
 }
 
-var Shade = function() {
+var Shade = function() { // White layer behind menus allows user to see background but unfocuses it
    let style = {
       position: 'fixed',
       left: '0px',

@@ -217,4 +217,5 @@
    Fixed latency issues
    Fixed current color detection in spawn and pause menus
    Fixed in-game window resizing issue
-   
+   Fixed second game in single session break-on-spawn bug
+   Fixed return to title screen no-render bug

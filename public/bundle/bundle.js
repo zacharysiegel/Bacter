@@ -3,9 +3,8 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var ability;
-var Ability = function Ability(datA) {
-   // datA: { player: }
-   var data = datA;
+var Ability = function Ability(data) {
+   // data: { player: }
    this.player = data.player;
    this.auto = false;
    this.extend = {
@@ -35,22 +34,22 @@ var Ability = function Ability(datA) {
       cooldown: 4000
    };
    // speed: { // Not updated
-   // 	value: false, 
-   // 	activated: false, 
-   // 	i: 0, 
-   // 	j: 0, 
-   // 	factor: 2, 
-   // 	timeout: undefined, 
-   // 	time: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    i: 0, 
+   //    j: 0, 
+   //    factor: 2, 
+   //    timeout: undefined, 
+   //    time: 5000
    // };
    // slow: { // Not updated
-   // 	value: false, 
-   // 	activated: false, 
-   // 	i: 0, 
-   // 	j: 1, 
-   // 	factor: 2, 
-   // 	timeout: undefined, 
-   // 	time: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    i: 0, 
+   //    j: 1, 
+   //    factor: 2, 
+   //    timeout: undefined, 
+   //    time: 5000
    // };
    this.immortality = {
       value: false,
@@ -80,32 +79,32 @@ var Ability = function Ability(datA) {
       cooldown: 6000
    };
    // stimulate: {
-   // 	value: false, 
-   // 	activated: false, 
-   // 	can: false, 
-   // 	i: 2, 
-   // 	j: 0, 
-   // 	factor: 9, // Factor must be equal to that of poison
-   // 	timeout: undefined, 
-   // 	start: undefined, 
-   // 	end: undefined, 
-   // 	cooling: false, 
-   // 	time: 3000, 
-   // 	cooldown: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    can: false, 
+   //    i: 2, 
+   //    j: 0, 
+   //    factor: 9, // Factor must be equal to that of poison
+   //    timeout: undefined, 
+   //    start: undefined, 
+   //    end: undefined, 
+   //    cooling: false, 
+   //    time: 3000, 
+   //    cooldown: 5000
    // }, 
    // poison: {
-   // 	value: false, 
-   // 	activated: false, 
-   // 	can: false, 
-   // 	i: 2, 
-   // 	j: 1, 
-   // 	factor: 9, // Factor must be equal to that of stimulate
-   // 	timeout: undefined, 
-   // 	start: undefined, 
-   // 	end: undefined, 
-   // 	cooling: false, 
-   // 	time: 3000, 
-   // 	cooldown: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    can: false, 
+   //    i: 2, 
+   //    j: 1, 
+   //    factor: 9, // Factor must be equal to that of stimulate
+   //    timeout: undefined, 
+   //    start: undefined, 
+   //    end: undefined, 
+   //    cooling: false, 
+   //    time: 3000, 
+   //    cooldown: 5000
    // }, 
    this.neutralize = {
       value: false,
@@ -178,14 +177,14 @@ var Ability = function Ability(datA) {
       can: [true, true, true],
       secrete: [{}, {}, {}
       // { // Sets values on use
-      // 	value: false, 
-      // 	color: undefined, 
-      // 	radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
-      // 	hit: false, 
-      // 	timeout: undefined, 
-      // 	start: undefined, 
-      // 	end: undefined, 
-      // 	time: 800 // Same as 'secrete'
+      //    value: false, 
+      //    color: undefined, 
+      //    radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
+      //    hit: false, 
+      //    timeout: undefined, 
+      //    start: undefined, 
+      //    end: undefined, 
+      //    time: 800 // Same as 'secrete'
       // }
       ],
       spore: [undefined, undefined, undefined],
@@ -437,11 +436,11 @@ function compress(playeR) {
 }
 
 // function speed(playeR) {
-// 	socket.emit('Speed', playeR);
+//    socket.emit('Speed', playeR);
 // }
 
 // function slow(playeR) {
-// 	socket.emit('Slow', playeR);
+//    socket.emit('Slow', playeR);
 // }
 
 function immortality(playeR) {
@@ -481,19 +480,19 @@ function freeze(playeR) {
 }
 
 // function stimulate(playeR) {
-// 	ability.stimulate.can = false;
-// 	socket.emit('Stimulate', playeR);
+//    ability.stimulate.can = false;
+//    socket.emit('Stimulate', playeR);
 // }
 
 // function poison(playeR) {
-// 	socket.emit('Poison', playeR);
-// 	ability.poison.can = false; // Redundancy
-// 	ability.poison.start = new Date();
-// 	socket.emit('Ability', ability);
-// 	setTimeout(() => {
-// 		ability.poison.end = new Date();
-// 		ability.poison.cooling = true;
-// 	}, ability.poison.time);
+//    socket.emit('Poison', playeR);
+//    ability.poison.can = false; // Redundancy
+//    ability.poison.start = new Date();
+//    socket.emit('Ability', ability);
+//    setTimeout(() => {
+//       ability.poison.end = new Date();
+//       ability.poison.cooling = true;
+//    }, ability.poison.time);
 // }
 
 function neutralize(playeR) {
@@ -728,13 +727,13 @@ var Board = function Board(datA) {
    this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
    this.list = [
       // {
-      // 	player: undefined, // ID of player
-      // 	name: undefined, // Screen name of player
-      // 	kills: undefined, // Kills as defined by number of enemy cells killed
-      // 	deaths: undefined, // Deaths as defined by number of org deaths
-      // 	ratio: undefined, // Ratio of kills to deaths
-      // 	score: undefined, // Flag captures (ctf), time score (kth)
-      // 	wins: undefined // Round wins (srv, ctf, inf, kth)
+      //    player: undefined, // ID of player
+      //    name: undefined, // Screen name of player
+      //    kills: undefined, // Kills as defined by number of enemy cells killed
+      //    deaths: undefined, // Deaths as defined by number of org deaths
+      //    ratio: undefined, // Ratio of kills to deaths
+      //    score: undefined, // Flag captures (ctf), time score (kth)
+      //    wins: undefined // Round wins (srv, ctf, inf, kth)
       // }
    ], this.count = undefined;
    if (data.mode == 'skm' || data.mode == 'ctf') {
@@ -1492,56 +1491,56 @@ var PORT = 80;
 
 // Repertoires
 var worldColors = {
-	black: { r: 0, g: 0, b: 0 }, // Only black is currently in use
-	white: { r: 230, g: 230, b: 230 },
-	blue: { r: 247, g: 250, b: 255 }
+   black: { r: 0, g: 0, b: 0 }, // Only black is currently in use
+   white: { r: 230, g: 230, b: 230 },
+   blue: { r: 247, g: 250, b: 255 }
 };
 var orgColors = {
-	black: {
-		fire: { r: 255, g: 90, b: 81 },
-		camel: { r: 232, g: 183, b: 155 },
-		clay: { r: 232, g: 145, b: 95 },
-		sun: { r: 255, g: 246, b: 86 },
-		leaf: { r: 125, g: 255, b: 200 },
-		lime: { r: 57, g: 249, b: 86 },
-		sky: { r: 48, g: 210, b: 255 },
-		lake: { r: 142, g: 182, b: 255 },
-		ocean: { r: 102, g: 136, b: 244 },
-		royal: { r: 175, g: 132, b: 255 },
-		petal: { r: 250, g: 122, b: 255 },
-		hot: { r: 232, g: 2, b: 216 }
-	},
-	white: {
-		fire: { r: 240, g: 75, b: 66 },
-		camel: { r: 232, g: 183, b: 155 },
-		clay: { r: 232, g: 145, b: 95 },
-		burnt: { r: 196, g: 99, b: 19 },
-		lime: { r: 57, g: 249, b: 86 },
-		forest: { r: 0, g: 114, b: 38 },
-		peacock: { r: 16, g: 143, b: 147 },
-		sky: { r: 48, g: 210, b: 255 },
-		lake: { r: 104, g: 157, b: 255 },
-		ocean: { r: 102, g: 136, b: 244 },
-		royal: { r: 175, g: 132, b: 255 },
-		petal: { r: 250, g: 122, b: 255 },
-		hot: { r: 232, g: 2, b: 216 }
-	}
+   black: {
+      fire: { r: 255, g: 90, b: 81 },
+      camel: { r: 232, g: 183, b: 155 },
+      clay: { r: 232, g: 145, b: 95 },
+      sun: { r: 255, g: 246, b: 86 },
+      leaf: { r: 125, g: 255, b: 200 },
+      lime: { r: 57, g: 249, b: 86 },
+      sky: { r: 48, g: 210, b: 255 },
+      lake: { r: 142, g: 182, b: 255 },
+      ocean: { r: 102, g: 136, b: 244 },
+      royal: { r: 175, g: 132, b: 255 },
+      petal: { r: 250, g: 122, b: 255 },
+      hot: { r: 232, g: 2, b: 216 }
+   },
+   white: {
+      fire: { r: 240, g: 75, b: 66 },
+      camel: { r: 232, g: 183, b: 155 },
+      clay: { r: 232, g: 145, b: 95 },
+      burnt: { r: 196, g: 99, b: 19 },
+      lime: { r: 57, g: 249, b: 86 },
+      forest: { r: 0, g: 114, b: 38 },
+      peacock: { r: 16, g: 143, b: 147 },
+      sky: { r: 48, g: 210, b: 255 },
+      lake: { r: 104, g: 157, b: 255 },
+      ocean: { r: 102, g: 136, b: 244 },
+      royal: { r: 175, g: 132, b: 255 },
+      petal: { r: 250, g: 122, b: 255 },
+      hot: { r: 232, g: 2, b: 216 }
+   }
 };
 var skins = ['grid', 'circles', 'ghost'];
 var modes = {
-	ffa: 'Free for All',
-	skm: 'Skirmish',
-	srv: 'Survival',
-	ctf: 'Capture the Flag',
-	inf: 'Infection',
-	kth: 'King of the Hill'
+   ffa: 'Free for All',
+   skm: 'Skirmish',
+   srv: 'Survival',
+   ctf: 'Capture the Flag',
+   inf: 'Infection',
+   kth: 'King of the Hill'
 };
 var teamColors = ['red', 'blue', 'green', 'pink'];
 var teamColorDef = { // Conversion between team name to color name
-	red: 'fire',
-	blue: 'sky',
-	green: 'lime',
-	pink: 'petal'
+   red: 'fire',
+   blue: 'sky',
+   green: 'lime',
+   pink: 'petal'
 };
 var firsts = ['Extend', 'Compress'];
 var seconds = ['Immortality', 'Freeze'];
@@ -1566,28 +1565,28 @@ var _margin = 25; // Title screen margin
 var Labels = true;
 var Messages = true;
 var Controls = {
-	left1: { key: 'A', code: 65 },
-	left2: { key: '←', code: 37 },
-	up1: { key: 'W', code: 87 },
-	up2: { key: '↑', code: 38 },
-	right1: { key: 'D', code: 68 },
-	right2: { key: '→', code: 39 },
-	down1: { key: 'S', code: 83 },
-	down2: { key: '↓', code: 40 },
-	ability1: { key: 'X', code: 88 },
-	ability2: { key: 'C', code: 67 },
-	ability3: { key: 'V', code: 86 },
-	ability4: { key: ' ', code: 32 },
-	respawn: { key: 'R', code: 82 },
-	pause: { key: 'ESC', code: 27 }
+   left1: { key: 'A', code: 65 },
+   left2: { key: '←', code: 37 },
+   up1: { key: 'W', code: 87 },
+   up2: { key: '↑', code: 38 },
+   right1: { key: 'D', code: 68 },
+   right2: { key: '→', code: 39 },
+   down1: { key: 'S', code: 83 },
+   down2: { key: '↓', code: 40 },
+   ability1: { key: 'X', code: 88 },
+   ability2: { key: 'C', code: 67 },
+   ability3: { key: 'V', code: 86 },
+   ability4: { key: ' ', code: 32 },
+   respawn: { key: 'R', code: 82 },
+   pause: { key: 'ESC', code: 27 }
 };
 var Defaults = {
-	worldwidth: 800,
-	worldheight: 800,
-	playercap: 16,
-	playermin: 4,
-	boardlength: 10,
-	teamcount: 2
+   worldwidth: 800,
+   worldheight: 800,
+   playercap: 16,
+   playermin: 4,
+   boardlength: 10,
+   teamcount: 2
 };
 "use strict";
 
@@ -1711,17 +1710,29 @@ function setup() {
    title = new Title();
 }
 
-function initialize(gamE, datA) {
+/**
+ * Initialize game
+ * @param  object game_ game object holding all game-wide info
+ * @param  object data: {
+ *                         spectate: boolean true: initialize as spectator, false: initialize as player
+ *                      }
+ * @return void
+ */
+function initialize(game_, data) {
    ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-   game = gamE;
-   if (datA.spectate != true) {
+   game = game_;
+   if (data.spectate !== true) {
       // Field can be left undefined
-      spawn({ color: datA.color, skin: datA.skin, team: datA.team });
-   } else if (datA.spectate == true) {
-      spectate({ color: datA.color, skin: datA.skin, team: datA.team });
+      spawn({ color: data.color, skin: data.skin, team: data.team });
+   } else if (data.spectate === true) {
+      spectate({ color: data.color, skin: data.skin, team: data.team });
    }
 }
 
+/**
+ * Event listener called when user presses a key
+ * @return boolean false: disables default behaviors
+ */
 function keyPressed() {
    switch (keyCode) {
       case Controls.ability1.code:
@@ -1925,6 +1936,11 @@ function keyPressed() {
    }
 }
 
+/**
+ * Event listener called when any mouse button is clicked
+ *    Not currently in use
+ * @return boolean false should disable default behaviors
+ */
 function mouseClicked() {
    if (mouseButton == LEFT) {
       // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
@@ -1949,6 +1965,13 @@ function mouseClicked() {
    }
 }
 
+/**
+ * Event listener for when the browser's window frame is resized
+ *    Resizes the canvas to match the window
+ *    Resizes the world to match the canvas
+ *    Updates variables to match changes
+ * @return void
+ */
 function windowResized() {
    center = {
       x: window.innerWidth / 2,
@@ -2059,8 +2082,8 @@ var Button = function (_React$Component) {
          switch (this.instance) {
             case 'leave game':
             case 'leave tutorial':
-               org.clearIntervals(); // Copied from die()
-               ability = new Ability({ player: socket.id }); // Reset ability object
+               org.clearIntervals();
+               // ability = new Ability({ player: socket.id }); // Ability reset occurs already in renderTitle()
                if (getSrc().src === 'game') {
                   // No game object in pause tutorial menu
                   socket.emit('Leave Game', game);
@@ -2836,6 +2859,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var MenuSubmit = function (_React$Component) {
    _inherits(MenuSubmit, _React$Component);
 
+   // Button for submitting menu information
    function MenuSubmit(props) {
       _classCallCheck(this, MenuSubmit);
 
@@ -3792,7 +3816,7 @@ function submit(menuType) {
          }{
             var deniedJoin = function deniedJoin() {
                ok = false;
-               if (password == '' || typeof password != 'string') {
+               if (password == '' || typeof password !== 'string') {
                   ok = false;
                   issues.push(_defineProperty({}, 'password', 'A password is required for this game'));
                   // alert('A password is required for this game');
@@ -3801,13 +3825,13 @@ function submit(menuType) {
                   issues.push(_defineProperty({}, 'password', 'Password is invalid'));
                   // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedJoin.bind(this));
+               socket.off('Permission Denied');
             };
 
             var grantedJoin = function grantedJoin() {
                // Function is defined locally so it cannot be called from the global scope (slightly better security)
                if (ok) {
-                  // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
+                  // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   var already = false;
                   for (var _i4 = 0; _i4 < game.board.list.length; _i4++) {
@@ -3925,7 +3949,6 @@ function submit(menuType) {
                      for (var _i8 = 0; _i8 < teamColors.length; _i8++) {
                         if (team === teamColors[_i8]) {
                            game.teams[_i8].push(socket.id); // Add player to selected team
-                           console.log(state);
                            socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
@@ -3956,14 +3979,13 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
+               socket.off('Permission Granted');
             };
 
             // Password
             socket.emit('Check Permission', { title: game.info.title, type: 'join' });
             socket.on('Permission Denied', deniedJoin.bind(this)); // Call bound function so this.issues() can be called from within
             socket.on('Permission Granted', grantedJoin.bind(this));
-
-            socket.removeListener('Permission Granted', grantedJoin.bind(this));
          }
          break;
       case 'spectate':
@@ -4011,7 +4033,7 @@ function submit(menuType) {
                   issues.push('Password is invalid');
                   // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedSpectate.bind(this));
+               socket.off('Permission Denied');
                this.issue(issues);
             };
 
@@ -4044,7 +4066,7 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
-               socket.removeListener('Permission Granted', grantedSpectate.bind(this));
+               socket.off('Permission Granted');
             };
 
             // Password
@@ -4218,7 +4240,6 @@ function submit(menuType) {
                   // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
-                  console.log(state);
                   socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
                }
             }
@@ -4453,14 +4474,14 @@ var messageWidth = function messageWidth(message) {
 'use strict';
 
 var org;
-var Org = function Org(datA) {
+var Org = function Org(data) {
    var _this = this;
 
-   // datA: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
-   this.player = datA.player;
-   this.color = datA.color;
-   this.skin = datA.skin;
-   this.team = datA.team;
+   // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
+   this.player = data.player;
+   this.color = data.color;
+   this.skin = data.skin;
+   this.team = data.team;
    var src = getSrc();
    if (src != undefined && src.src == 'game') {
       if (game.rounds.util == true) {
@@ -4478,7 +4499,7 @@ var Org = function Org(datA) {
          }
       }
    }
-   if (datA.spectate == true) {
+   if (data.spectate == true) {
       this.speed = _spectatespeed; // Faster movement when spectating
    } else {
       this.speed = _movespeed; // Speed of position movement
@@ -4503,8 +4524,8 @@ var Org = function Org(datA) {
       var average = sum / this.count;
       return average;
    };
-   if (datA.pos != undefined) {
-      this.pos = datA.pos;
+   if (data.pos != undefined) {
+      this.pos = data.pos;
    } else {
       do {
          this.pos = { // Position is the target's location in the world
@@ -4591,6 +4612,10 @@ var Org = function Org(datA) {
    this.hit = undefined;
    this.count = this.cells.length;
    this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
+   /**
+    * Clear the growth interval(s) in this org
+    * @return void
+    */
    this.clearIntervals = function () {
       for (var _i2 = 0; _i2 < _this.intervals.length; _i2++) {
          clearInterval(_this.intervals[_i2]);
@@ -4739,20 +4764,20 @@ var getRegionInfo = function getRegionInfo(orG) {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function spawn(datA) {
-   // datA: { color: {}, skin: '', team: '' }
+function spawn(data) {
+   // data: { color: {}, skin: '', team: '' }
    state = 'game';
-   org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, spectate: false });
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
    socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 }
 
-function spectate(datA) {
-   // datA: { color: {}, pos: {}, skin: '', team: '' }
+function spectate(data) {
+   // data: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
    socket.emit('Spectator Joined', game);
-   org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true });
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectate: true });
 }
 
 function renderUI() {
@@ -5138,7 +5163,11 @@ function move() {
    }
 }
 
-function run() {
+/**
+ * Enter game by starting game interval (runLoop()) (with org growth)
+ * @return void
+ */
+function enter() {
    if (!org.intervals.length) {
       // org.intervals array must be of length 0
       org.intervals.push(setInterval(function () {
@@ -5247,8 +5276,8 @@ function runLoop() {
    }
 }
 
-function grow(orG) {
-   var org = orG;
+function grow(org_) {
+   var org = org_;
    // Avoid double intervals
    if (org.tracker.start) {
       // If tracker has been started
@@ -5256,8 +5285,9 @@ function grow(orG) {
       org.tracker.elap = org.tracker.end - org.tracker.start;
    }
    if (org.tracker.elap < _ofrequency * .6) {
-      switch (state) {
-         case 'game': // Only necessary in game, others states may be added
+      // If org is growing ~twice as frequently as it should
+      switch (state) {// Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
+         case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
          case 'pauseGameMenu':
             org.clearIntervals();
             org.intervals.push(setInterval(function () {
@@ -5276,13 +5306,13 @@ function grow(orG) {
    }
    // Birth
    var regions = getRegionInfo(org);
-   if (ability.freeze.value == false) {
+   if (ability.freeze.value === false) {
       // If org is not Frozen (cannot birth or die naturally)
       // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
       // if (ability.poison.value == true) {
-      // 	if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
-      // 		continue;
-      // 	}
+      //    if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
+      //       continue;
+      //    }
       // }
       for (var _i5 = 0; _i5 < regions.adjacent.length; _i5++) {
          // Only Adjacent Regions Can Produce New Cells
@@ -5586,8 +5616,8 @@ function grow(orG) {
    org.tracker.start = Date.now();
 }
 
-function die(spectatE) {
-   socket.emit('Dead', spectatE);
+function die(spectating) {
+   socket.emit('Dead', spectating);
    org.clearIntervals();
    for (var i in ability) {
       // Reset Ability Cooldowns
@@ -5652,7 +5682,7 @@ function connectSocket() {
    });
 
    socket.on('Enter', function () {
-      return run();
+      return enter();
    }); // Begin growth
 
    socket.on('Force Spawn', function () {
@@ -5742,8 +5772,8 @@ function connectSocket() {
       }
    });
 
-   socket.on('Game Ended', function (gamE) {
-      if (gamE.info.host != socket.id) {
+   socket.on('Game Ended', function (game) {
+      if (game.info.host !== socket.id) {
          // Don't alert host (he already knows)
          alert('The game has ended');
       }
@@ -5793,27 +5823,27 @@ function connectSocket() {
       });
 
       // socket.on('Speed', () => { // Not updated
-      // 	ability.speed.value = true;
-      // 	org.speed *= ability.speed.factor;
-      // 	clearTimeout(ability.speed.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.speed.timeout = setTimeout(() => { // End ability
-      // 		org.speed /= ability.speed.factor;
-      // 		ability.speed.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.speed.time);
+      //    ability.speed.value = true;
+      //    org.speed *= ability.speed.factor;
+      //    clearTimeout(ability.speed.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.speed.timeout = setTimeout(() => { // End ability
+      //       org.speed /= ability.speed.factor;
+      //       ability.speed.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.speed.time);
       // });
 
       // socket.on('Slow', () => { // Not updated
-      // 	ability.slow.value = true;
-      // 	org.speed /= ability.slow.factor; // Divide speed by factor
-      // 	clearTimeout(ability.slow.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.slow.timeout = setTimeout(() => { // End ability
-      // 		org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
-      // 		ability.slow.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.slow.time);
+      //    ability.slow.value = true;
+      //    org.speed /= ability.slow.factor; // Divide speed by factor
+      //    clearTimeout(ability.slow.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.slow.timeout = setTimeout(() => { // End ability
+      //       org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
+      //       ability.slow.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.slow.time);
       // });
 
       socket.on('Immortality', function () {
@@ -5841,26 +5871,26 @@ function connectSocket() {
       });
 
       // socket.on('Stimulate', () => {
-      // 	ability.stimulate.value = true;
-      // 	clearTimeout(ability.stimulate.timeout);
-      // 	ability.stimulate.start = new Date();
-      // 	socket.emit('Ability', ability);
-      // 	ability.stimulate.timeout = setTimeout(() => { // End ability
-      // 		ability.stimulate.value = false;
-      // 		ability.stimulate.end = new Date();
-      // 		ability.stimulate.cooling = true;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.stimulate.time);
+      //    ability.stimulate.value = true;
+      //    clearTimeout(ability.stimulate.timeout);
+      //    ability.stimulate.start = new Date();
+      //    socket.emit('Ability', ability);
+      //    ability.stimulate.timeout = setTimeout(() => { // End ability
+      //       ability.stimulate.value = false;
+      //       ability.stimulate.end = new Date();
+      //       ability.stimulate.cooling = true;
+      //       socket.emit('Ability', ability);
+      //    }, ability.stimulate.time);
       // });
 
       // socket.on('Poison', () => {
-      // 	ability.poison.value = true;
-      // 	clearTimeout(ability.poison.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.poison.timeout = setTimeout(() => { // End ability
-      // 		ability.poison.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.poison.time);
+      //    ability.poison.value = true;
+      //    clearTimeout(ability.poison.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.poison.timeout = setTimeout(() => { // End ability
+      //       ability.poison.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.poison.time);
       // });
 
       socket.on('Neutralize', function () {
@@ -5958,6 +5988,11 @@ var Title = function Title() {
       this.abilities[i] = new Ability({ player: i });
    }
    this.menu = new TitleMenu(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2);
+
+   /**
+    * Interval to run title screen animations
+    * @return void
+    */
    this.interval = setInterval(function () {
       {
          // Render
@@ -5984,6 +6019,15 @@ var Title = function Title() {
          }
       }
    }, _ofrequency);
+
+   /**
+    * Resize the title screen to fit the window dimensions
+    * @param  number x offset in x-direction from left of window
+    * @param  number y offset in y-direction from top of window
+    * @param  number w screen width (pixels)
+    * @param  number h screen height (pixels)
+    * @return void
+    */
    this.resize = function (x, y, w, h) {
       center.x = window.innerWidth / 2;
       center.y = window.innerHeight / 2;
@@ -6090,10 +6134,10 @@ var TitleMenu = function (_React$Component) {
    return TitleMenu;
 }(React.Component);
 
-;
-
 function renderTitle() {
    state = 'title';
+   if (org) org.clearIntervals(); // If global org variable exists (such as after exiting a game) clear its interval(s) so as to not interfere with title animations
+   ability = new Ability({ player: socket.id });
    var a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
    React.createElement(
       'div',
@@ -6101,10 +6145,10 @@ function renderTitle() {
       React.createElement(CanvasCont, null),
       React.createElement(TitleMenu, null)
    ), eid('cont')); // TitleMenu will not retain its this. namespace
-   ability = new Ability({ player: socket.id });
 }
 
 var Shade = function Shade() {
+   // White layer behind menus allows user to see background but unfocuses it
    var style = {
       position: 'fixed',
       left: '0px',

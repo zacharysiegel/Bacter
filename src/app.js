@@ -32,6 +32,9 @@ let config = require('./config.json');
 // Send Static Data
 app.use(express.static('./public'));
 
+// Bacter Module Imports
+let print_dev = require('./print_dev.js'); // print_dev only prints to console if print developer mode is enabled (defined in ./print_dev.js)
+
 // Start
 let connections = 0;
 let games = [];
@@ -45,8 +48,8 @@ let passwords = [
 let intervals = [];
 let shrinkIntervals = [];
 
-console.log('Running...');
-console.log('');
+console.log('Running...'); // Uses console.log rather than print_dev so 'Running...' always prints to console
+print_dev('');
 
 //////////////////////////    Listeners    //////////////////////////
 
@@ -59,7 +62,7 @@ io.sockets.on('connection', socket => {
       // orgs: []
    // }
    connections++;
-   console.log('Client connected: ' + socket.id + '    (' + connections + ')'); // Server Message
+   print_dev('Client connected: ' + socket.id + '    (' + connections + ')'); // Server Message
 
    socket.join('Lobby'); // Join 'Lobby' Room
    socket.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
@@ -67,7 +70,7 @@ io.sockets.on('connection', socket => {
    // Disconnect
    socket.on('disconnect', () => {
       connections--;
-      console.log('Client disconnected: ' + socket.id + ' (' + connections + ')'); // Server Message
+      print_dev('Client disconnected: ' + socket.id + ' (' + connections + ')'); // Server Message
 
       // End Hosted Game
       for (let i = 0; i < games.length; i++) {
@@ -87,7 +90,7 @@ io.sockets.on('connection', socket => {
                   }
                }
             }
-            console.log('                                               Game Deleted: ' + games[i].info.title + ' (' + games[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+            print_dev('                                               Game Deleted: ' + games[i].info.title + ' (' + games[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
             for (let j = 0; j < passwords.length; j++) {
                if (passwords[j].title == games[i].info.title) {
                   passwords.splice(j, 1);
@@ -120,7 +123,7 @@ io.sockets.on('connection', socket => {
                   games[i].abilities.splice(j, 1); // Remove Player Abilities
                   games[i].info.count = games[i].orgs.length;
                   j--;
-                  console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  print_dev('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -129,7 +132,7 @@ io.sockets.on('connection', socket => {
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
-                  console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  print_dev('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -167,7 +170,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-         console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+         print_dev('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
             if (games[i].info.host == game.info.host) {
                games.splice(i, 1); // Delete Game
@@ -198,7 +201,7 @@ io.sockets.on('connection', socket => {
                   games[i].abilities.splice(j, 1); // Remove Player Abilities
                   games[i].info.count = games[i].orgs.length;
                   j--;
-                  console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  print_dev('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -207,7 +210,7 @@ io.sockets.on('connection', socket => {
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
-                  console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  print_dev('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -222,14 +225,14 @@ io.sockets.on('connection', socket => {
          for (let i = 0; i < game.players.length; i++) {
             for (let j = 0; j < io.sockets.sockets.length; j++) {
                if (game.players[i] == io.sockets.sockets[j].id) {
-                  io.sockets.sockets[j].leave(game.info.title);
+                  io.sockets.sockets[j].leave(game.info.title); // Make all players in 'game' leave the server group
                }
             }
          }
          for (let i = 0; i < games[i].spectators.length; i++) {
             for (let j = 0; j < io.sockets.sockets.length; j++) {
                if (game.spectators[i] == io.sockets.sockets[j].id) {
-                  io.sockets.sockets[j].leave(game.info.title);
+                  io.sockets.sockets[j].leave(game.info.title); // Make all spectators in 'game' leave the server group
                }
             }
          }
@@ -240,7 +243,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-         console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+         print_dev('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
             if (games[i].info.host == game.info.host) {
                games.splice(i, 1); // Delete Game
@@ -286,7 +289,7 @@ io.sockets.on('connection', socket => {
             break;
          }
       }
-      if (hasPassword == false || granted == true) {
+      if (hasPassword === false || granted === true) {
          socket.emit('Permission Granted', data);
       } else if (hasPassword == true && granted == false) {
          socket.emit('Permission Denied', data);
@@ -298,10 +301,10 @@ io.sockets.on('connection', socket => {
       games.push(game);
       socket.leave('Lobby'); // Leave 'Lobby' Room
       socket.join(game.info.title); // Join 'Game' Room
-      console.log('                                               Game Created: ' + games[games.length - 1].info.title + ' (' + games[games.length - 1].info.host + ')');
+      print_dev('                                               Game Created: ' + games[games.length - 1].info.title + ' (' + games[games.length - 1].info.host + ')');
       intervals.push(setInterval(() => { // Send updated game to all players
          for (let i = 0; i < games.length; i++) { // Game interval
-            if (games[i].info.host == socket.id) { // Find game of specific host
+            if (games[i].info.host === socket.id) { // Find game of specific host
                games[i].info.count = games[i].players.length; // Calculate and update player count
                io.to(games[i].info.title).emit('Game', games[i]); // Send updated game info to clients in game room
                break;
@@ -310,18 +313,26 @@ io.sockets.on('connection', socket => {
       }, config._renderfrequency));
    });
 
-   // Player Joined
-   socket.on('Player Joined', (datA) => {
+   /**
+    * Player Joined emit listener
+    * @param  data: {
+    *            info: game.info,
+    *            org: org,
+    *            ability: ability
+    *         }
+    * @return void
+    */
+   socket.on('Player Joined', (data) => {
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == datA.info.host) {
+         if (games[i].info.host == data.info.host) {
             socket.leave('Lobby'); // Leave 'Lobby' Room
-            socket.join(datA.info.title); // Join 'Game' Room
+            socket.join(data.info.title); // Join 'Game' Room
             games[i].players.push(socket.id); // Add player to server's list of players in game
-            games[i].orgs.push(datA.org); // Create server instance of org
-            games[i].abilities.push(datA.ability); // Create server instance of ability
+            games[i].orgs.push(data.org); // Create server instance of org
+            games[i].abilities.push(data.ability); // Create server instance of ability
             games[i].info.count = games[i].orgs.length;
             socket.emit('Enter');
-            console.log('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
+            print_dev('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
             break;
          }
       }
@@ -334,7 +345,7 @@ io.sockets.on('connection', socket => {
             socket.leave('Lobby'); // Leave 'Lobby' Room
             socket.join(game.info.title); // Join 'Game' Room
             games[i].spectators.push(socket.id);
-            console.log('                                               Spectator Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
+            print_dev('                                               Spectator Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
             break;
          }
       }
@@ -488,13 +499,16 @@ io.sockets.on('connection', socket => {
 
    // Update Server Abilities
    socket.on('Ability', (ability) => {
+      let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].info.count; j++) {
             if (games[i].abilities[j].player == socket.id) { // Find ability of socket
                games[i].abilities[j] = ability;
+               done = true;
                break;
             }
          }
+         if (done) break;
       }
    });
 
@@ -556,7 +570,6 @@ io.sockets.on('connection', socket => {
                   games[i].info.count = games[i].orgs.length;
                   if (spectating) {
                      socket.emit('Spectate'); // Dead player becomes spectator
-                     console.log('Spectate: ' + socket.id);
                   }
                   break;
                }

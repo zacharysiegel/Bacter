@@ -21,8 +21,8 @@ class Button extends React.Component {
       switch (this.instance) {
          case 'leave game':
          case 'leave tutorial':
-            org.clearIntervals(); // Copied from die()
-            ability = new Ability({ player: socket.id }); // Reset ability object
+            org.clearIntervals();
+            // ability = new Ability({ player: socket.id }); // Ability reset occurs already in renderTitle()
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
                socket.emit('Leave Game', game);
                for (let i = 0; i < game.board.list.length; i++) {

@@ -30,7 +30,7 @@ function connectSocket() {
       if (state === 'browser') renderBrowser();
    });
 
-   socket.on('Enter', () => run()); // Begin growth
+   socket.on('Enter', () => enter()); // Begin growth
 
    socket.on('Force Spawn', () => {
       die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
@@ -118,8 +118,8 @@ function connectSocket() {
       }
    });
 
-   socket.on('Game Ended', function(gamE) {
-      if (gamE.info.host != socket.id) { // Don't alert host (he already knows)
+   socket.on('Game Ended', function(game) {
+      if (game.info.host !== socket.id) { // Don't alert host (he already knows)
          alert('The game has ended');
       }
       renderTitle();
@@ -164,27 +164,27 @@ function connectSocket() {
       });
 
       // socket.on('Speed', () => { // Not updated
-      // 	ability.speed.value = true;
-      // 	org.speed *= ability.speed.factor;
-      // 	clearTimeout(ability.speed.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.speed.timeout = setTimeout(() => { // End ability
-      // 		org.speed /= ability.speed.factor;
-      // 		ability.speed.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.speed.time);
+      //    ability.speed.value = true;
+      //    org.speed *= ability.speed.factor;
+      //    clearTimeout(ability.speed.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.speed.timeout = setTimeout(() => { // End ability
+      //       org.speed /= ability.speed.factor;
+      //       ability.speed.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.speed.time);
       // });
 
       // socket.on('Slow', () => { // Not updated
-      // 	ability.slow.value = true;
-      // 	org.speed /= ability.slow.factor; // Divide speed by factor
-      // 	clearTimeout(ability.slow.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.slow.timeout = setTimeout(() => { // End ability
-      // 		org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
-      // 		ability.slow.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.slow.time);
+      //    ability.slow.value = true;
+      //    org.speed /= ability.slow.factor; // Divide speed by factor
+      //    clearTimeout(ability.slow.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.slow.timeout = setTimeout(() => { // End ability
+      //       org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
+      //       ability.slow.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.slow.time);
       // });
 
       socket.on('Immortality', () => {
@@ -210,26 +210,26 @@ function connectSocket() {
       });
 
       // socket.on('Stimulate', () => {
-      // 	ability.stimulate.value = true;
-      // 	clearTimeout(ability.stimulate.timeout);
-      // 	ability.stimulate.start = new Date();
-      // 	socket.emit('Ability', ability);
-      // 	ability.stimulate.timeout = setTimeout(() => { // End ability
-      // 		ability.stimulate.value = false;
-      // 		ability.stimulate.end = new Date();
-      // 		ability.stimulate.cooling = true;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.stimulate.time);
+      //    ability.stimulate.value = true;
+      //    clearTimeout(ability.stimulate.timeout);
+      //    ability.stimulate.start = new Date();
+      //    socket.emit('Ability', ability);
+      //    ability.stimulate.timeout = setTimeout(() => { // End ability
+      //       ability.stimulate.value = false;
+      //       ability.stimulate.end = new Date();
+      //       ability.stimulate.cooling = true;
+      //       socket.emit('Ability', ability);
+      //    }, ability.stimulate.time);
       // });
 
       // socket.on('Poison', () => {
-      // 	ability.poison.value = true;
-      // 	clearTimeout(ability.poison.timeout);
-      // 	socket.emit('Ability', ability);
-      // 	ability.poison.timeout = setTimeout(() => { // End ability
-      // 		ability.poison.value = false;
-      // 		socket.emit('Ability', ability);
-      // 	}, ability.poison.time);
+      //    ability.poison.value = true;
+      //    clearTimeout(ability.poison.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.poison.timeout = setTimeout(() => { // End ability
+      //       ability.poison.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.poison.time);
       // });
 
       socket.on('Neutralize', () => {

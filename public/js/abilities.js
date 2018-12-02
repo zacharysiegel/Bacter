@@ -1,6 +1,5 @@
 var ability;
-var Ability = function(datA) { // datA: { player: }
-   let data = datA;
+var Ability = function(data) { // data: { player: }
    this.player = data.player;
    this.auto = false;
    this.extend = {
@@ -30,22 +29,22 @@ var Ability = function(datA) { // datA: { player: }
       cooldown: 4000
    };
    // speed: { // Not updated
-   // 	value: false, 
-   // 	activated: false, 
-   // 	i: 0, 
-   // 	j: 0, 
-   // 	factor: 2, 
-   // 	timeout: undefined, 
-   // 	time: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    i: 0, 
+   //    j: 0, 
+   //    factor: 2, 
+   //    timeout: undefined, 
+   //    time: 5000
    // };
    // slow: { // Not updated
-   // 	value: false, 
-   // 	activated: false, 
-   // 	i: 0, 
-   // 	j: 1, 
-   // 	factor: 2, 
-   // 	timeout: undefined, 
-   // 	time: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    i: 0, 
+   //    j: 1, 
+   //    factor: 2, 
+   //    timeout: undefined, 
+   //    time: 5000
    // };
    this.immortality = {
       value: false,
@@ -75,32 +74,32 @@ var Ability = function(datA) { // datA: { player: }
       cooldown: 6000
    };
    // stimulate: {
-   // 	value: false, 
-   // 	activated: false, 
-   // 	can: false, 
-   // 	i: 2, 
-   // 	j: 0, 
-   // 	factor: 9, // Factor must be equal to that of poison
-   // 	timeout: undefined, 
-   // 	start: undefined, 
-   // 	end: undefined, 
-   // 	cooling: false, 
-   // 	time: 3000, 
-   // 	cooldown: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    can: false, 
+   //    i: 2, 
+   //    j: 0, 
+   //    factor: 9, // Factor must be equal to that of poison
+   //    timeout: undefined, 
+   //    start: undefined, 
+   //    end: undefined, 
+   //    cooling: false, 
+   //    time: 3000, 
+   //    cooldown: 5000
    // }, 
    // poison: {
-   // 	value: false, 
-   // 	activated: false, 
-   // 	can: false, 
-   // 	i: 2, 
-   // 	j: 1, 
-   // 	factor: 9, // Factor must be equal to that of stimulate
-   // 	timeout: undefined, 
-   // 	start: undefined, 
-   // 	end: undefined, 
-   // 	cooling: false, 
-   // 	time: 3000, 
-   // 	cooldown: 5000
+   //    value: false, 
+   //    activated: false, 
+   //    can: false, 
+   //    i: 2, 
+   //    j: 1, 
+   //    factor: 9, // Factor must be equal to that of stimulate
+   //    timeout: undefined, 
+   //    start: undefined, 
+   //    end: undefined, 
+   //    cooling: false, 
+   //    time: 3000, 
+   //    cooldown: 5000
    // }, 
    this.neutralize = {
       value: false,
@@ -173,14 +172,14 @@ var Ability = function(datA) { // datA: { player: }
       can: [true, true, true],
       secrete: [{}, {}, {}
          // { // Sets values on use
-         // 	value: false, 
-         // 	color: undefined, 
-         // 	radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
-         // 	hit: false, 
-         // 	timeout: undefined, 
-         // 	start: undefined, 
-         // 	end: undefined, 
-         // 	time: 800 // Same as 'secrete'
+         //    value: false, 
+         //    color: undefined, 
+         //    radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
+         //    hit: false, 
+         //    timeout: undefined, 
+         //    start: undefined, 
+         //    end: undefined, 
+         //    time: 800 // Same as 'secrete'
          // }
       ],
       spore: [undefined, undefined, undefined],
@@ -416,11 +415,11 @@ function compress(playeR) {
 }
 
 // function speed(playeR) {
-// 	socket.emit('Speed', playeR);
+//    socket.emit('Speed', playeR);
 // }
 
 // function slow(playeR) {
-// 	socket.emit('Slow', playeR);
+//    socket.emit('Slow', playeR);
 // }
 
 function immortality(playeR) {
@@ -455,19 +454,19 @@ function freeze(playeR) {
 }
 
 // function stimulate(playeR) {
-// 	ability.stimulate.can = false;
-// 	socket.emit('Stimulate', playeR);
+//    ability.stimulate.can = false;
+//    socket.emit('Stimulate', playeR);
 // }
 
 // function poison(playeR) {
-// 	socket.emit('Poison', playeR);
-// 	ability.poison.can = false; // Redundancy
-// 	ability.poison.start = new Date();
-// 	socket.emit('Ability', ability);
-// 	setTimeout(() => {
-// 		ability.poison.end = new Date();
-// 		ability.poison.cooling = true;
-// 	}, ability.poison.time);
+//    socket.emit('Poison', playeR);
+//    ability.poison.can = false; // Redundancy
+//    ability.poison.start = new Date();
+//    socket.emit('Ability', ability);
+//    setTimeout(() => {
+//       ability.poison.end = new Date();
+//       ability.poison.cooling = true;
+//    }, ability.poison.time);
 // }
 
 function neutralize(playeR) {

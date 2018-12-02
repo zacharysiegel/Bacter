@@ -281,7 +281,7 @@ function submit(menuType) {
 
             function deniedJoin() {
                ok = false;
-               if (password == '' || typeof password != 'string') {
+               if (password == '' || typeof password !== 'string') {
                   ok = false;
                   issues.push({ ['password']: 'A password is required for this game' });
                   // alert('A password is required for this game');
@@ -290,11 +290,11 @@ function submit(menuType) {
                   issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedJoin.bind(this));
+               socket.off('Permission Denied');
             }
 
             function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
-               if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
+               if (ok) { // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
                   for (let i = 0; i < game.board.list.length; i++) {
@@ -407,7 +407,6 @@ function submit(menuType) {
                      for (let i = 0; i < teamColors.length; i++) {
                         if (team === teamColors[i]) {
                            game.teams[i].push(socket.id); // Add player to selected team
-                           console.log(state);
                            socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
@@ -436,8 +435,8 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
+               socket.off('Permission Granted');
             }
-            socket.removeListener('Permission Granted', grantedJoin.bind(this));
          }
          break;
       case 'spectate':
@@ -485,7 +484,7 @@ function submit(menuType) {
                   issues.push('Password is invalid');
                   // alert('Password is invalid');
                }
-               socket.removeListener('Permission Denied', deniedSpectate.bind(this));
+               socket.off('Permission Denied');
                this.issue(issues);
             }
 
@@ -517,7 +516,7 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
-               socket.removeListener('Permission Granted', grantedSpectate.bind(this));
+               socket.off('Permission Granted');
             }
          }
          break;
@@ -670,7 +669,6 @@ function submit(menuType) {
                if (org.team !== team) { // Only add player to team if not already on team
                   game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
                   game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
-                  console.log(state);
                   socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
                }
             }

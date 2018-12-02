@@ -32,16 +32,28 @@ function setup() {
    title = new Title();
 }
 
-function initialize(gamE, datA) {
+/**
+ * Initialize game
+ * @param  object game_ game object holding all game-wide info
+ * @param  object data: {
+ *                         spectate: boolean true: initialize as spectator, false: initialize as player
+ *                      }
+ * @return void
+ */
+function initialize(game_, data) {
    ReactDOM.render(<CanvasCont />, eid('cont'));
-   game = gamE;
-   if (datA.spectate != true) { // Field can be left undefined
-      spawn({ color: datA.color, skin: datA.skin, team: datA.team });
-   } else if (datA.spectate == true) {
-      spectate({ color: datA.color, skin: datA.skin, team: datA.team });
+   game = game_;
+   if (data.spectate !== true) { // Field can be left undefined
+      spawn({ color: data.color, skin: data.skin, team: data.team });
+   } else if (data.spectate === true) {
+      spectate({ color: data.color, skin: data.skin, team: data.team });
    }
 }
 
+/**
+ * Event listener called when user presses a key
+ * @return boolean false: disables default behaviors
+ */
 function keyPressed() {
    switch (keyCode) {
       case Controls.ability1.code: // X by default
@@ -231,6 +243,11 @@ function keyPressed() {
    }
 }
 
+/**
+ * Event listener called when any mouse button is clicked
+ *    Not currently in use
+ * @return boolean false should disable default behaviors
+ */
 function mouseClicked() {
    if (mouseButton == LEFT) {
       // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
@@ -255,6 +272,13 @@ function mouseClicked() {
    }
 }
 
+/**
+ * Event listener for when the browser's window frame is resized
+ *    Resizes the canvas to match the window
+ *    Resizes the world to match the canvas
+ *    Updates variables to match changes
+ * @return void
+ */
 function windowResized() {
    center = {
       x: window.innerWidth / 2,

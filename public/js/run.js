@@ -1,15 +1,15 @@
-function spawn(datA) { // datA: { color: {}, skin: '', team: '' }
+function spawn(data) { // data: { color: {}, skin: '', team: '' }
    state = 'game';
-   org = new Org({ player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, spectate: false });
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
    socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
 }
 
-function spectate(datA) { // datA: { color: {}, pos: {}, skin: '', team: '' }
+function spectate(data) { // data: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
    socket.emit('Spectator Joined', game);
-   org = new Org( { player: socket.id, color: datA.color, skin: datA.skin, team: datA.team, pos: datA.pos, spectate: true } );
+   org = new Org( { player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectate: true } );
 }
 
 function renderUI() {
@@ -359,7 +359,11 @@ function move() {
    }
 }
 
-function run() {
+/**
+ * Enter game by starting game interval (runLoop()) (with org growth)
+ * @return void
+ */
+function enter() {
    if (!org.intervals.length) { // org.intervals array must be of length 0
       org.intervals.push(setInterval(() => runLoop(), _ofrequency));
    }
@@ -465,16 +469,16 @@ function runLoop() {
    }
 }
 
-function grow(orG) {
-   let org = orG;
+function grow(org_) {
+   let org = org_;
    // Avoid double intervals
    if (org.tracker.start) { // If tracker has been started
       org.tracker.end = Date.now();
       org.tracker.elap = org.tracker.end - org.tracker.start;
    }
-   if (org.tracker.elap < _ofrequency * .6) {
-      switch (state) {
-         case 'game': // Only necessary in game, others states may be added
+   if (org.tracker.elap < _ofrequency * .6) { // If org is growing ~twice as frequently as it should
+      switch (state) { // Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
+         case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
          case 'pauseGameMenu':
             org.clearIntervals();
             org.intervals.push(setInterval(() => runLoop(), _ofrequency));
@@ -491,12 +495,12 @@ function grow(orG) {
    }
    // Birth
    var regions = getRegionInfo(org);
-   if (ability.freeze.value == false) { // If org is not Frozen (cannot birth or die naturally)
+   if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
       // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
       // if (ability.poison.value == true) {
-      // 	if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
-      // 		continue;
-      // 	}
+      //    if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
+      //       continue;
+      //    }
       // }
       for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
          // Don't birth new cell outside world boundary
@@ -758,8 +762,8 @@ function grow(orG) {
    org.tracker.start = Date.now();
 }
 
-function die(spectatE) {
-   socket.emit('Dead', spectatE);
+function die(spectating) {
+   socket.emit('Dead', spectating);
    org.clearIntervals();
    for (let i in ability) { // Reset Ability Cooldowns
       if (typeof ability[i] === 'object' && i !== 'shoot') { // Avoid reference error

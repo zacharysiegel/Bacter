@@ -1,9 +1,9 @@
 var org;
-var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
-   this.player = datA.player;
-   this.color = datA.color;
-   this.skin = datA.skin;
-   this.team = datA.team;
+var Org = function(data) { // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
+   this.player = data.player;
+   this.color = data.color;
+   this.skin = data.skin;
+   this.team = data.team;
    let src = getSrc();
    if (src != undefined && src.src == 'game') {
       if (game.rounds.util == true) {
@@ -20,7 +20,7 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
          }
       }
    }
-   if (datA.spectate == true) {
+   if (data.spectate == true) {
       this.speed = _spectatespeed; // Faster movement when spectating
    } else {
       this.speed = _movespeed; // Speed of position movement
@@ -43,8 +43,8 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
       let average = sum / this.count;
       return average;
    };
-   if (datA.pos != undefined) {
-      this.pos = datA.pos;
+   if (data.pos != undefined) {
+      this.pos = data.pos;
    } else {
       do {
          this.pos = { // Position is the target's location in the world
@@ -122,6 +122,10 @@ var Org = function(datA) { // datA: { player: , color: , skin: , team: , spectat
    this.hit = undefined;
    this.count = this.cells.length;
    this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
+   /**
+    * Clear the growth interval(s) in this org
+    * @return void
+    */
    this.clearIntervals = () => {
       for (let i = 0; i < this.intervals.length; i++) {
          clearInterval(this.intervals[i]);

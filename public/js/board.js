@@ -3,13 +3,13 @@ var Board = function(datA) {
    this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
    this.list = [
          // {
-         // 	player: undefined, // ID of player
-         // 	name: undefined, // Screen name of player
-         // 	kills: undefined, // Kills as defined by number of enemy cells killed
-         // 	deaths: undefined, // Deaths as defined by number of org deaths
-         // 	ratio: undefined, // Ratio of kills to deaths
-         // 	score: undefined, // Flag captures (ctf), time score (kth)
-         // 	wins: undefined // Round wins (srv, ctf, inf, kth)
+         //    player: undefined, // ID of player
+         //    name: undefined, // Screen name of player
+         //    kills: undefined, // Kills as defined by number of enemy cells killed
+         //    deaths: undefined, // Deaths as defined by number of org deaths
+         //    ratio: undefined, // Ratio of kills to deaths
+         //    score: undefined, // Flag captures (ctf), time score (kth)
+         //    wins: undefined // Round wins (srv, ctf, inf, kth)
          // }
       ],
       this.count = undefined;
