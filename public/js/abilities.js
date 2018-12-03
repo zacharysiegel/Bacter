@@ -215,7 +215,7 @@ function shoot(I, J) { // Both parameters are required
       ability.shoot.start[I] = new Date(); // Set start time
 
       // Get Spore
-      let regions = getRegionInfo(org); // Get region data
+      let regions = org.getRegionInfo(); // Get region data
       let theta;
       if (mouseX == Infinity || mouseY == Infinity) {
          let mpos = getMpos();
@@ -486,7 +486,7 @@ function spore() {
       ability.spore.can = false;
       ability.secrete.can = true;
       ability.spore.start = new Date();
-      var regions = getRegionInfo(org);
+      var regions = org.getRegionInfo();
       ability.spore.spores = regions.exposed; // All exposed cells become spores
       ability.spore.count = ability.spore.spores.length;
       for (let i = 0; i < ability.spore.count; i++) {

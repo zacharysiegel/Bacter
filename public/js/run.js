@@ -3,7 +3,8 @@ function spawn(data) { // data: { color: {}, skin: '', team: '' }
    org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
-   socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
+   let compressedOrg = org.getCompressed();
+   socket.emit('Player Joined', { info: game.info, org: compressedOrg, ability: ability });
 }
 
 function spectate(data) { // data: { color: {}, pos: {}, skin: '', team: '' }
@@ -23,7 +24,7 @@ function renderUI() {
       line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
    }
 
-   // // Targeting
+   // // Render Clickbox
    // if (org.target) { // If org is targenting a player (NOT IN USE)
    //    for (let i = 0; i < src.orgs.length; i++) {
    //       if (src.orgs[i].player == org.target) { // Find targeted org
@@ -94,11 +95,11 @@ function renderUI() {
 
    // Ability Tooltips
    translate(org.off.x, org.off.y);
-   var current;
+   var currentTime;
    if (src.stopped == true) {
-      current = src.stopdate;
+      currentTime = src.stopdate;
    } else {
-      current = new Date(); // Set current time
+      currentTime = new Date(); // Set current time
    }
    if (!ability.tag.activated) {
       for (let i = 0; i < 4; i++) {
@@ -145,9 +146,9 @@ function renderUI() {
                      if (ability[j].j == 0) { // If defensive ability (or spore)
                         // Ability
                         if (ability[j].value == true) { // If during ability
-                           arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                           arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability[j].start) / ability[j].time * 360); // Ability timeout timer
                         } else if (ability[j].value == false && ability[j].can == false) { // If during cooldown
-                           arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                           arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
                         } else if (ability[j].value == false && ability[j].can == true) { // If idling
                            ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
                         }
@@ -157,10 +158,10 @@ function renderUI() {
                            // Ability
                            if (ability[j].can == true) { // Idle
                               ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-                           } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
-                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-                           } else if (ability[j].can == false && current - ability[j].start > ability[j].time) { // If during cooldown
-                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                           } else if (ability[j].can == false && currentTime - ability[j].start <= ability[j].time) { // If during ability
+                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                           } else if (ability[j].can == false && currentTime - ability[j].start > ability[j].time) { // If during cooldown
+                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
                            }
                            // Shoot
                            if (j != 'toxin') { // Toxin does not shoot
@@ -168,18 +169,18 @@ function renderUI() {
                               if (ability.shoot.value[i] == false && ability.shoot.can[i] == true) { // Idle
                                  ellipse(center.x - 150 + i * 100 - 41, height * 9 / 10, 8);
                               } else if (ability.shoot.value[i] == true && ability.shoot.can[i] == false) { // If is shooting
-                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[i]) / ability.shoot.time * 360); // Ability timeout timer
+                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (currentTime - ability.shoot.start[i]) / ability.shoot.time * 360); // Ability timeout timer
                               } else if (ability.shoot.secrete[i].value == true) { // If is secreting
-                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360) - ((current - ability.shoot.secrete[i].start) / ability.secrete.time * (360 - (ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360))); // Secretion timer
-                              } else if (current - ability.shoot.secrete[i].end < ability.shoot.cooldown[i]) {
-                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + ((current - ability.shoot.secrete[i].end) / ability.shoot.cooldown[i] * 360)); // Shoot cooldown timer (if no hit)
+                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360) - ((currentTime - ability.shoot.secrete[i].start) / ability.secrete.time * (360 - (ability.shoot.end[i] - ability.shoot.start[i]) / ability.shoot.time * 360))); // Secretion timer
+                              } else if (currentTime - ability.shoot.secrete[i].end < ability.shoot.cooldown[i]) {
+                                 arc(center.x - 150 + i * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + ((currentTime - ability.shoot.secrete[i].end) / ability.shoot.cooldown[i] * 360)); // Shoot cooldown timer (if no hit)
                               }
                            }
                         } else if (ability[j].i == 3) { // Secrete
                            if (ability[j].can == true) { // Idle
                               ellipse(center.x - 150 + i * 100, height * 9 / 10, 29);
-                           } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) { // If during ability
-                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360) - (current - ability[j].start) / ability[j].time * (360 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360))); // Ability cooldown timer
+                           } else if (ability[j].can == false && currentTime - ability[j].start <= ability[j].time) { // If during ability
+                              arc(center.x - 150 + i * 100, height * 9 / 10, 29, 29, -90, -90 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360) - (currentTime - ability[j].start) / ability[j].time * (360 - ((ability.spore.end - ability.spore.start) / ability.spore.time * 360))); // Ability cooldown timer
                            }
                         }
                      }
@@ -236,10 +237,10 @@ function renderUI() {
       noStroke();
       if (ability.tag.can == true) { // Idle
          ellipse(center.x, height * 9 / 10, 29);
-      } else if (ability.tag.can == false && current - ability.tag.start <= ability.tag.time) { // If during ability
-         arc(center.x, height * 9 / 10, 29, 29, -90, -90 - (current - ability.tag.start) / ability.tag.time * 360); // Ability timeout timer
-      } else if (ability.tag.can == false && current - ability.tag.start > ability.tag.time) { // If during cooldown
-         arc(center.x, height * 9 / 10, 29, 29, -90, -90 + (current - ability.tag.end) / ability.tag.cooldown * 360); // Ability cooldown timer
+      } else if (ability.tag.can == false && currentTime - ability.tag.start <= ability.tag.time) { // If during ability
+         arc(center.x, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability.tag.start) / ability.tag.time * 360); // Ability timeout timer
+      } else if (ability.tag.can == false && currentTime - ability.tag.start > ability.tag.time) { // If during cooldown
+         arc(center.x, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability.tag.end) / ability.tag.cooldown * 360); // Ability cooldown timer
       }
       itemize(items.tag, 1, { r: 0, g: 0, b: 0 }, center.x, height * 9 / 10);
       // Shoot
@@ -248,11 +249,11 @@ function renderUI() {
       if (ability.shoot.value[ability.tag.i] == false && ability.shoot.can[ability.tag.i] == true) { // Idle
          ellipse(center.x - 41, height * 9 / 10, 8);
       } else if (ability.shoot.value[ability.tag.i] == true && ability.shoot.can[ability.tag.i] == false) { // If is shooting
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360); // Ability timeout timer
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (currentTime - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360); // Ability timeout timer
       } else if (ability.shoot.secrete[ability.tag.i].value == true) { // If is secreting
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360) - ((current - ability.shoot.secrete[ability.tag.i].start) / ability.secrete.time * (360 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360))); // Secretion timer
-      } else if (current - ability.shoot.secrete[ability.tag.i].end < ability.shoot.cooldown[ability.tag.i]) {
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 + ((current - ability.shoot.secrete[ability.tag.i].end) / ability.shoot.cooldown[ability.tag.i] * 360)); // Shoot cooldown timer (if no hit)
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - ((ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360) - ((currentTime - ability.shoot.secrete[ability.tag.i].start) / ability.secrete.time * (360 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360))); // Secretion timer
+      } else if (currentTime - ability.shoot.secrete[ability.tag.i].end < ability.shoot.cooldown[ability.tag.i]) {
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 + ((currentTime - ability.shoot.secrete[ability.tag.i].end) / ability.shoot.cooldown[ability.tag.i] * 360)); // Shoot cooldown timer (if no hit)
       }
       if (ability.tag.value == true) { // Ability Activated Tooltip (only green for tag)
          fill(66, 244, 176); // Green
@@ -370,396 +371,39 @@ function enter() {
 }
 
 function runLoop() {
-   // Rounds
-   var current = new Date();
-   if (game.rounds.util) {
-      if (game.info.host == socket.id) { // Only if player is host
-         if (game.rounds.waiting == true && game.rounds.delayed == false && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
-            socket.emit('Round Delay', game);
-            game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
-            socket.emit('Force Spawn', game.info);
-         }
-      }
-      if (game.info.mode == 'srv') { // Survival End-Game
-         if (game.rounds.waiting == false && game.rounds.delayed == false && game.info.count == 1 && game.players[0] == socket.id) { // If during game and player is winner
-            for (let i = 0; i < game.board.list.length; i++) {
-               if (game.board.list[i].player == socket.id) {
-                  socket.emit('Round End', game.info);
-                  game.board.list[i].wins++;
-                  orderBoard(game.board.list);
-                  socket.emit('Board', { list: game.board.list, host: game.board.host });
-               }
-            }
-         }
-      }
-   }
+   roundBehaviors();
 
    grow(org);
-
-   // // Targeting DO NOT DELETE
-   // org.clickbox.left = org.x();
-   // org.clickbox.right = org.clickbox.left;
-   // org.clickbox.top = org.y();
-   // org.clickbox.bottom = org.clickbox.top;
-   // for (let i = 0; i < org.count; i++) { // Set the size of clickbox
-   //    if (org.cells[i].x - org.cells[i].width / 2 < org.clickbox.left) {
-   //       org.clickbox.left = org.cells[i].x - org.cells[i].width / 2;
-   //    }
-   //    if (org.cells[i].x + org.cells[i].width / 2 > org.clickbox.right) {
-   //       org.clickbox.right = org.cells[i].x + org.cells[i].width / 2;
-   //    }
-   //    if (org.cells[i].y - org.cells[i].height / 2 < org.clickbox.top) {
-   //       org.clickbox.top = org.cells[i].y - org.cells[i].height / 2;
-   //    }
-   //    if (org.cells[i].y + org.cells[i].height / 2 > org.clickbox.bottom) {
-   //       org.clickbox.bottom = org.cells[i].y + org.cells[i].height / 2;
-   //    }
-   // }
-   // org.clickbox.left -= org.clickbox.buffer;
-   // org.clickbox.right += org.clickbox.buffer;
-   // org.clickbox.top -= org.clickbox.buffer;
-   // org.clickbox.bottom += org.clickbox.buffer;
-   // org.clickbox.width = org.clickbox.right - org.clickbox.left;
-   // org.clickbox.height = org.clickbox.bottom - org.clickbox.top;
-   // org.clickbox.x = org.clickbox.left + org.clickbox.width / 2;
-   // org.clickbox.y = org.clickbox.top + org.clickbox.height / 2;
+   // org.setClickbox();
 
    // CTF
    if (game.info.mode === 'ctf') {
-      if (!game.flag.carried) {
-         if (org.pos.x - org.col > game.flag.x - game.flag.width / 2 && org.pos.x + org.col < game.flag.x + game.flag.width / 2 && org.pos.y - org.col > game.flag.y - game.flag.height / 2 && org.pos.y + org.col < game.flag.y + game.flag.height / 2) {
-            game.flag.carried = true;
-            game.flag.carrier = socket.id;
-            socket.emit('Flag', { flag: game.flag, host: game.info.host });
-         }
-      }
-   }
-   
-   socket.emit('Org Update', [
-      org.alive, // Only the following attributes of org need to be updated
-      org.cells, // Latency is decreased by only sending necessary data
-      org.off,
-      org.pos,
-      org.color,
-      org.skin,
-      org.team,
-      org.coefficient,
-      org.range
-   ]);
-   if (org.count === 0) {
-      for (let i = 0; i < game.board.list.length; i++) {
-         if (game.board.list[i].player === socket.id) { // Add death to leaderboard
-            game.board.list[i].deaths++; // Add 1 to deaths counter
-            orderBoard(game.board.list); // Sort the list by kills then deaths
-            socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
-         }
-      }
-      if (org.hit !== org.player) { // Cannot gain kill for suicide
-         for (let i = 0; i < game.board.list.length; i++) {
-            if (game.board.list[i].player === org.hit) { // Find killer in leaderboard list
-               game.board.list[i].kills++;
-               orderBoard(game.board.list);
-               socket.emit('Board', { list: game.board.list, host: game.board.host });
-               break;
-            }
-         }
-      }
-      die(true);
+      game.flag.detectPickup();
    }
 }
 
-function grow(org_) {
-   let org = org_;
-   // Avoid double intervals
-   if (org.tracker.start) { // If tracker has been started
-      org.tracker.end = Date.now();
-      org.tracker.elap = org.tracker.end - org.tracker.start;
-   }
-   if (org.tracker.elap < _ofrequency * .6) { // If org is growing ~twice as frequently as it should
-      switch (state) { // Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
-         case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
-         case 'pauseGameMenu':
-            org.clearIntervals();
-            org.intervals.push(setInterval(() => runLoop(), _ofrequency));
-            break;
+function roundBehaviors() {
+   var currentTime = new Date();
+   if (game.rounds.util) {
+      if (game.info.host === socket.id) { // Only if player is host
+         if (game.rounds.waiting && !game.rounds.delayed && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
+            socket.emit('Round Delay', game);
+            game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
+         } else if (game.rounds.waiting && game.rounds.delayed && currentTime - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
+            socket.emit('Force Spawn', game.info);
+         }
       }
-   }
-   let src = getSrc();
-   let ability;
-   for (let i = 0; i < src.abilities.length; i++) {
-      if (src.abilities[i].player == org.player) {
-         ability = src.abilities[i];
-         break;
-      }
-   }
-   // Birth
-   var regions = getRegionInfo(org);
-   if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
-      // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
-      // if (ability.poison.value == true) {
-      //    if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
-      //       continue;
-      //    }
-      // }
-      for (let i = 0; i < regions.adjacent.length; i++) { // Only Adjacent Regions Can Produce New Cells
-         // Don't birth new cell outside world boundary
-         if (src.world) {
-            if (src.world.type === 'rectangle') {
-               if (regions.adjacent[i].x - _cellwidth / 2 <= src.world.x || regions.adjacent[i].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[i].y - _cellwidth / 2 <= src.world.x || regions.adjacent[i].y + _cellwidth / 2 >= src.world.y + src.world.height) { // If new cell would be outside world boundary
-                  continue;
-               }
-            } else if (src.world.type === 'ellipse') {
-               let a = src.world.width / 2;
-               let b = src.world.height / 2;
-               let x = (regions.adjacent[i].x - _cellwidth / 2) - a;
-               let y = (regions.adjacent[i].y - _cellwidth / 2) - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-left corner is outside ellipse
-                  continue;
-               }
-               x = (regions.adjacent[i].x + _cellwidth / 2) - a;
-               y = (regions.adjacent[i].y - _cellwidth / 2) - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If top-right corner is outside ellipse
-                  continue;
-               }
-               x = (regions.adjacent[i].x + _cellwidth / 2) - a;
-               y = (regions.adjacent[i].y + _cellwidth / 2) - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-right corner is outside ellipse
-                  continue;
-               }
-               x = (regions.adjacent[i].x - _cellwidth / 2) - a;
-               y = (regions.adjacent[i].y + _cellwidth / 2) - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) { // If bottom-left corner is outside ellipse
-                  continue;
-               }
-            }
-         }
-         // Don't birth new cell on top of an opponent org
-         var overlap = false;
-         for (let j = 0; j < src.orgs.length; j++) {
-            if (src.orgs[j].player === org.player) { // If org is player's org
-               continue;
-            }
-            for (let k = 0; k < src.orgs[j].count; k++) {
-               if (regions.adjacent[i].x + _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[i].x + _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) { // If right side collides
-                  if (regions.adjacent[i].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) { // If bottom side collides
-                     overlap = true;
-                  } else if (regions.adjacent[i].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) { // If top side collides
-                     overlap = true;
-                  }
-               } else if (regions.adjacent[i].x - _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[i].x - _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) { // If left side collides
-                  if (regions.adjacent[i].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) { // If bottom side collides
-                     overlap = true;
-                  } else if (regions.adjacent[i].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[i].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) { // If top side collides
-                     overlap = true;
-                  }
-               }
-            }
-         }
-         if (overlap === true) {
-            continue;
-         }
-         // Birth new cell accordingly
-         if (ability.compress.value ^ ability.extend.value == 0) { // compress.value NOT XOR extend.value
-            org.coefficient = -27.5;
-            org.range = _range;
-         } else if (ability.compress.value == true) {
-            org.coefficient = -31.5;
-            org.range = _range - 10;
-         } else if (ability.extend.value == true) {
-            org.coefficient = -25.5;
-            org.range = _range + 20;
-         }
-         let chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[i].x - org.pos.x) + sq(regions.adjacent[i].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
-         if (random(0, 100) <= chance) {
-            var repeat = false;
-            for (let j = 0; j < org.count; j++) {
-               if (regions.adjacent[i].x == org.cells[j].x && regions.adjacent[i].y == org.cells[j].y) {
-                  repeat = true;
-                  break;
-               }
-            }
-            if (repeat === false) {
-               org.cells.push(new Cell(regions.adjacent[i].x, regions.adjacent[i].y, org));
-               org.count++;
+      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count == 1 && game.players[0] === socket.id) { // Survival end-game: if during game and player is winner
+         for (let i = 0; i < game.board.list.length; i++) {
+            if (game.board.list[i].player == socket.id) {
+               socket.emit('Round End', game.info);
+               game.board.list[i].wins++;
+               orderBoard(game.board.list);
+               socket.emit('Board', { list: game.board.list, host: game.board.host });
             }
          }
       }
    }
-
-   // Natural Death
-   if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
-      if (ability.immortality.value === false) { // If org is not Immortal
-         for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
-            let chance = org.coefficient * Math.log(-regions.exposed[i].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
-            if (regions.exposed[i].d(org) > org.range) { // If exposed cell is outside maximum radius
-               for (let j = 0; j < org.count; j++) {
-                  if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) { // Find exposed cell within org cells array
-                     org.cells.splice(j, 1);
-                     org.count--;
-                     regions.exposed.splice(i, 1);
-                     i--;
-                     j--;
-                     break;
-                  }
-               }
-               continue;
-            }
-            if (src.world.type == 'rectangle' && (regions.exposed[i].x < src.world.x || regions.exposed[i].x > src.world.x + src.world.width || regions.exposed[i].y < src.world.y || regions.exposed[i].y > src.world.y + src.world.height)) { // If cell is outside rectangular world
-               for (let j = 0; j < org.count; j++) {
-                  if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) {
-                     org.cells.splice(j, 1);
-                     org.count--;
-                     regions.exposed.splice(i, 1);
-                     i--;
-                     j--;
-                     break;
-                  }
-               }
-            } else if (src.world.type === 'ellipse' && sq(regions.exposed[i].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[i].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) { // If outside elliptical world
-               for (let j = 0; j < org.count; j++) {
-                  if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) { // Identify cell
-                     org.cells.splice(j, 1);
-                     org.count--;
-                     regions.exposed.splice(i, 1);
-                     i--;
-                     j--;
-                     break;
-                  }
-               }
-            }
-            if (random(0, 100) <= chance) {
-               for (let j = 0; j < org.count; j++) {
-                  if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) {
-                     org.cells.splice(j, 1);
-                     org.count--;
-                     regions.exposed.splice(i, 1);
-                     i--;
-                     j--;
-                     break;
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   // Abilities
-   for (let i = 0; i < src.orgs.length; i++) {
-      if ((src.orgs[i].team === org.team && typeof team === 'string') && src.orgs[i].player !== socket.id) { // If is friendly org but not own org
-         continue; // No friendly fire but can hurt self
-      }
-      if (src.abilities[i].secrete.value === true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
-         for (let j = 0; j < org.count; j++) {
-            for (let k = 0; k < src.abilities[i].spore.count; k++) {
-               if (sqrt(sq(org.cells[j].x - src.abilities[i].spore.spores[k].x) + sq(org.cells[j].y - src.abilities[i].spore.spores[k].y)) <= src.abilities[i].secrete.radius) { // If center of cell is within secrete circle (subject to change)
-                  let skip = false;
-                  for (let l = 0; l < src.abilities.length; l++) {
-                     if (src.abilities[l].neutralize.value === true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
-                        skip = true;
-                        break;
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.hit = src.abilities[i].player;
-                  if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
-                     for (let l = 0; l < src.teams.length; l++) { // Search teams
-                        if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
-                           skip = true;
-                           break;
-                        }
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.cells.splice(j, 1);
-                  org.count--;
-                  j--;
-                  break;
-               }
-            }
-         }
-      }
-      for (let j = 0; j < 3; j++) { // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
-         if (src.abilities[i].shoot.secrete[j].value == true) {
-            for (let k = 0; k < org.count; k++) {
-               if (sqrt(sq(org.cells[k].x - src.abilities[i].shoot.spore[j].x) + sq(org.cells[k].y - src.abilities[i].shoot.spore[j].y)) <= src.abilities[i].shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
-                  let skip = false;
-                  for (let l = 0; l < src.abilities.length; l++) {
-                     if (src.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
-                        skip = true;
-                        break;
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.hit = src.abilities[i].player;
-                  if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
-                     for (let l = 0; l < src.teams.length; l++) { // Search teams
-                        if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
-                           skip = true;
-                           break;
-                        }
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.cells.splice(k, 1);
-                  org.count--;
-                  k--;
-                  // break; // Break causes cells to die one at a time (not default)
-               }
-            }
-         }
-      }
-      if (src.abilities[i].toxin.value == true) { // Toxin
-         for (let j = 0; j < org.count; j++) {
-            if (org.player == src.abilities[i].player) { // If is own org's toxin
-               continue; // Do not kill own cells
-            }
-            if (sqrt(sq(org.cells[j].x - src.abilities[i].toxin.x) + sq(org.cells[j].y - src.abilities[i].toxin.y)) <= src.abilities[i].toxin.radius) { // If center of cell is within toxin circle
-               let skip = false;
-               for (let l = 0; l < src.abilities.length; l++) {
-                  if (src.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
-                     skip = true;
-                     break;
-                  }
-               }
-               if (skip == true) {
-                  continue; // Acid is ineffectual when neutralized
-               }
-               org.hit = src.abilities[i].player;
-               if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
-                  for (let l = 0; l < src.teams.length; l++) { // Search teams
-                     if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
-                        skip = true;
-                        break;
-                     }
-                  }
-               }
-               if (skip == true) {
-                  continue; // Acid is ineffectual when neutralized
-               }
-               org.cells.splice(j, 1); // Kill cell
-               org.count--;
-               j--;
-               // break; // Break causes cells to die one at a time (not default)
-            }
-         }
-      }
-   }
-
-   if (org.count == 0) {
-      org.alive = false;
-   } else {
-      org.alive = true;
-   }
-   org.tracker.start = Date.now();
 }
 
 function die(spectating) {
