@@ -4,7 +4,7 @@ NPM Version: 5.6.0
 Node.js Version: 9.4.0
 */
 
-/* 
+/*
 socket.emit('ID', data) // Emit to specific client
 socket.broadcast.emit('ID', data); // Emit to all other clients
 io.sockets.emit('ID', data); // Emit to all clients

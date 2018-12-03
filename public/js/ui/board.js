@@ -70,7 +70,6 @@ function orderBoard(lisT) {
 }
 
 function renderLeaderboard() {
-   // Leaderboard
    translate(org.off.x, org.off.y); // Settings for entire board
    rectMode(CORNER);
    game.board.y = game.board.marginTop;

@@ -36,7 +36,7 @@ function renderUI() {
    // }
 
    // Screen Name Labels
-   if (Labels == true && src.src == 'game') {
+   if (Labels && src.src === 'game') {
       fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
       noStroke();
       textFont('Helvetica');
@@ -76,7 +76,7 @@ function renderUI() {
    }
 
    // Ability Cooldowns
-   if (src.stopped != true) {
+   if (!src.stopped) {
       for (let i in ability) { // Regular Cooldowns
          if (typeof ability[i] == 'object' && i !== 'shoot') {
             if (ability[i].cooling == true) {
@@ -100,11 +100,11 @@ function renderUI() {
    } else {
       current = new Date(); // Set current time
    }
-   if (ability.tag.activated == false) {
+   if (!ability.tag.activated) {
       for (let i = 0; i < 4; i++) {
          for (let j in ability) {
-            if (typeof ability[j] == 'object') {
-               if (ability[j].i == i) { // Find corresponding ability set to tooltip
+            if (typeof ability[j] === 'object') {
+               if (ability[j].i === i) { // Find corresponding ability set to tooltip
                   if (ability[j].activated == true) { // Find corresponding activated ability to tooltip
                      if (j == 'spore' && ability.secrete.value == true) {
                         continue; // Do not draw spore

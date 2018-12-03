@@ -37,7 +37,7 @@
     "url": "git+https://github.com/siegelzc/Bacter.git"
   },
   "author": "Zachary Siegel",
-  "license": "See licence in: /LICENSE",
+  "license": "GPL-3.0-only",
   "bugs": {
     "url": "https://github.com/siegelzc/Bacter/issues"
   },
