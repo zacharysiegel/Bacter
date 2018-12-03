@@ -373,7 +373,7 @@ function enter() {
 function runLoop() {
    roundBehaviors();
 
-   grow(org);
+   org.grow();
    // org.setClickbox();
 
    // CTF

@@ -75,7 +75,7 @@ var Title = function() {
          renderOrgs();
       } { // Calculate
          for (let i = 0; i < this.orgs.length; i++) {
-            grow(this.orgs[i]);
+            this.orgs[i].grow();
          }
       }
    }, _ofrequency);

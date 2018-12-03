@@ -222,7 +222,7 @@ function shoot(I, J) {
       ability.shoot.start[I] = new Date(); // Set start time
 
       // Get Spore
-      var regions = getRegionInfo(org); // Get region data
+      var regions = org.getRegionInfo(); // Get region data
       var theta = void 0;
       if (mouseX == Infinity || mouseY == Infinity) {
          var mpos = getMpos();
@@ -513,7 +513,7 @@ function spore() {
       ability.spore.can = false;
       ability.secrete.can = true;
       ability.spore.start = new Date();
-      var regions = getRegionInfo(org);
+      var regions = org.getRegionInfo();
       ability.spore.spores = regions.exposed; // All exposed cells become spores
       ability.spore.count = ability.spore.spores.length;
       for (var i = 0; i < ability.spore.count; i++) {
@@ -722,6 +722,2332 @@ function cooldown(abilitY) {
 }
 'use strict';
 
+// Socket Settings
+var DEV = true;
+var HEROKU = true;
+var PORT = 80;
+
+// Repertoires
+var worldColors = {
+   black: { r: 0, g: 0, b: 0 }, // Only black is currently in use
+   white: { r: 230, g: 230, b: 230 },
+   blue: { r: 247, g: 250, b: 255 }
+};
+var orgColors = {
+   black: {
+      fire: { r: 255, g: 90, b: 81 },
+      camel: { r: 232, g: 183, b: 155 },
+      clay: { r: 232, g: 145, b: 95 },
+      sun: { r: 255, g: 246, b: 86 },
+      leaf: { r: 125, g: 255, b: 200 },
+      lime: { r: 57, g: 249, b: 86 },
+      sky: { r: 48, g: 210, b: 255 },
+      lake: { r: 142, g: 182, b: 255 },
+      ocean: { r: 102, g: 136, b: 244 },
+      royal: { r: 175, g: 132, b: 255 },
+      petal: { r: 250, g: 122, b: 255 },
+      hot: { r: 232, g: 2, b: 216 }
+   },
+   white: {
+      fire: { r: 240, g: 75, b: 66 },
+      camel: { r: 232, g: 183, b: 155 },
+      clay: { r: 232, g: 145, b: 95 },
+      burnt: { r: 196, g: 99, b: 19 },
+      lime: { r: 57, g: 249, b: 86 },
+      forest: { r: 0, g: 114, b: 38 },
+      peacock: { r: 16, g: 143, b: 147 },
+      sky: { r: 48, g: 210, b: 255 },
+      lake: { r: 104, g: 157, b: 255 },
+      ocean: { r: 102, g: 136, b: 244 },
+      royal: { r: 175, g: 132, b: 255 },
+      petal: { r: 250, g: 122, b: 255 },
+      hot: { r: 232, g: 2, b: 216 }
+   }
+};
+var skins = ['grid', 'circles', 'ghost'];
+var modes = {
+   ffa: 'Free for All',
+   skm: 'Skirmish',
+   srv: 'Survival',
+   ctf: 'Capture the Flag',
+   inf: 'Infection',
+   kth: 'King of the Hill'
+};
+var teamColors = ['red', 'blue', 'green', 'pink'];
+var teamColorDef = { // Conversion between team name to color name
+   red: 'fire',
+   blue: 'sky',
+   green: 'lime',
+   pink: 'petal'
+};
+var firsts = ['Extend', 'Compress'];
+var seconds = ['Immortality', 'Freeze'];
+var thirds = ['Neutralize', 'Toxin'];
+
+// Math
+var cos45 = 0.70710678118;
+var root2 = 1.41421356;
+
+// Configurations
+var _ofrequency = 70; // Org update frequency
+var _renderfrequency = 40; // Rendering update frequency
+var _range = 50; // Org default maximum size
+var _cellwidth = 6; // Width of single cell (pixels)
+var _movespeed = 1.7; // Crosshair movement speed
+var _spectatespeed = 2.5; // Crosshair movement speed in spectate mode
+var _rounddelay = 10000; // Delay time (in milliseconds) before survival round starts
+var _dummies = 10; // Number of dummy orgs in title screen
+var _margin = 25; // Title screen margin
+
+// Settings
+var Labels = true;
+var Messages = true;
+var Controls = {
+   left1: { key: 'A', code: 65 },
+   left2: { key: '←', code: 37 },
+   up1: { key: 'W', code: 87 },
+   up2: { key: '↑', code: 38 },
+   right1: { key: 'D', code: 68 },
+   right2: { key: '→', code: 39 },
+   down1: { key: 'S', code: 83 },
+   down2: { key: '↓', code: 40 },
+   ability1: { key: 'X', code: 88 },
+   ability2: { key: 'C', code: 67 },
+   ability3: { key: 'V', code: 86 },
+   ability4: { key: ' ', code: 32 },
+   respawn: { key: 'R', code: 82 },
+   pause: { key: 'ESC', code: 27 }
+};
+var Defaults = {
+   worldwidth: 800,
+   worldheight: 800,
+   playercap: 16,
+   playermin: 4,
+   boardlength: 10,
+   teamcount: 2
+};
+'use strict';
+
+var game; // Initialize in global scope
+var Game = function Game(datA) {
+   var data = datA;
+   this.src = 'game';
+   this.players = [];{
+      // Info
+      this.info = {
+         host: socket.id,
+         title: data.title,
+         protected: undefined,
+         count: 0,
+         cap: data.cap,
+         mode: data.mode,
+         teamCount: data.teamCount
+      };
+      if (!data.password) // If there is no password
+         this.info.protected = false;else // If there is a password
+         this.info.protected = true;
+   }{
+      // Teams
+      this.teams = [];
+      if (this.info.mode === 'skm' || this.info.mode === 'ctf') {
+         for (var i = 0; i < this.info.teamCount; i++) {
+            this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+         }
+      } else if (this.info.mode === 'inf') {
+         for (var _i = 0; _i < 2; _i++) {
+            // Only can be two teams in infection (healthy/infected)
+            this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+         }
+      }
+   }{
+      // Rounds
+      this.rounds = {
+         host: undefined, // Identification purposes
+         util: false, // If game utilizes rounds
+         waiting: true,
+         delayed: false,
+         delaystart: undefined,
+         rounddelay: _rounddelay,
+         start: undefined,
+         min: undefined, // Min players
+         winner: undefined
+      };
+      if (this.info.mode === 'srv' || this.info.mode === 'ctf' || this.info.mode === 'inf' || this.info.mode === 'kth') {
+         // If game mode utilizes round system
+         this.rounds.util = true;
+         this.rounds.host = this.info.host;
+         this.rounds.min = data.min;
+         this.rounds.waiting = true;
+      }
+   }
+   this.board = new Board(data);
+   this.world = new World(data);
+   if (this.info.mode === 'ctf') this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
+   this.players = [];
+   this.spectators = [];
+   this.orgs = [];
+   this.abilities = [];
+};
+
+function createGame(datA) {
+   game = new Game(datA);
+   socket.emit('Game Created', game);
+   if (game.info.protected) // If game is password protected
+      socket.emit('Password Created', { pass: datA.password, info: game.info });
+}
+'use strict';
+
+var games = [];
+var state;
+var mouseDown = false;
+
+function setup() {
+   state = 'setup';
+   noCanvas(); // Canvas settings
+   rectMode(CENTER); // "
+   ellipseMode(RADIUS); // "
+   angleMode(DEGREES); // "
+   textAlign(LEFT); // "
+
+   connectSocket();
+   var page = document.body.parentNode; // Edit global variable mouseDown to determine if mouse is down or up anywhere on the page
+   var md = function md() {
+      return mouseDown = true;
+   }; // "
+   page.removeEventListener('mousedown', md); // "
+   page.addEventListener('mousedown', md); // "
+   var mu = function mu() {
+      return mouseDown = false;
+   }; // "
+   page.removeEventListener('mouseup', mu); // "
+   page.addEventListener('mouseup', mu); // "
+   var socketInterval = setInterval(function () {
+      // Create instance of Ability, but socket object must exist first, so loop until socket exists
+      ability = new Ability({ player: socket.id }); // Create new instance of Ability
+      if (socket.id) {
+         // If socket.id has loaded
+         clearInterval(socketInterval); // End the loop
+      }
+   }, 50);
+   center = { // Set coordinates of center of window (and canvas)
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2
+   };
+   renderTitle();
+   title = new Title();
+}
+
+/**
+ * Initialize game
+ * @param  object game_ game object holding all game-wide info
+ * @param  object data: {
+ *                         spectate: boolean true: initialize as spectator, false: initialize as player
+ *                      }
+ * @return void
+ */
+function initialize(game_, data) {
+   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+   game = game_;
+   if (data.spectate !== true) {
+      // Field can be left undefined
+      spawn({ color: data.color, skin: data.skin, team: data.team });
+   } else if (data.spectate === true) {
+      spectate({ color: data.color, skin: data.skin, team: data.team });
+   }
+}
+
+/**
+ * Event listener called when user presses a key
+ * @return boolean false: disables default behaviors
+ */
+function keyPressed() {
+   switch (keyCode) {
+      case Controls.ability1.code:
+         // X by default
+         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
+            if (ability.extend.activated == true && ability.extend.can == true) {
+               extend(org.player); // Extend self
+            } else if (ability.compress.activated == true && ability.compress.can == true) {
+               shoot(0, 1);
+               // for (let i = 0; i < game.info.count; i++) {
+               //    if (org.target == game.players[i]) { // Find targeted org
+               //       compress(org.target); // Compress targeted org
+               //       break;
+               //    }
+               // }
+            } else if (ability.tag.activated == true && ability.tag.can == true) {
+               shoot(0, 1);
+            }
+            // if (ability.speed.activated == true) { // Speed/Slow; OLD
+            //    speed(org.player);
+            // } else if (ability.slow.activated == true) {
+            //    slow(org.target);
+            // }
+         }
+         break;
+      case Controls.ability2.code:
+         // C by default
+         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
+            if (ability.immortality.activated == true && ability.immortality.can == true) {
+               immortality(org.player); // Immortalize self
+            } else if (ability.freeze.activated == true && ability.freeze.can == true) {
+               shoot(1, 1);
+               // for (let i = 0; i < game.info.count; i++) {
+               //    if (org.target == game.players[i]) { // Find targeted org
+               //       freeze(org.target); // Freeze targeted org
+               //       break;
+               //    }
+               // }
+            }
+         }
+         break;
+      case Controls.ability3.code:
+         // V by default
+         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
+            // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
+            //    stimulate(org.player); // Stimulate self
+            // } else if (ability.poison.activated == true && ability.poison.can == true) {
+            //    shoot(2, 1);
+            //    // for (let i = 0; i < game.info.count; i++) {
+            //    //    if (org.target == game.players[i]) { // Find targeted org
+            //    //       poison(org.target); // Poison targeted org
+            //    //       break;
+            //    //    }
+            //    // }
+            // }
+            if (ability.neutralize.activated == true && ability.neutralize.can == true) {
+               neutralize(org.player);
+            } else if (ability.toxin.activated == true && ability.toxin.can == true) {
+               toxin(org.player);
+            }
+         }
+         break;
+      case Controls.ability4.code:
+         // SPACE by default
+         if ((state === 'game' || state === 'tutorial') && org.alive) {
+            if (ability.spore.value == false && ability.secrete.value == false) {
+               spore();
+            } else if (ability.spore.value == true && ability.secrete.value == false) {
+               secrete();
+            }
+         }
+         break;
+      case Controls.respawn.code:
+         // R by default
+         if (state == 'spectate' && org.alive == false && org.spawn == true) {
+            if (game.players.length < game.info.cap) {
+               socket.emit('Spectator Left', game.info);
+               renderMenu('respawn', game); // Load respawn menu
+            } else {
+               alert('Game is at maximum player capacity');
+               // Return to spectate mode
+            }
+         }
+         break;
+      case Controls.pause.code:
+         {
+            // ESC by default
+            switch (state) {// Used as the back key for menus (variable pause key may be used as well)
+               case 'createMenu':
+               case 'browser':
+                  renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
+                  break;
+               case 'joinMenu':
+                  if (game.info.host === socket.id) {
+                     // If player is host (If player is joining directly after creating the game)
+                     socket.emit('Game Ended', game);
+                     renderTitle();
+                  } else {
+                     renderBrowser();
+                  }
+                  break;
+               case 'spectateMenu':
+                  renderBrowser();
+                  break;
+               case 'game':
+                  renderMenu('pauseGame', game);
+                  break;
+               case 'spectate':
+                  renderMenu('pauseSpectate', game);
+                  break;
+               case 'tutorial':
+                  renderMenu('pauseTutorial', tutorial);
+                  break;
+               case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
+               case 'respawnMenu':
+                  // Respawn is included because 'back' for respawn should return to spectate
+                  state = 'spectate';
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+                  break;
+               case 'pauseGameMenu':
+                  var skip = false;
+                  for (var i = 0; i < game.players.length; i++) {
+                     if (game.players[i] === socket.id) {
+                        // If still is a player
+                        state = 'game';
+                        skip = true;
+                        break;
+                     }
+                  }
+                  if (!skip) {
+                     for (var _i = 0; _i < game.spectators.length; _i++) {
+                        if (game.spectators[_i] === socket.id) {
+                           state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                           break;
+                        }
+                     }
+                  }
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+                  break;
+               case 'pauseTutorialMenu':
+                  state = 'tutorial';
+                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+                  break;
+            }
+            break;
+         }
+   }
+   // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
+   switch (keyCode) {
+      case 27 !== Controls.pause.code ? 27 : '':
+         // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
+         switch (state) {// Used as the back key for menus (variable pause key may be used as well)
+            case 'createMenu':
+            case 'browser':
+               renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
+               break;
+            case 'joinMenu':
+               if (game.info.host === socket.id) {
+                  // If player is host (If player is joining directly after creating the game)
+                  socket.emit('Game Ended', game);
+                  renderTitle();
+               } else {
+                  renderBrowser();
+               }
+               break;
+            case 'spectate':
+               renderBrowser();
+               break;
+            case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
+            case 'respawnMenu':
+               // Respawn is included because 'back' for respawn should return to spectate
+               state = 'spectate';
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+               break;
+            case 'pauseGameMenu':
+               var _skip = false;
+               for (var _i2 = 0; _i2 < game.players.length; _i2++) {
+                  if (game.players[_i2] === socket.id) {
+                     // If still is a player
+                     state = 'game';
+                     _skip = true;
+                     break;
+                  }
+               }
+               if (!_skip) {
+                  for (var _i3 = 0; _i3 < game.spectators.length; _i3++) {
+                     if (game.spectators[_i3] === socket.id) {
+                        state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                        break;
+                     }
+                  }
+               }
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+               break;
+            case 'pauseTutorialMenu':
+               state = 'tutorial';
+               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+               break;
+         }
+         break;
+   }
+}
+
+/**
+ * Event listener called when any mouse button is clicked
+ *    Not currently in use
+ * @return boolean false should disable default behaviors
+ */
+function mouseClicked() {
+   if (mouseButton == LEFT) {
+      // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
+      //    { // Targeting
+      //       org.target = undefined; // Clear target if click not on opponent org
+      //       for (let i = 0; i < game.info.count; i++) {
+      //          if (game.orgs[i].player == org.player) { // If org is player's org
+      //             continue; // Cannot target oneself
+      //          }
+      //          if (mouseX + org.off.x >= game.orgs[i].clickbox.left && mouseX + org.off.x <= game.orgs[i].clickbox.right && mouseY + org.off.y >= game.orgs[i].clickbox.top && mouseY + org.off.y <= game.orgs[i].clickbox.bottom) { // If clicked another org
+      //             org.target = game.orgs[i].player;
+      //             break;
+      //          }
+      //       }
+      //    }
+      // }
+      return false; // Supposedly negates default behavior
+   } else if (mouseButton == RIGHT) {
+      return false; // Supposedly negates default behavior
+   } else if (mouseButton == CENTER) {
+      return false; // Supposedly negates default behavior
+   }
+}
+
+/**
+ * Event listener for when the browser's window frame is resized
+ *    Resizes the canvas to match the window
+ *    Resizes the world to match the canvas
+ *    Updates variables to match changes
+ * @return void
+ */
+function windowResized() {
+   center = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2
+   };
+   var src = getSrc();
+   if (state === 'title' || state === 'browser' || state === 'tutorial') {
+      src.resize(0, 0, window.innerWidth, window.innerHeight);
+   } else if (state === 'game' || state === 'spectate') {
+      org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
+      org.off.y = org.pos.y - center.y;
+      ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+   } else if (state.indexOf('Menu') !== -1) {
+      var type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
+      var data = type === 'join' || type === 'spectate' || type === 'respawn' ? game : null; // Only join, spectate, and respawn menus use game variable as data
+      renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
+      if (src.src === 'title') {
+         // ^^ Cut out Menu at end of state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
+         src.resize(0, 0, window.innerWidth, window.innerHeight);
+      } else if (src.src === 'game') {
+         // If menu during game (player or spectator)
+         org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
+         org.off.y = org.pos.y - center.y;
+      } else if (src.src === 'tutorial') {
+         src.resize(0, 0, window.innerWidth, window.innerHeight);
+      } // Resize the content of the canvas in the background of menus
+   }
+}
+'use strict';
+
+var org;
+var Org = function Org(data) {
+   var _this = this;
+
+   // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
+   this.player = data.player;
+   this.color = data.color;
+   this.skin = data.skin;
+   this.team = data.team;
+   var src = getSrc();
+   if (src != undefined && src.src == 'game') {
+      if (game.rounds.util == true) {
+         this.ready = false; // org.ready ensures that org will only be forcibly respawned once
+      }
+      if (game.info.mode == 'srv' && game.rounds.waiting == false) {
+         this.spawn = false;
+      } else {
+         this.spawn = true; // Allowance to spawn
+      }
+      for (var i = 0; i < game.board.list.length; i++) {
+         if (game.board.list[i].player == this.player) {
+            // Find player name in leaderboard list
+            this.name = game.board.list[i].name;
+         }
+      }
+   }
+   if (data.spectate == true) {
+      this.speed = _spectatespeed; // Faster movement when spectating
+   } else {
+      this.speed = _movespeed; // Speed of position movement
+   }
+   this.cells = [];
+   this.count = 0;
+   if (data.pos != undefined) {
+      this.pos = data.pos;
+   } else {
+      do {
+         this.pos = { // Position is the target's location in the world
+            x: floor(random(game.world.x + 50 + _cellwidth / 2, game.world.x + game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
+            y: floor(random(game.world.y + 50 + _cellwidth / 2, game.world.y + game.world.height - 50 - _cellwidth / 2))
+         };
+         var rePos = false;
+         if (game.world.type == 'rectangle') {
+            if (this.pos.x < game.world.x || this.pos.x > game.world.x + game.world.width || this.pos.y < game.world.y || this.pos.y > game.world.y + game.world.height) {
+               rePos = false;
+            }
+         } else if (game.world.type == 'ellipse') {
+            if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
+               rePos = true;
+            }
+         }
+         for (var _i = 0; _i < game.info.count; _i++) {
+            // Org Overlap
+            for (var j = 0; j < game.orgs[_i].count; j++) {
+               if (game.orgs[_i].cells[j].x - game.orgs[_i].cells[j].width <= this.pos.x && game.orgs[_i].cells[j].x + game.orgs[_i].cells[j].width >= this.pos.x && game.orgs[_i].cells[j].y - game.orgs[_i].cells[j].height <= this.pos.y && game.orgs[_i].cells[j].y + game.orgs[_i].cells[j].height >= this.pos.y) {
+                  // If position collides with enemy cell (Full width buffer is intended)
+                  rePos = true;
+                  break;
+               }
+            }
+            if (rePos == true) {
+               break;
+            }
+            var abilitY = game.abilities[_i];
+            if (abilitY.secrete.value == true) {
+               // Spore Secretions Overlap
+               for (var _j = 0; _j < abilitY.spore.count; _j++) {
+                  var cell = abilitY.spore.spores[_j];
+                  if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= abilitY.secrete.radius) {
+                     rePos = true;
+                     break;
+                  }
+               }
+            }
+            for (var _j2 = 0; _j2 < 3; _j2++) {
+               // Shoot Secretions Overlap
+               if (abilitY.shoot.secrete[_j2].value == true) {
+                  var _cell = abilitY.shoot.spore[_j2];
+                  var sec = abilitY.shoot.secrete[_j2];
+                  if (sqrt(sq(this.pos.x - _cell.x) + sq(this.pos.y - _cell.y)) <= sec.radius) {
+                     rePos = true;
+                     break;
+                  }
+               }
+            }
+            if (abilitY.toxin.value == true) {
+               // Toxin Overlap
+               if (sqrt(sq(this.pos.x - abilitY.toxin.x) + sq(this.pos.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
+                  rePos = true;
+               }
+            }
+            if (rePos == true) {
+               break;
+            }
+         }
+      } while (rePos == true);
+   }
+   this.off = { // Offset is the difference between pos and center
+      x: this.pos.x - center.x,
+      y: this.pos.y - center.y
+   };
+   this.col = 10; // Collision radius (square) for crosshair (used in collision detection with flag)
+   // this.target = undefined; // ID of player which this org is currently targeting (NOT IN USE)
+   // this.clickbox = { // Targeting box for other orgs to click (NOT IN USE)
+   //    width: undefined,
+   //    height: undefined,
+   //    x: undefined,
+   //    y: undefined,
+   //    left: this.pos.x,
+   //    right: this.pos.x,
+   //    top: this.pos.y,
+   //    bottom: this.pos.y,
+   //    buffer: _cellwidth / 2,
+   //    color: this.color
+   // };
+   this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
+   this.range = 50;
+   this.alive = false;
+   this.hit = undefined;
+   this.count = this.cells.length;
+   this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
+   /**
+    * Clear the growth interval(s) in this org
+    * @return void
+    */
+   this.tracker = { // Used to ensure no double org growth intervals
+      start: undefined,
+      end: undefined,
+      elap: undefined
+   };
+
+   // Helper Functions
+   /**
+    * Compress the org object into only the data that must be sent to the server
+    *    In order to reduce latency, data sent through web socket should be minimized
+    *    Currently, only the following properties are updated each tick:
+    *       alive, cells, off, pos, color, skin, team, coefficient, range
+    * @return {Object} contains only attributes of org, no functional properties
+    */
+   this.getCompressed = function () {
+      return {
+         player: _this.player, // Properties are listed here in the order they appear above in this file (/public/js/org.js)
+         color: _this.color,
+         skin: _this.skin,
+         team: _this.team,
+         ready: _this.ready,
+         spawn: _this.spawn,
+         name: _this.name,
+         speed: _this.speed,
+         cells: _this.cells,
+         count: _this.count,
+         pos: _this.pos,
+         off: _this.off,
+         col: _this.col,
+         // target: this.target,
+         // clickbox: this.clickbox,
+         coefficient: _this.coefficient,
+         range: _this.range,
+         alive: _this.alive,
+         hit: _this.hit,
+         intervals: _this.intervals,
+         tracker: _this.tracker
+      };
+   };
+   this.clearIntervals = function () {
+      for (var _i2 = 0; _i2 < _this.intervals.length; _i2++) {
+         clearInterval(_this.intervals[_i2]);
+      }
+      _this.intervals = [];
+   };
+   this.x = function () {
+      // The average of all cell x values 
+      var sum = 0;
+      for (var i = 0; i < _this.count; i++) {
+         sum += _this.cells[i].x;
+      }
+      var average = sum / _this.count;
+      return average;
+   };
+   this.y = function () {
+      // The average of all cell y values
+      var sum = 0;
+      for (var i = 0; i < _this.count; i++) {
+         sum += _this.cells[i].y;
+      }
+      var average = sum / _this.count;
+      return average;
+   };
+   this.checkAlive = function () {
+      if (_this.count > 0) _this.alive = true;else if (_this.count === 0) _this.alive = false;else console.error('(org).checkAlive(): (org).count < 0');
+   };
+   // this.setClickbox = () => { // DO NOT DELETE
+   //    this.clickbox.left = this.x();
+   //    this.clickbox.right = this.clickbox.left;
+   //    this.clickbox.top = this.y();
+   //    this.clickbox.bottom = this.clickbox.top;
+   //    for (let i = 0; i < this.count; i++) { // Set the size of clickbox
+   //       if (this.cells[i].x - this.cells[i].width / 2 < this.clickbox.left) {
+   //          this.clickbox.left = this.cells[i].x - this.cells[i].width / 2;
+   //       }
+   //       if (this.cells[i].x + this.cells[i].width / 2 > this.clickbox.right) {
+   //          this.clickbox.right = this.cells[i].x + this.cells[i].width / 2;
+   //       }
+   //       if (this.cells[i].y - this.cells[i].height / 2 < this.clickbox.top) {
+   //          this.clickbox.top = this.cells[i].y - this.cells[i].height / 2;
+   //       }
+   //       if (this.cells[i].y + this.cells[i].height / 2 > this.clickbox.bottom) {
+   //          this.clickbox.bottom = this.cells[i].y + this.cells[i].height / 2;
+   //       }
+   //    }
+   //    this.clickbox.left -= this.clickbox.buffer;
+   //    this.clickbox.right += this.clickbox.buffer;
+   //    this.clickbox.top -= this.clickbox.buffer;
+   //    this.clickbox.bottom += this.clickbox.buffer;
+   //    this.clickbox.width = this.clickbox.right - this.clickbox.left;
+   //    this.clickbox.height = this.clickbox.bottom - this.clickbox.top;
+   //    this.clickbox.x = this.clickbox.left + this.clickbox.width / 2;
+   //    this.clickbox.y = this.clickbox.top + this.clickbox.height / 2;
+   // };
+   this.getRegionInfo = function () {
+      var enclosed = [];
+      var exposed = [];
+      var adjacent = [];
+      for (var _i3 = 0; _i3 < _this.count; _i3++) {
+         var test = { x: undefined, y: undefined };
+         var left = false;
+         var top = false;
+         var right = false;
+         var bottom = false;
+         for (var _j3 = 0; _j3 < _this.count; _j3++) {
+            if (_i3 != _j3) {
+               test = { // Left
+                  x: _this.cells[_i3].x - _this.cells[_i3].width,
+                  y: _this.cells[_i3].y
+               };
+               if (test.x == _this.cells[_j3].x && test.y == _this.cells[_j3].y) {
+                  left = true; // There is a friendly cell to the left
+               }
+               test = { // Top
+                  x: _this.cells[_i3].x,
+                  y: _this.cells[_i3].y - _this.cells[_i3].height
+               };
+               if (test.x == _this.cells[_j3].x && test.y == _this.cells[_j3].y) {
+                  top = true; // There is a friendly cell to the top
+               }
+               test = { // Right
+                  x: _this.cells[_i3].x + _this.cells[_i3].width,
+                  y: _this.cells[_i3].y
+               };
+               if (test.x == _this.cells[_j3].x && test.y == _this.cells[_j3].y) {
+                  right = true; // There is a friendly cell to the right
+               }
+               test = { // Bottom
+                  x: _this.cells[_i3].x,
+                  y: _this.cells[_i3].y + _this.cells[_i3].height
+               };
+               if (test.x == _this.cells[_j3].x && test.y == _this.cells[_j3].y) {
+                  bottom = true; // There is a friendly cell to the bottom
+               }
+            }
+         }
+         if (left == true && top == true && right == true && bottom == true) {
+            // If cell is enclosed on all sides by friendly cells
+            enclosed.push(_this.cells[_i3]);
+         } else {
+            // If cell is not enclosed on all sides by friendly cells
+            exposed.push(_this.cells[_i3]);
+         }
+         if (left == false) {
+            // Push all empty regions adjacent to org
+            adjacent.push({ x: _this.cells[_i3].x - _this.cells[_i3].width, y: _this.cells[_i3].y });
+         }
+         if (top == false) {
+            adjacent.push({ x: _this.cells[_i3].x, y: _this.cells[_i3].y - _this.cells[_i3].height });
+         }
+         if (right == false) {
+            adjacent.push({ x: _this.cells[_i3].x + _this.cells[_i3].width, y: _this.cells[_i3].y });
+         }
+         if (bottom == false) {
+            adjacent.push({ x: _this.cells[_i3].x, y: _this.cells[_i3].y + _this.cells[_i3].height });
+         }
+      }
+      for (var j = 0; j < adjacent.length; j++) {
+         // Splice out empty regions adjacent to multiple cells
+         for (var k = 0; k < adjacent.length; k++) {
+            if (j != k) {
+               // If adjacent[j] and adjacent[k] are different regions
+               if (adjacent[k].x == adjacent[j].x && adjacent[k].y == adjacent[j].y) {
+                  // If region is repeated
+                  adjacent.splice(k, 1);
+                  k--;
+               }
+               if (j >= adjacent.length) {
+                  continue;
+               }
+            }
+         }
+      }
+      return {
+         enclosed: enclosed,
+         exposed: exposed,
+         adjacent: adjacent
+      };
+   };
+   this.grow = function () {
+      // Avoid double intervals
+      if (_this.tracker.start) {
+         // If tracker has been started
+         _this.tracker.end = Date.now();
+         _this.tracker.elap = _this.tracker.end - _this.tracker.start;
+      }
+      if (_this.tracker.elap < _ofrequency * .6) {
+         // If org is growing ~twice as frequently as it should
+         switch (state) {// Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
+            case 'game': // Only necessary in states where org are growing (game and game pause menu), others states may be added
+            case 'pauseGameMenu':
+               _this.clearIntervals();
+               _this.intervals.push(setInterval(function () {
+                  return runLoop();
+               }, _ofrequency));
+               break;
+         }
+      }
+      var src = getSrc();
+      var ability = void 0;
+      for (var _i4 = 0; _i4 < src.abilities.length; _i4++) {
+         if (src.abilities[_i4].player == _this.player) {
+            ability = src.abilities[_i4];
+            break;
+         }
+      }
+      // Birth
+      var regions = _this.getRegionInfo();
+      if (ability.freeze.value === false) {
+         // If org is not Frozen (cannot birth or die naturally)
+         // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
+         // if (ability.poison.value == true) {
+         //    if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
+         //       continue;
+         //    }
+         // }
+         for (var _i5 = 0; _i5 < regions.adjacent.length; _i5++) {
+            // Only Adjacent Regions Can Produce New Cells
+            // Don't birth new cell outside world boundary
+            if (src.world) {
+               if (src.world.type === 'rectangle') {
+                  if (regions.adjacent[_i5].x - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[_i5].y - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].y + _cellwidth / 2 >= src.world.y + src.world.height) {
+                     // If new cell would be outside world boundary
+                     continue;
+                  }
+               } else if (src.world.type === 'ellipse') {
+                  var a = src.world.width / 2;
+                  var b = src.world.height / 2;
+                  var x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
+                  var y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
+                  if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
+                     // If top-left corner is outside ellipse
+                     continue;
+                  }
+                  x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
+                  y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
+                  if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
+                     // If top-right corner is outside ellipse
+                     continue;
+                  }
+                  x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
+                  y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
+                  if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
+                     // If bottom-right corner is outside ellipse
+                     continue;
+                  }
+                  x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
+                  y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
+                  if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
+                     // If bottom-left corner is outside ellipse
+                     continue;
+                  }
+               }
+            }
+            // Don't birth new cell on top of an opponent org
+            var overlap = false;
+            for (var _j4 = 0; _j4 < _this.length; _j4++) {
+               if (_this[_j4].player === _this.player) {
+                  // If org is player's org
+                  continue;
+               }
+               for (var k = 0; k < _this[_j4].count; k++) {
+                  if (regions.adjacent[_i5].x + _cellwidth / 2 >= _this[_j4].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x + _cellwidth / 2 <= _this[_j4].cells[k].x + _cellwidth / 2) {
+                     // If right side collides
+                     if (regions.adjacent[_i5].y + _cellwidth / 2 >= _this[_j4].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= _this[_j4].cells[k].y + _cellwidth / 2) {
+                        // If bottom side collides
+                        overlap = true;
+                     } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= _this[_j4].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= _this[_j4].cells[k].y + _cellwidth / 2) {
+                        // If top side collides
+                        overlap = true;
+                     }
+                  } else if (regions.adjacent[_i5].x - _cellwidth / 2 >= _this[_j4].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x - _cellwidth / 2 <= _this[_j4].cells[k].x + _cellwidth / 2) {
+                     // If left side collides
+                     if (regions.adjacent[_i5].y + _cellwidth / 2 >= _this[_j4].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= _this[_j4].cells[k].y + _cellwidth / 2) {
+                        // If bottom side collides
+                        overlap = true;
+                     } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= _this[_j4].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= _this[_j4].cells[k].y + _cellwidth / 2) {
+                        // If top side collides
+                        overlap = true;
+                     }
+                  }
+               }
+            }
+            if (overlap === true) {
+               continue;
+            }
+            // Birth new cell accordingly
+            if (ability.compress.value ^ ability.extend.value == 0) {
+               // compress.value NOT XOR extend.value
+               _this.coefficient = -27.5;
+               _this.range = _range;
+            } else if (ability.compress.value == true) {
+               _this.coefficient = -31.5;
+               _this.range = _range - 10;
+            } else if (ability.extend.value == true) {
+               _this.coefficient = -25.5;
+               _this.range = _range + 20;
+            }
+            var chance = _this.coefficient * Math.log(sqrt(sq(regions.adjacent[_i5].x - _this.pos.x) + sq(regions.adjacent[_i5].y - _this.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
+            if (random(0, 100) <= chance) {
+               var repeat = false;
+               for (var _j5 = 0; _j5 < _this.count; _j5++) {
+                  if (regions.adjacent[_i5].x == _this.cells[_j5].x && regions.adjacent[_i5].y == _this.cells[_j5].y) {
+                     repeat = true;
+                     break;
+                  }
+               }
+               if (repeat === false) {
+                  _this.cells.push(new Cell(regions.adjacent[_i5].x, regions.adjacent[_i5].y, _this));
+                  _this.count++;
+               }
+            }
+         }
+      }
+
+      // Natural Death
+      if (ability.freeze.value === false) {
+         // If org is not Frozen (cannot birth or die naturally)
+         if (ability.immortality.value === false) {
+            // If org is not Immortal
+            for (var _i6 = 0; _i6 < regions.exposed.length; _i6++) {
+               // Only Exposed Cells Can Die
+               var _chance = _this.coefficient * Math.log(-regions.exposed[_i6].d(_this) + (_this.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
+               if (regions.exposed[_i6].d(_this) > _this.range) {
+                  // If exposed cell is outside maximum radius
+                  for (var _j6 = 0; _j6 < _this.count; _j6++) {
+                     if (regions.exposed[_i6].x === _this.cells[_j6].x && regions.exposed[_i6].y === _this.cells[_j6].y) {
+                        // Find exposed cell within org cells array
+                        _this.cells.splice(_j6, 1);
+                        _this.count--;
+                        regions.exposed.splice(_i6, 1);
+                        _i6--;
+                        _j6--;
+                        break;
+                     }
+                  }
+                  continue;
+               }
+               if (src.world.type == 'rectangle' && (regions.exposed[_i6].x < src.world.x || regions.exposed[_i6].x > src.world.x + src.world.width || regions.exposed[_i6].y < src.world.y || regions.exposed[_i6].y > src.world.y + src.world.height)) {
+                  // If cell is outside rectangular world
+                  for (var _j7 = 0; _j7 < _this.count; _j7++) {
+                     if (regions.exposed[_i6].x === _this.cells[_j7].x && regions.exposed[_i6].y === _this.cells[_j7].y) {
+                        _this.cells.splice(_j7, 1);
+                        _this.count--;
+                        regions.exposed.splice(_i6, 1);
+                        _i6--;
+                        _j7--;
+                        break;
+                     }
+                  }
+               } else if (src.world.type === 'ellipse' && sq(regions.exposed[_i6].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i6].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
+                  // If outside elliptical world
+                  for (var _j8 = 0; _j8 < _this.count; _j8++) {
+                     if (regions.exposed[_i6].x === _this.cells[_j8].x && regions.exposed[_i6].y === _this.cells[_j8].y) {
+                        // Identify cell
+                        _this.cells.splice(_j8, 1);
+                        _this.count--;
+                        regions.exposed.splice(_i6, 1);
+                        _i6--;
+                        _j8--;
+                        break;
+                     }
+                  }
+               }
+               if (random(0, 100) <= _chance) {
+                  for (var _j9 = 0; _j9 < _this.count; _j9++) {
+                     if (regions.exposed[_i6].x === _this.cells[_j9].x && regions.exposed[_i6].y === _this.cells[_j9].y) {
+                        _this.cells.splice(_j9, 1);
+                        _this.count--;
+                        regions.exposed.splice(_i6, 1);
+                        _i6--;
+                        _j9--;
+                        break;
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      // Abilities
+      for (var _i7 = 0; _i7 < _this.length; _i7++) {
+         if (_this[_i7].team === _this.team && typeof team === 'string' && _this[_i7].player !== socket.id) {
+            // If is friendly org but not own org
+            continue; // No friendly fire but can hurt self
+         }
+         if (src.abilities[_i7].secrete.value === true) {
+            // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
+            for (var _j10 = 0; _j10 < _this.count; _j10++) {
+               for (var _k = 0; _k < src.abilities[_i7].spore.count; _k++) {
+                  if (sqrt(sq(_this.cells[_j10].x - src.abilities[_i7].spore.spores[_k].x) + sq(_this.cells[_j10].y - src.abilities[_i7].spore.spores[_k].y)) <= src.abilities[_i7].secrete.radius) {
+                     // If center of cell is within secrete circle (subject to change)
+                     var skip = false;
+                     for (var l = 0; l < src.abilities.length; l++) {
+                        if (src.abilities[l].neutralize.value === true && sqrt(sq(_this.cells[_j10].x - src.abilities[l].neutralize.x) + sq(_this.cells[_j10].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) {
+                           // If center of cell is within neutralize circle
+                           skip = true;
+                           break;
+                        }
+                     }
+                     if (skip == true) {
+                        continue; // Acid is ineffectual when neutralized
+                     }
+                     _this.hit = src.abilities[_i7].player;
+                     if (src.src === 'game' && _this.hit !== _this.player) {
+                        // Only for game; Only for other player hits
+                        for (var _l = 0; _l < src.teams.length; _l++) {
+                           // Search teams
+                           if (src.teams[_l].indexOf(_this.hit) !== -1 && src.teams[_l].indexOf(_this.player) !== -1) {
+                              // If player and hitter are on same team
+                              skip = true;
+                              break;
+                           }
+                        }
+                     }
+                     if (skip == true) {
+                        continue; // Acid is ineffectual when neutralized
+                     }
+                     _this.cells.splice(_j10, 1);
+                     _this.count--;
+                     _j10--;
+                     break;
+                  }
+               }
+            }
+         }
+         for (var _j11 = 0; _j11 < 3; _j11++) {
+            // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
+            if (src.abilities[_i7].shoot.secrete[_j11].value == true) {
+               for (var _k2 = 0; _k2 < _this.count; _k2++) {
+                  if (sqrt(sq(_this.cells[_k2].x - src.abilities[_i7].shoot.spore[_j11].x) + sq(_this.cells[_k2].y - src.abilities[_i7].shoot.spore[_j11].y)) <= src.abilities[_i7].shoot.secrete[_j11].radius) {
+                     // If center of cell is within shoot circle (subject to change)
+                     var _skip = false;
+                     for (var _l2 = 0; _l2 < src.abilities.length; _l2++) {
+                        if (src.abilities[_l2].neutralize.value == true && sqrt(sq(_this.cells[_j11].x - src.abilities[_l2].neutralize.x) + sq(_this.cells[_j11].y - src.abilities[_l2].neutralize.y)) <= src.abilities[_l2].neutralize.radius) {
+                           // If center of cell is within neutralize circle
+                           _skip = true;
+                           break;
+                        }
+                     }
+                     if (_skip == true) {
+                        continue; // Acid is ineffectual when neutralized
+                     }
+                     _this.hit = src.abilities[_i7].player;
+                     if (src.src === 'game' && _this.hit !== _this.player) {
+                        // Only for game; Only for other player hits
+                        for (var _l3 = 0; _l3 < src.teams.length; _l3++) {
+                           // Search teams
+                           if (src.teams[_l3].indexOf(_this.hit) !== -1 && src.teams[_l3].indexOf(_this.player) !== -1) {
+                              // If player and hitter are on same team
+                              _skip = true;
+                              break;
+                           }
+                        }
+                     }
+                     if (_skip == true) {
+                        continue; // Acid is ineffectual when neutralized
+                     }
+                     _this.cells.splice(_k2, 1);
+                     _this.count--;
+                     _k2--;
+                     // break; // Break causes cells to die one at a time (not default)
+                  }
+               }
+            }
+         }
+         if (src.abilities[_i7].toxin.value == true) {
+            // Toxin
+            for (var _j12 = 0; _j12 < _this.count; _j12++) {
+               if (_this.player == src.abilities[_i7].player) {
+                  // If is own org's toxin
+                  continue; // Do not kill own cells
+               }
+               if (sqrt(sq(_this.cells[_j12].x - src.abilities[_i7].toxin.x) + sq(_this.cells[_j12].y - src.abilities[_i7].toxin.y)) <= src.abilities[_i7].toxin.radius) {
+                  // If center of cell is within toxin circle
+                  var _skip2 = false;
+                  for (var _l4 = 0; _l4 < src.abilities.length; _l4++) {
+                     if (src.abilities[_l4].neutralize.value == true && sqrt(sq(_this.cells[_j12].x - src.abilities[_l4].neutralize.x) + sq(_this.cells[_j12].y - src.abilities[_l4].neutralize.y)) <= src.abilities[_l4].neutralize.radius) {
+                        // If center of cell is within neutralize circle
+                        _skip2 = true;
+                        break;
+                     }
+                  }
+                  if (_skip2 == true) {
+                     continue; // Acid is ineffectual when neutralized
+                  }
+                  _this.hit = src.abilities[_i7].player;
+                  if (src.src === 'game' && _this.hit !== _this.player) {
+                     // Only for game; Only for other player hits
+                     for (var _l5 = 0; _l5 < src.teams.length; _l5++) {
+                        // Search teams
+                        if (src.teams[_l5].indexOf(_this.hit) !== -1 && src.teams[_l5].indexOf(_this.player) !== -1) {
+                           // If player and hitter are on same team
+                           _skip2 = true;
+                           break;
+                        }
+                     }
+                  }
+                  if (_skip2 == true) {
+                     continue; // Acid is ineffectual when neutralized
+                  }
+                  _this.cells.splice(_j12, 1); // Kill cell
+                  _this.count--;
+                  _j12--;
+                  // break; // Break causes cells to die one at a time (not default)
+               }
+            }
+         }
+      }
+
+      _this.checkAlive();
+
+      socket.emit('Org Update', [_this.alive, // Only the following attributes of org need to be updated
+      _this.cells, // Latency is decreased by only sending necessary data
+      _this.off, _this.pos, _this.color, _this.skin, _this.team, _this.coefficient, _this.range]);
+      if (_this.count === 0) {
+         for (var _i8 = 0; _i8 < game.board.list.length; _i8++) {
+            if (game.board.list[_i8].player === socket.id) {
+               // Add death to leaderboard
+               game.board.list[_i8].deaths++; // Add 1 to deaths counter
+               orderBoard(game.board.list); // Sort the list by kills then deaths
+               socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
+            }
+         }
+         if (_this.hit !== _this.player) {
+            // Cannot gain kill for suicide
+            for (var _i9 = 0; _i9 < game.board.list.length; _i9++) {
+               if (game.board.list[_i9].player === _this.hit) {
+                  // Find killer in leaderboard list
+                  game.board.list[_i9].kills++;
+                  orderBoard(game.board.list);
+                  socket.emit('Board', { list: game.board.list, host: game.board.host });
+                  break;
+               }
+            }
+         }
+         die(true);
+      }
+
+      _this.tracker.start = Date.now();
+   };
+};
+
+var Cell = function Cell(x, y, org) {
+   this.player = org.player;
+   this.width = _cellwidth; // or 3x3
+   this.height = _cellwidth;
+   this.x = x;
+   this.y = y;
+   this.color = org.color;
+   this.r = function () {
+      // Distance from org center
+      var distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
+      return distance;
+   };
+   this.d = function (org) {
+      // Distance from target (Position in world)
+      var distance = sqrt(sq(this.x - org.pos.x) + sq(this.y - org.pos.y));
+      return distance;
+   };
+};
+
+function renderOrgs() {
+   var src = getSrc();
+   for (var i = 0; i < src.orgs.length; i++) {
+      for (var j = 0; j < src.orgs[i].count; j++) {
+         var cell = src.orgs[i].cells[j];
+         fill(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
+         if (src.orgs[i].skin == 'grid') {
+            stroke(40, 40, 40); // Draw constant grid (natural grid is variable)
+            strokeWeight(.25);
+            rect(cell.x, cell.y, cell.width, cell.height);
+         } else if (src.orgs[i].skin == 'circles') {
+            noStroke();
+            ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
+         } else if (src.orgs[i].skin == 'ghost') {
+            noFill();
+            stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
+            strokeWeight(1);
+            rect(cell.x, cell.y, cell.width, cell.height);
+         } else if (src.orgs[i].skin == 'none') {
+            stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b); // Stroke over natural grid
+            strokeWeight(1);
+            rect(cell.x, cell.y, cell.width, cell.height);
+         }
+      }
+   }
+}
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function spawn(data) {
+   // data: { color: {}, skin: '', team: '' }
+   state = 'game';
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
+   org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+   org.count++;
+   var compressedOrg = org.getCompressed();
+   socket.emit('Player Joined', { info: game.info, org: compressedOrg, ability: ability });
+}
+
+function spectate(data) {
+   // data: { color: {}, pos: {}, skin: '', team: '' }
+   state = 'spectate';
+   socket.emit('Spectator Joined', game);
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectate: true });
+}
+
+function renderUI() {
+   var src = getSrc();
+   // Crosshair
+   if (src.src != 'tutorial') {
+      noFill();
+      stroke(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b);
+      strokeWeight(1);
+      line(org.pos.x - 4, org.pos.y, org.pos.x + 4, org.pos.y);
+      line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
+   }
+
+   // // Render Clickbox
+   // if (org.target) { // If org is targenting a player (NOT IN USE)
+   //    for (let i = 0; i < src.orgs.length; i++) {
+   //       if (src.orgs[i].player == org.target) { // Find targeted org
+   //          noFill();
+   //          stroke(src.orgs[i].clickbox.color.r, src.orgs[i].clickbox.color.g, src.orgs[i].clickbox.color.b);
+   //          strokeWeight(1);
+   //          rect(src.orgs[i].clickbox.x, src.orgs[i].clickbox.y, src.orgs[i].clickbox.width, src.orgs[i].clickbox.height, 2); // Draw Target Box
+   //       }
+   //    }
+   // }
+
+   // Screen Name Labels
+   if (Labels && src.src === 'game') {
+      fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
+      noStroke();
+      textFont('Helvetica');
+      if (game.world.color == 'black') {
+         textStyle(NORMAL);
+      } else if (game.world.color == 'white') {
+         textStyle(BOLD);
+      }
+      textSize(10);
+
+      var _loop = function _loop(i) {
+         for (var j = 0; j < game.board.list.length; j++) {
+            if (game.orgs[i].player == game.board.list[j].player) {
+               var x = function x() {
+                  // x() and y() cannot be accessed through orgs array, so code is copied and edited from org file
+                  var sum = 0;
+                  for (var k = 0; k < game.orgs[i].count; k++) {
+                     sum += game.orgs[i].cells[k].x;
+                  }
+                  var average = sum / game.orgs[i].count;
+                  return average;
+               };
+               var y = function y() {
+                  var sum = 0;
+                  for (var k = 0; k < game.orgs[i].count; k++) {
+                     sum += game.orgs[i].cells[k].y;
+                  }
+                  var average = sum / game.orgs[i].count;
+                  return average;
+               };
+               if (game.board.list[j].name.length <= 30) {
+                  text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+               } else {
+                  text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+               }
+            }
+         }
+      };
+
+      for (var i = 0; i < game.info.count; i++) {
+         _loop(i);
+      }
+   }
+
+   // Ability Cooldowns
+   if (!src.stopped) {
+      for (var i in ability) {
+         // Regular Cooldowns
+         if (_typeof(ability[i]) == 'object' && i !== 'shoot') {
+            if (ability[i].cooling == true) {
+               cooldown(ability[i]);
+            }
+         }
+      }
+      for (var _i = 0; _i < ability.shoot.value.length; _i++) {
+         // Shoot Cooldown
+         if (ability.shoot.cooling[_i] == true) {
+            cooldown(ability.shoot);
+            break;
+         }
+      }
+   }
+
+   // Ability Tooltips
+   translate(org.off.x, org.off.y);
+   var currentTime;
+   if (src.stopped == true) {
+      currentTime = src.stopdate;
+   } else {
+      currentTime = new Date(); // Set current time
+   }
+   if (!ability.tag.activated) {
+      for (var _i2 = 0; _i2 < 4; _i2++) {
+         for (var j in ability) {
+            if (_typeof(ability[j]) === 'object') {
+               if (ability[j].i === _i2) {
+                  // Find corresponding ability set to tooltip
+                  if (ability[j].activated == true) {
+                     // Find corresponding activated ability to tooltip
+                     if (j == 'spore' && ability.secrete.value == true) {
+                        continue; // Do not draw spore
+                     }
+                     if (j == 'secrete' && ability.secrete.value == false) {
+                        continue; // Do not draw secrete
+                     }
+                     fill(215);
+                     stroke(0);
+                     strokeWeight(1);
+                     rect(center.x - 150 + _i2 * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+                     var letter = void 0;
+                     if (_i2 == 0) {
+                        letter = Controls.ability1.key;
+                     } else if (_i2 == 1) {
+                        letter = Controls.ability2.key;
+                     } else if (_i2 == 2) {
+                        letter = Controls.ability3.key;
+                     } else if (_i2 == 3) {
+                        if (Controls.ability4.key == ' ') {
+                           letter = '_'; // Display space bar as underscore
+                        } else {
+                           letter = Controls.ability4.key;
+                        }
+                     }
+                     fill(0);
+                     noStroke();
+                     textSize(14);
+                     textFont('Consolas');
+                     textStyle(BOLD);
+                     text(letter, center.x - 150 + _i2 * 100 - textWidth(letter) / 2, height * 9 / 10 + 30 + 13);
+                     fill(0);
+                     stroke(0);
+                     strokeWeight(1);
+                     ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 30); // Background ellipse; Necessary to cover the key tip
+                     fill(215);
+                     noStroke();
+                     if (ability[j].j == 0) {
+                        // If defensive ability (or spore)
+                        // Ability
+                        if (ability[j].value == true) {
+                           // If during ability
+                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                        } else if (ability[j].value == false && ability[j].can == false) {
+                           // If during cooldown
+                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                        } else if (ability[j].value == false && ability[j].can == true) {
+                           // If idling
+                           ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
+                        }
+                     } else if (ability[j].j == 1) {
+                        // If offensive ability
+                        if (ability[j].i < 3) {
+                           // If one of first three abilities (not secrete)
+                           noStroke();
+                           // Ability
+                           if (ability[j].can == true) {
+                              // Idle
+                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
+                           } else if (ability[j].can == false && currentTime - ability[j].start <= ability[j].time) {
+                              // If during ability
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability[j].start) / ability[j].time * 360); // Ability timeout timer
+                           } else if (ability[j].can == false && currentTime - ability[j].start > ability[j].time) {
+                              // If during cooldown
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
+                           }
+                           // Shoot
+                           if (j != 'toxin') {
+                              // Toxin does not shoot
+                              stroke(0);
+                              if (ability.shoot.value[_i2] == false && ability.shoot.can[_i2] == true) {
+                                 // Idle
+                                 ellipse(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8);
+                              } else if (ability.shoot.value[_i2] == true && ability.shoot.can[_i2] == false) {
+                                 // If is shooting
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (currentTime - ability.shoot.start[_i2]) / ability.shoot.time * 360); // Ability timeout timer
+                              } else if (ability.shoot.secrete[_i2].value == true) {
+                                 // If is secreting
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360 - (currentTime - ability.shoot.secrete[_i2].start) / ability.secrete.time * (360 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360)); // Secretion timer
+                              } else if (currentTime - ability.shoot.secrete[_i2].end < ability.shoot.cooldown[_i2]) {
+                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + (currentTime - ability.shoot.secrete[_i2].end) / ability.shoot.cooldown[_i2] * 360); // Shoot cooldown timer (if no hit)
+                              }
+                           }
+                        } else if (ability[j].i == 3) {
+                           // Secrete
+                           if (ability[j].can == true) {
+                              // Idle
+                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
+                           } else if (ability[j].can == false && currentTime - ability[j].start <= ability[j].time) {
+                              // If during ability
+                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360 - (currentTime - ability[j].start) / ability[j].time * (360 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360)); // Ability cooldown timer
+                           }
+                        }
+                     }
+                     itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + _i2 * 100, height * 9 / 10);
+                  }
+                  if (ability[j].value == true && ability[j].i < 3) {
+                     // Ability Activated Tooltip (Not for spore/secrete)
+                     if (ability[j].j == 0 || ability[j].i == 3) {
+                        // If defensive ability (+ secrete)
+                        fill(66, 244, 176); // Green
+                        noStroke();
+                        ellipse(center.x - 150 + _i2 * 100 - 9, height * 9 / 10 - 37, 5, 5);
+                     } else if (ability[j].j == 1 && ability[j].i != 3) {
+                        // If offensive ability (No secrete)
+                        fill(255, 141, 135); // Red
+                        noStroke();
+                        ellipse(center.x - 150 + _i2 * 100 + 9, height * 9 / 10 - 37, 5, 5);
+                     }
+                  }
+                  // fill(215);
+                  // ellipse(center.x - 150 + 3 * 100, height * 9 / 10, 29);
+               }
+            }
+         }
+      }
+   } else if (ability.tag.activated == true) {
+      fill(215);
+      stroke(0);
+      strokeWeight(1);
+      rect(center.x, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
+      var _letter = void 0;
+      if (ability.tag.i == 0) {
+         _letter = Controls.ability1.key;
+      } else if (ability.tag.i == 1) {
+         _letter = Controls.ability2.key;
+      } else if (ability.tag.i == 2) {
+         _letter = Controls.ability3.key;
+      } else if (ability.tag.i == 3) {
+         if (Controls.ability4.key == ' ') {
+            _letter = '_';
+         } else {
+            _letter = Controls.ability4.key;
+         }
+      }
+      fill(0);
+      noStroke();
+      textSize(14);
+      textFont('Consolas');
+      textStyle(BOLD);
+      text(_letter, center.x - textWidth(_letter) / 2, height * 9 / 10 + 30 + 13); // Letter text
+      // Ability Circles
+      fill(0);
+      stroke(0);
+      strokeWeight(1);
+      ellipse(center.x, height * 9 / 10, 30); // Background ellipse
+      fill(215);
+      noStroke();
+      if (ability.tag.can == true) {
+         // Idle
+         ellipse(center.x, height * 9 / 10, 29);
+      } else if (ability.tag.can == false && currentTime - ability.tag.start <= ability.tag.time) {
+         // If during ability
+         arc(center.x, height * 9 / 10, 29, 29, -90, -90 - (currentTime - ability.tag.start) / ability.tag.time * 360); // Ability timeout timer
+      } else if (ability.tag.can == false && currentTime - ability.tag.start > ability.tag.time) {
+         // If during cooldown
+         arc(center.x, height * 9 / 10, 29, 29, -90, -90 + (currentTime - ability.tag.end) / ability.tag.cooldown * 360); // Ability cooldown timer
+      }
+      itemize(items.tag, 1, { r: 0, g: 0, b: 0 }, center.x, height * 9 / 10);
+      // Shoot
+      fill(215);
+      stroke(0);
+      if (ability.shoot.value[ability.tag.i] == false && ability.shoot.can[ability.tag.i] == true) {
+         // Idle
+         ellipse(center.x - 41, height * 9 / 10, 8);
+      } else if (ability.shoot.value[ability.tag.i] == true && ability.shoot.can[ability.tag.i] == false) {
+         // If is shooting
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (currentTime - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360); // Ability timeout timer
+      } else if (ability.shoot.secrete[ability.tag.i].value == true) {
+         // If is secreting
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360 - (currentTime - ability.shoot.secrete[ability.tag.i].start) / ability.secrete.time * (360 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360)); // Secretion timer
+      } else if (currentTime - ability.shoot.secrete[ability.tag.i].end < ability.shoot.cooldown[ability.tag.i]) {
+         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 + (currentTime - ability.shoot.secrete[ability.tag.i].end) / ability.shoot.cooldown[ability.tag.i] * 360); // Shoot cooldown timer (if no hit)
+      }
+      if (ability.tag.value == true) {
+         // Ability Activated Tooltip (only green for tag)
+         fill(66, 244, 176); // Green
+         noStroke();
+         ellipse(center.x - 9, height * 9 / 10 - 37, 5, 5);
+      }
+   }
+   translate(-org.off.x, -org.off.y);
+}
+
+var getSrc = function getSrc() {
+   var src = void 0;
+   switch (state) {
+      case 'game':
+      case 'spectate':
+      case 'respawnMenu':
+      case 'pauseGameMenu':
+      case 'pauseSpectateMenu':
+         src = game;
+         break;
+      case 'title':
+      case 'browser':
+      case 'createMenu':
+      case 'joinMenu':
+      case 'spectateMenu':
+         src = title;
+         break;
+      case 'tutorial':
+      case 'pauseTutorialMenu':
+         src = tutorial;
+         break;
+   }
+   return src;
+};
+
+function move() {
+   var keys = '';
+   if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) {
+      keys += 'l';
+   }
+   if (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code)) {
+      keys += 'u';
+   }
+   if (keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) {
+      keys += 'r';
+   }
+   if (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) {
+      keys += 'd';
+   }
+   switch (keys) {
+      case 'l':
+         org.pos.x -= org.speed;
+         break;
+      case 'u':
+         org.pos.y -= org.speed;
+         break;
+      case 'r':
+         org.pos.x += org.speed;
+         break;
+      case 'd':
+         org.pos.y += org.speed;
+         break;
+      case 'lu':
+         org.pos.x -= org.speed * cos45;
+         org.pos.y -= org.speed * cos45;
+         break;
+      case 'lr':
+         // Net zero
+         break;
+      case 'ld':
+         org.pos.x -= org.speed * cos45;
+         org.pos.y += org.speed * cos45;
+         break;
+      case 'ur':
+         org.pos.x += org.speed * cos45;
+         org.pos.y -= org.speed * cos45;
+         break;
+      case 'ud':
+         // Net zero
+         break;
+      case 'rd':
+         org.pos.x += org.speed * cos45;
+         org.pos.y += org.speed * cos45;
+         break;
+      case 'lur':
+         org.pos.y -= org.speed; // Net up
+         break;
+      case 'lud':
+         org.pos.x -= org.speed; // Net left
+         break;
+      case 'lrd':
+         org.pos.y += org.speed; // Net down
+         break;
+      case 'urd':
+         org.pos.x += org.speed; // Net right
+         break;
+      case 'lurd':
+         // Net zero
+         break;
+   }
+   if (keys != '') {
+      org.off.x = org.pos.x - center.x;
+      org.off.y = org.pos.y - center.y;
+   }
+}
+
+/**
+ * Enter game by starting game interval (runLoop()) (with org growth)
+ * @return void
+ */
+function enter() {
+   if (!org.intervals.length) {
+      // org.intervals array must be of length 0
+      org.intervals.push(setInterval(function () {
+         return runLoop();
+      }, _ofrequency));
+   }
+}
+
+function runLoop() {
+   roundBehaviors();
+
+   org.grow();
+   // org.setClickbox();
+
+   // CTF
+   if (game.info.mode === 'ctf') {
+      game.flag.detectPickup();
+   }
+}
+
+function roundBehaviors() {
+   var currentTime = new Date();
+   if (game.rounds.util) {
+      if (game.info.host === socket.id) {
+         // Only if player is host
+         if (game.rounds.waiting && !game.rounds.delayed && game.info.count >= game.rounds.min) {
+            // If waiting, not delayed, and have minimum players
+            socket.emit('Round Delay', game);
+            game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
+         } else if (game.rounds.waiting && game.rounds.delayed && currentTime - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) {
+            // Only host; If 1 second left in round-begin delay
+            socket.emit('Force Spawn', game.info);
+         }
+      }
+      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count == 1 && game.players[0] === socket.id) {
+         // Survival end-game: if during game and player is winner
+         for (var i = 0; i < game.board.list.length; i++) {
+            if (game.board.list[i].player == socket.id) {
+               socket.emit('Round End', game.info);
+               game.board.list[i].wins++;
+               orderBoard(game.board.list);
+               socket.emit('Board', { list: game.board.list, host: game.board.host });
+            }
+         }
+      }
+   }
+}
+
+function die(spectating) {
+   socket.emit('Dead', spectating);
+   org.clearIntervals();
+   for (var i in ability) {
+      // Reset Ability Cooldowns
+      if (_typeof(ability[i]) === 'object' && i !== 'shoot') {
+         // Avoid reference error
+         if (ability[i].activated != undefined && ability[i].activated == true) {
+            // If is a usable ability
+            clearTimeout(ability[i].timeout);
+            ability[i].value = false;
+            ability[i].can = true;
+            ability[i].cooling = false;
+            ability[i].start = undefined;
+            ability[i].end = undefined;
+         }
+      }
+   }
+   for (var _i3 = 0; _i3 < 3; _i3++) {
+      // Reset shoots
+      clearTimeout(ability.shoot.timeout[_i3]);
+      ability.shoot.value[_i3] = false;
+      ability.shoot.can[_i3] = true;
+      ability.shoot.spore[_i3] = undefined;
+      ability.shoot.secrete[_i3] = {};
+      ability.shoot.start[_i3] = undefined;
+      ability.shoot.end[_i3] = undefined;
+   }
+   socket.emit('Ability', ability);
+}
+'use strict';
+
+var socket = void 0; // Initialize in global scope
+var gamesInterval = void 0; // "
+// let emitGameInterval; // "
+function connectSocket() {
+   if (DEV) {
+      socket = io.connect('localhost:' + PORT); // Local server (Development only)
+   } else {
+      if (HEROKU) {
+         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
+      } else {
+         socket = io.connect('24.55.26.67:' + PORT); // Local Server
+      }
+   }
+
+   gamesInterval = setInterval(function () {
+      if (state !== 'game' && state !== 'spectate') {
+         socket.emit('Games Request');
+      }
+   }, 250);
+
+   // emitGameInterval = setInterval(() => {
+   //    if (state === 'game' || state === 'spectate') {
+   //       socket.emit('Game', { game: game });
+   //    }
+   // }, _renderfrequency);
+
+   socket.on('Games', function (data) {
+      // data: { games: , connections: }
+      games = data.games;
+      connections = data.connections;
+      if (state === 'browser') renderBrowser();
+   });
+
+   socket.on('Enter', function () {
+      return enter();
+   }); // Begin growth
+
+   socket.on('Force Spawn', function () {
+      die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
+      for (var i = 0; i < game.spectators.length; i++) {
+         if (game.spectators[i] === socket.id) {
+            // If player is spectator
+            socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
+         }
+      }
+      if (state === 'pauseSpectateMenu') {
+         renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
+      } else if (state === 'respawnMenu') {
+         renderMenu('pauseGame', game);
+         menus.pauseGame.submit();
+      }
+      spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
+      org.spawn = false;
+      org.ready = true; // org.ready ensures that org will only be forcibly respawned once
+   });
+
+   socket.on('Game', function (gamE) {
+      game = gamE;
+      if (ability.spore.value === true) {
+         ability.spore.interval();
+      }
+      for (var i = 0; i < 3; i++) {
+         if (ability.shoot.value[i] === true) {
+            ability.shoot.interval[i]();
+         }
+      }
+      switch (state) {
+         case 'game':
+         case 'pauseGameMenu':
+            {
+               translate(-org.off.x, -org.off.y);
+               renderWorld();
+               for (var _i = 0; _i < game.info.count; _i++) {
+                  renderToxin(game.abilities[_i]);
+               }
+               for (var _i2 = 0; _i2 < game.info.count; _i2++) {
+                  renderSecretions(game.abilities[_i2]);
+               }
+               for (var _i3 = 0; _i3 < game.info.count; _i3++) {
+                  renderNeutralize(game.abilities[_i3]);
+               }
+               renderOrgs();
+               for (var _i4 = 0; _i4 < game.info.count; _i4++) {
+                  renderSpores(game.abilities[_i4]);
+               }
+               renderUI();
+               renderLeaderboard();
+               translate(org.off.x, org.off.y);
+            }
+            renderMessages(); // Render messages outside translation
+            if (state === 'game') {
+               move(); // Move goes at the end so player does not render his movements before others
+            }
+            break;
+         case 'spectate':
+         case 'pauseSpectateMenu':
+         case 'respawnMenu':
+            {
+               translate(-org.off.x, -org.off.y);
+               renderWorld();
+               for (var _i5 = 0; _i5 < game.info.count; _i5++) {
+                  renderToxin(game.abilities[_i5]);
+               }
+               for (var _i6 = 0; _i6 < game.info.count; _i6++) {
+                  renderSecretions(game.abilities[_i6]);
+               }
+               for (var _i7 = 0; _i7 < game.info.count; _i7++) {
+                  renderNeutralize(game.abilities[_i7]);
+               }
+               renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
+               for (var _i8 = 0; _i8 < game.info.count; _i8++) {
+                  renderSpores(game.abilities[_i8]);
+               }
+               renderLeaderboard();
+               translate(org.off.x, org.off.y);
+            }
+            renderMessages();
+            if (state === 'spectate') {
+               move(); // Move is after messages so everything has same offset
+            }
+            break;
+      }
+   });
+
+   socket.on('Game Ended', function (game) {
+      if (game.info.host !== socket.id) {
+         // Don't alert host (he already knows)
+         alert('The game has ended');
+      }
+      renderTitle();
+   });
+
+   socket.on('Spectate', function () {
+      return spectate({ color: org.color, pos: org.pos, skin: org.skin, team: org.team });
+   });
+
+   {
+      // Abilities
+      socket.on('Tag', function () {
+         ability.tag.value = true;
+         clearTimeout(ability.tag.timeout);
+         socket.emit('Ability', ability);
+         if (game.info.mode === '') {
+            ability.tag.timeout = setTimeout(function () {
+               ability.tag.value = false;
+               socket.emit('Ability', ability);
+            }, ability.tag.time);
+         }
+      });
+
+      socket.on('Extend', function () {
+         ability.extend.value = true;
+         clearTimeout(ability.extend.timeout);
+         ability.extend.start = new Date();
+         socket.emit('Ability', ability);
+         ability.extend.timeout = setTimeout(function () {
+            // End ability
+            ability.extend.value = false;
+            ability.extend.end = new Date();
+            ability.extend.cooling = true;
+            socket.emit('Ability', ability);
+         }, ability.extend.time);
+      });
+
+      socket.on('Compress', function () {
+         ability.compress.value = true;
+         clearTimeout(ability.compress.timeout);
+         socket.emit('Ability', ability);
+         ability.compress.timeout = setTimeout(function () {
+            ability.compress.value = false;
+            socket.emit('Ability', ability);
+         }, ability.compress.time);
+      });
+
+      // socket.on('Speed', () => { // Not updated
+      //    ability.speed.value = true;
+      //    org.speed *= ability.speed.factor;
+      //    clearTimeout(ability.speed.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.speed.timeout = setTimeout(() => { // End ability
+      //       org.speed /= ability.speed.factor;
+      //       ability.speed.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.speed.time);
+      // });
+
+      // socket.on('Slow', () => { // Not updated
+      //    ability.slow.value = true;
+      //    org.speed /= ability.slow.factor; // Divide speed by factor
+      //    clearTimeout(ability.slow.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.slow.timeout = setTimeout(() => { // End ability
+      //       org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
+      //       ability.slow.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.slow.time);
+      // });
+
+      socket.on('Immortality', function () {
+         ability.immortality.value = true;
+         clearTimeout(ability.immortality.timeout);
+         ability.immortality.start = new Date();
+         socket.emit('Ability', ability);
+         ability.immortality.timeout = setTimeout(function () {
+            // End ability
+            ability.immortality.value = false;
+            ability.immortality.end = new Date();
+            ability.immortality.cooling = true;
+         }, ability.immortality.time);
+      });
+
+      socket.on('Freeze', function () {
+         ability.freeze.value = true;
+         clearTimeout(ability.freeze.timeout);
+         socket.emit('Ability', ability);
+         ability.freeze.timeout = setTimeout(function () {
+            // End ability
+            ability.freeze.value = false;
+            socket.emit('Ability', ability);
+         }, ability.freeze.time);
+      });
+
+      // socket.on('Stimulate', () => {
+      //    ability.stimulate.value = true;
+      //    clearTimeout(ability.stimulate.timeout);
+      //    ability.stimulate.start = new Date();
+      //    socket.emit('Ability', ability);
+      //    ability.stimulate.timeout = setTimeout(() => { // End ability
+      //       ability.stimulate.value = false;
+      //       ability.stimulate.end = new Date();
+      //       ability.stimulate.cooling = true;
+      //       socket.emit('Ability', ability);
+      //    }, ability.stimulate.time);
+      // });
+
+      // socket.on('Poison', () => {
+      //    ability.poison.value = true;
+      //    clearTimeout(ability.poison.timeout);
+      //    socket.emit('Ability', ability);
+      //    ability.poison.timeout = setTimeout(() => { // End ability
+      //       ability.poison.value = false;
+      //       socket.emit('Ability', ability);
+      //    }, ability.poison.time);
+      // });
+
+      socket.on('Neutralize', function () {
+         ability.neutralize.value = true;
+         ability.neutralize.start = new Date();
+         clearTimeout(ability.neutralize.timeout);
+         ability.neutralize.x = org.pos.x;
+         ability.neutralize.y = org.pos.y;
+         socket.emit('Ability', ability);
+         ability.neutralize.timeout = setTimeout(function () {
+            ability.neutralize.value = false;
+            ability.neutralize.end = new Date();
+            ability.neutralize.cooling = true;
+            socket.emit('Ability', ability);
+         }, ability.neutralize.time);
+      });
+
+      socket.on('Toxin', function () {
+         ability.toxin.value = true;
+         ability.toxin.start = new Date();
+         clearTimeout(ability.toxin.timeout);
+         ability.toxin.x = org.pos.x;
+         ability.toxin.y = org.pos.y;
+         socket.emit('Ability', ability);
+         ability.toxin.timeout = setTimeout(function () {
+            ability.toxin.value = false;
+            ability.toxin.end = new Date();
+            ability.toxin.cooling = true;
+            socket.emit('Ability', ability);
+         }, ability.toxin.time);
+      });
+   }
+}
+'use strict';
+
+var tutorial;
+
+function renderTutorial() {
+   clearInterval(title.interval);
+   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
+   state = 'tutorial';
+}
+
+var Tutorial = function Tutorial() {
+   var _this = this;
+
+   this.src = 'tutorial';
+   this.task = 'move';
+   this.taskTimeout = undefined;
+   this.margin = _margin;
+   this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin });{
+      // Org
+      var colors = [];
+      for (var j in orgColors.black) {
+         if (j != 'sun' && j != 'sky') {
+            // No bright colors which would obscure the crosshair in tutorial to minimize confusion
+            colors.push(orgColors.black[j]);
+         }
+      }
+      var color = random(colors);
+      org = new Org({ player: socket.id, color: color, skin: 'none', spectate: false, pos: { x: center.x, y: center.y }, title: false });
+      org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+      org.count++;
+   }
+   this.orgs = [org];
+   this.abilities = [ability];
+   this.ointerval = setInterval(function () {
+      for (var i = 0; i < _this.orgs.length; i++) {
+         _this.orgs[i].grow();
+         if (org.count == 0) {
+            _this.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+            _this.orgs[i].count++;
+         }
+      }
+   }, _ofrequency); // 70ms
+   this.rinterval = setInterval(function () {
+      {
+         // Render
+         // Background
+         background(_this.world.backdrop.r, _this.world.backdrop.g, _this.world.backdrop.b);
+
+         // Shadows
+         {
+            // World
+            fill(_this.world.backdrop.r - 20, _this.world.backdrop.g - 20, _this.world.backdrop.b - 20);
+            noStroke();
+            rect(_this.world.x + _this.world.width / 2 + 7, _this.world.y + _this.world.height / 2 + 6, _this.world.width, _this.world.height);
+         }{
+            // Messages
+            if (Messages == true) {
+               textFont('Helvetica');
+               textStyle(NORMAL);
+               var message = currentMessage();
+               if (message != undefined) {
+                  var breaks = freq(message, '\n');
+                  var width = messageWidth(message);
+                  rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
+               }
+            }
+         }
+
+         // World
+         fill(_this.world.background.r, _this.world.background.g, _this.world.background.b);
+         stroke(_this.world.border.color.r, _this.world.border.color.g, _this.world.border.color.b);
+         strokeWeight(1);
+         rect(_this.world.x + _this.world.width / 2, _this.world.y + _this.world.height / 2, _this.world.width, _this.world.height);
+
+         // Game
+         renderToxin(ability);
+         renderSecretions(ability);
+         renderNeutralize(ability);
+         renderOrgs();
+         renderSpores(ability);
+         if (_this.task != 'move' && _this.task != 'survive') {
+            translate(-org.off.x, -org.off.y);
+            renderUI();
+            translate(org.off.x, org.off.y);
+         }
+         noFill(); // Crosshair
+         stroke(_this.world.border.color.r, _this.world.border.color.g, _this.world.border.color.b);
+         strokeWeight(1);
+         line(org.pos.x - 4, org.pos.y, org.pos.x + 4, org.pos.y);
+         line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
+         renderMessages(); // Render messages outside translation
+      }{
+         // Calculate
+         if (_this.stopped == false) {
+            if (ability.spore.value == true) {
+               ability.spore.interval();
+            }
+            for (var i = 0; i < 3; i++) {
+               if (ability.shoot.value[i] == true) {
+                  ability.shoot.interval[i]();
+               }
+            }
+            if (state == 'tutorial') {
+               move();
+            }
+         }
+         _this.detect();
+      }
+   }, _renderfrequency); // 40ms
+   this.clear = function () {
+      clearInterval(this.ointerval);
+      clearInterval(this.rinterval);
+   };
+   this.stopped = false;
+   this.stopdate = undefined;
+   this.stop = function () {
+      this.stopped = true;
+      this.stopdate = new Date();
+      clearInterval(this.ointerval);
+   };
+   this.resize = function (x, y, w, h) {
+      center.x = window.innerWidth / 2;
+      center.y = window.innerHeight / 2;
+      var old_x = this.world.x - this.margin;
+      var old_y = this.world.y - this.margin;
+      for (var i = 0; i < this.orgs.length; i++) {
+         this.orgs[i].pos.x = (this.orgs[i].pos.x - this.margin - old_x) / this.world.width * (w - this.margin * 2) + (this.margin + x); // Reposition org correctly
+         this.orgs[i].pos.y = (this.orgs[i].pos.y - this.margin - old_y) / this.world.height * (h - this.margin * 2) + (this.margin + y); // Must be before new world creation so can find percentage of former world size
+         this.orgs[i].cells = [];
+         this.orgs[i].cells[0] = new Cell(this.orgs[i].pos.x, this.orgs[i].pos.y, this.orgs[i]);
+         this.orgs[i].count = 1;
+      }
+      this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
+      if (state === 'tutorial') renderTutorial(); // Only render if state is 'tutorial'; otherwise, will render over pause menu
+   };
+   this.detect = function () {
+      var _this2 = this;
+
+      switch (this.task) {
+         case 'move':
+            {
+               if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) {
+                  // If a directional key is pressed
+                  this.task = 'fullscreen';
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        _this2.task = 'survive';
+                     }, 3500);
+                  }
+               }
+               break;
+            }
+         case 'survive':
+            {
+               if (this.taskTimeout == undefined) {
+                  this.taskTimeout = setTimeout(function () {
+                     _this2.taskTimeout = undefined;
+                     _this2.task = 'extend';
+                     ability.extend.activated = true;
+                     ability.extend.can = true;
+                     socket.emit('Ability', ability);
+                  }, 4500);
+               }
+               break;
+            }
+         case 'extend':
+            {
+               if (keyIsDown(Controls.ability1.code)) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.extend.activated = false;
+                        ability.extend.can = false;
+                        _this2.task = 'immortality';
+                        ability.immortality.activated = true;
+                        ability.immortality.can = true;
+                        socket.emit('Ability', ability);
+                     }, ability.extend.time);
+                  }
+               }
+               break;
+            }
+         case 'immortality':
+            {
+               if (keyIsDown(Controls.ability2.code)) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.immortality.activated = false;
+                        ability.immortality.can = false;
+                        _this2.task = 'neutralize';
+                        ability.neutralize.activated = true;
+                        ability.neutralize.can = true;
+                        socket.emit('Ability', ability);
+                     }, ability.immortality.time);
+                  }
+               }
+               break;
+            }
+         case 'neutralize':
+            {
+               if (keyIsDown(Controls.ability3.code)) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.neutralize.activated = false;
+                        ability.neutralize.can = false;
+                        _this2.task = 'shoot';
+                        ability.compress.activated = true;
+                        ability.compress.can = true;
+                        ability.freeze.activated = true;
+                        ability.freeze.can = true;
+                        socket.emit('Ability', ability);
+                     }, ability.neutralize.time);
+                  }
+               }
+               break;
+            }
+         case 'shoot':
+            {
+               if (this.taskTimeout == undefined) {
+                  this.taskTimeout = setTimeout(function () {
+                     _this2.taskTimeout = undefined;
+                     ability.freeze.activated = false;
+                     ability.freeze.can = false;
+                     _this2.task = 'compress';
+                     ability.compress.activated = true; // Redundancy
+                     ability.compress.can = true; // Redundancy
+                  }, 10000);
+               }
+               break;
+            }
+         case 'compress':
+            {
+               if (this.orgs.length == 1) {
+                  var _colors = [];
+                  for (var _j in orgColors.black) {
+                     if (_j != 'sun' && _j != 'lime') _colors.push(orgColors.black[_j]);
+                  }
+                  var _color = random(_colors);
+                  var pos = void 0;
+                  do {
+                     pos = { x: random(this.world.width), y: random(this.world.height) };
+                  } while (sqrt(sq(pos.x - org.pos.x) + sq(pos.y - org.pos.y)) < _range + 30); // _range + 20 is maximum extend range
+                  this.orgs.push(new Org({ player: 'bot' + 1, color: _color, skin: 'none', spectate: false, pos: pos, title: false }));
+                  this.orgs[1].cells[0] = new Cell(this.orgs[1].pos.x, this.orgs[1].pos.y, this.orgs[1]); // Create first cell in org
+                  this.orgs[1].count++;
+                  this.abilities[1] = new Ability({ player: 'bot' + 1 });
+               }
+               if (ability.compress.applied == true) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.compress.activated = false;
+                        ability.compress.can = false;
+                        ability.freeze.activated = true;
+                        ability.freeze.can = true;
+                        _this2.task = 'freeze';
+                     }, ability.compress.time);
+                  }
+               }
+               break;
+            }
+         case 'freeze':
+            {
+               if (ability.freeze.applied == true) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.freeze.activated = false;
+                        ability.freeze.can = false;
+                        ability.toxin.activated = true;
+                        ability.toxin.can = true;
+                        _this2.task = 'toxin';
+                     }, ability.freeze.time);
+                  }
+               }
+               break;
+            }
+         case 'toxin':
+            {
+               if (keyIsDown(Controls.ability3.code)) {
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.toxin.activated = false;
+                        ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
+                        _this2.task = 'spore';
+                        ability.spore.activated = true;
+                        ability.spore.can = true;
+                        ability.secrete.activated = true; // .can = false
+                        socket.emit('Ability', ability);
+                     }, ability.toxin.time);
+                  }
+               }
+               break;
+            }
+         case 'spore':
+            {
+               var current = new Date();
+               if (ability.secrete.value == true) {
+                  if (this.stopped == true) {
+                     this.stopped = false;
+                     this.ointerval = setInterval(function () {
+                        // Restart
+                        for (var i = 0; i < _this2.orgs.length; i++) {
+                           _this2.orgs[i].grow();
+                           if (org.count == 0) {
+                              _this2.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
+                              _this2.orgs[i].count++;
+                           }
+                        }
+                     }, _ofrequency); // 70ms
+                     ability.spore.end = new Date();
+                     ability.secrete.start = new Date();
+                  }
+                  if (this.taskTimeout == undefined) {
+                     this.taskTimeout = setTimeout(function () {
+                        _this2.taskTimeout = undefined;
+                        ability.spore.activated = false;
+                        ability.spore.can = false;
+                        ability.secrete.activated = false;
+                        ability.secrete.can = false;
+                        _this2.task = 'done';
+                     }, ability.secrete.time);
+                  }
+               } else if (ability.spore.value == true && current - ability.spore.start >= ability.spore.time / 2) {
+                  if (this.stopped == false) {
+                     clearInterval(ability.spore.interval);
+                     clearTimeout(ability.spore.timeout);
+                     this.stop();
+                  }
+               }
+               break;
+            }
+      }
+   };
+};
+'use strict';
+
 var Board = function Board(datA) {
    var data = datA;
    this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
@@ -795,7 +3121,6 @@ function orderBoard(lisT) {
 }
 
 function renderLeaderboard() {
-   // Leaderboard
    translate(org.off.x, org.off.y); // Settings for entire board
    rectMode(CORNER);
    game.board.y = game.board.marginTop;
@@ -1484,113 +3809,10 @@ var CanvasCont = function (_React$Component) {
 ;
 'use strict';
 
-// Socket Settings
-var DEV = true;
-var HEROKU = true;
-var PORT = 80;
-
-// Repertoires
-var worldColors = {
-   black: { r: 0, g: 0, b: 0 }, // Only black is currently in use
-   white: { r: 230, g: 230, b: 230 },
-   blue: { r: 247, g: 250, b: 255 }
-};
-var orgColors = {
-   black: {
-      fire: { r: 255, g: 90, b: 81 },
-      camel: { r: 232, g: 183, b: 155 },
-      clay: { r: 232, g: 145, b: 95 },
-      sun: { r: 255, g: 246, b: 86 },
-      leaf: { r: 125, g: 255, b: 200 },
-      lime: { r: 57, g: 249, b: 86 },
-      sky: { r: 48, g: 210, b: 255 },
-      lake: { r: 142, g: 182, b: 255 },
-      ocean: { r: 102, g: 136, b: 244 },
-      royal: { r: 175, g: 132, b: 255 },
-      petal: { r: 250, g: 122, b: 255 },
-      hot: { r: 232, g: 2, b: 216 }
-   },
-   white: {
-      fire: { r: 240, g: 75, b: 66 },
-      camel: { r: 232, g: 183, b: 155 },
-      clay: { r: 232, g: 145, b: 95 },
-      burnt: { r: 196, g: 99, b: 19 },
-      lime: { r: 57, g: 249, b: 86 },
-      forest: { r: 0, g: 114, b: 38 },
-      peacock: { r: 16, g: 143, b: 147 },
-      sky: { r: 48, g: 210, b: 255 },
-      lake: { r: 104, g: 157, b: 255 },
-      ocean: { r: 102, g: 136, b: 244 },
-      royal: { r: 175, g: 132, b: 255 },
-      petal: { r: 250, g: 122, b: 255 },
-      hot: { r: 232, g: 2, b: 216 }
-   }
-};
-var skins = ['grid', 'circles', 'ghost'];
-var modes = {
-   ffa: 'Free for All',
-   skm: 'Skirmish',
-   srv: 'Survival',
-   ctf: 'Capture the Flag',
-   inf: 'Infection',
-   kth: 'King of the Hill'
-};
-var teamColors = ['red', 'blue', 'green', 'pink'];
-var teamColorDef = { // Conversion between team name to color name
-   red: 'fire',
-   blue: 'sky',
-   green: 'lime',
-   pink: 'petal'
-};
-var firsts = ['Extend', 'Compress'];
-var seconds = ['Immortality', 'Freeze'];
-var thirds = ['Neutralize', 'Toxin'];
-
-// Math
-var cos45 = 0.70710678118;
-var root2 = 1.41421356;
-
-// Configurations
-var _ofrequency = 70; // Org update frequency
-var _renderfrequency = 40; // Rendering update frequency
-var _range = 50; // Org default maximum size
-var _cellwidth = 6; // Width of single cell (pixels)
-var _movespeed = 1.7; // Crosshair movement speed
-var _spectatespeed = 2.5; // Crosshair movement speed in spectate mode
-var _rounddelay = 10000; // Delay time (in milliseconds) before survival round starts
-var _dummies = 10; // Number of dummy orgs in title screen
-var _margin = 25; // Title screen margin
-
-// Settings
-var Labels = true;
-var Messages = true;
-var Controls = {
-   left1: { key: 'A', code: 65 },
-   left2: { key: '←', code: 37 },
-   up1: { key: 'W', code: 87 },
-   up2: { key: '↑', code: 38 },
-   right1: { key: 'D', code: 68 },
-   right2: { key: '→', code: 39 },
-   down1: { key: 'S', code: 83 },
-   down2: { key: '↓', code: 40 },
-   ability1: { key: 'X', code: 88 },
-   ability2: { key: 'C', code: 67 },
-   ability3: { key: 'V', code: 86 },
-   ability4: { key: ' ', code: 32 },
-   respawn: { key: 'R', code: 82 },
-   pause: { key: 'ESC', code: 27 }
-};
-var Defaults = {
-   worldwidth: 800,
-   worldheight: 800,
-   playercap: 16,
-   playermin: 4,
-   boardlength: 10,
-   teamcount: 2
-};
-"use strict";
-
 var Flag = function Flag(X, Y, coloR) {
+   var _this = this;
+
+   // Attributes
    this.x = X;
    this.y = Y;
    this.color = coloR;
@@ -1598,409 +3820,24 @@ var Flag = function Flag(X, Y, coloR) {
    this.carrier = undefined;
    this.height = 20;
    this.width = 9;
-};
-'use strict';
 
-var game; // Initialize in global scope
-var Game = function Game(datA) {
-   var data = datA;
-   this.src = 'game';
-   this.players = [];{
-      // Info
-      this.info = {
-         host: socket.id,
-         title: data.title,
-         protected: undefined,
-         count: 0,
-         cap: data.cap,
-         mode: data.mode,
-         teamCount: data.teamCount
-      };
-      if (!data.password) // If there is no password
-         this.info.protected = false;else // If there is a password
-         this.info.protected = true;
-   }{
-      // Teams
-      this.teams = [];
-      if (this.info.mode === 'skm' || this.info.mode === 'ctf') {
-         for (var i = 0; i < this.info.teamCount; i++) {
-            this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
-         }
-      } else if (this.info.mode === 'inf') {
-         for (var _i = 0; _i < 2; _i++) {
-            // Only can be two teams in infection (healthy/infected)
-            this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+   // Helper Functions
+   this.detectPickup = function () {
+      if (!_this.carried) {
+         // If flag is unposessed
+         if (org.pos.x - org.col > _this.x - _this.width / 2 && org.pos.x + org.col < _this.x + _this.width / 2 && org.pos.y - org.col > _this.y - _this.height / 2 && org.pos.y + org.col < _this.y + _this.height / 2) {
+            // If org collides with flag
+            _this.pickup(socket.id); // Org picks up flag
          }
       }
-   }{
-      // Rounds
-      this.rounds = {
-         host: undefined, // Identification purposes
-         util: false, // If game utilizes rounds
-         waiting: true,
-         delayed: false,
-         delaystart: undefined,
-         rounddelay: _rounddelay,
-         start: undefined,
-         min: undefined, // Min players
-         winner: undefined
-      };
-      if (this.info.mode === 'srv' || this.info.mode === 'ctf' || this.info.mode === 'inf' || this.info.mode === 'kth') {
-         // If game mode utilizes round system
-         this.rounds.util = true;
-         this.rounds.host = this.info.host;
-         this.rounds.min = data.min;
-         this.rounds.waiting = true;
-      }
-   }
-   this.board = new Board(data);
-   this.world = new World(data);
-   if (this.info.mode === 'ctf') this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
-   this.players = [];
-   this.spectators = [];
-   this.orgs = [];
-   this.abilities = [];
-};
-
-function createGame(datA) {
-   game = new Game(datA);
-   socket.emit('Game Created', game);
-   if (game.info.protected) // If game is password protected
-      socket.emit('Password Created', { pass: datA.password, info: game.info });
-}
-'use strict';
-
-var games = [];
-var state;
-var mouseDown = false;
-
-function setup() {
-   state = 'setup';
-   noCanvas(); // Canvas settings
-   rectMode(CENTER); // "
-   ellipseMode(RADIUS); // "
-   angleMode(DEGREES); // "
-   textAlign(LEFT); // "
-
-   connectSocket();
-   var page = document.body.parentNode; // Edit global variable mouseDown to determine if mouse is down or up anywhere on the page
-   var md = function md() {
-      return mouseDown = true;
-   }; // "
-   page.removeEventListener('mousedown', md); // "
-   page.addEventListener('mousedown', md); // "
-   var mu = function mu() {
-      return mouseDown = false;
-   }; // "
-   page.removeEventListener('mouseup', mu); // "
-   page.addEventListener('mouseup', mu); // "
-   var socketInterval = setInterval(function () {
-      // Create instance of Ability, but socket object must exist first, so loop until socket exists
-      ability = new Ability({ player: socket.id }); // Create new instance of Ability
-      if (socket.id) {
-         // If socket.id has loaded
-         clearInterval(socketInterval); // End the loop
-      }
-   }, 50);
-   center = { // Set coordinates of center of window (and canvas)
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2
    };
-   renderTitle();
-   title = new Title();
-}
-
-/**
- * Initialize game
- * @param  object game_ game object holding all game-wide info
- * @param  object data: {
- *                         spectate: boolean true: initialize as spectator, false: initialize as player
- *                      }
- * @return void
- */
-function initialize(game_, data) {
-   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-   game = game_;
-   if (data.spectate !== true) {
-      // Field can be left undefined
-      spawn({ color: data.color, skin: data.skin, team: data.team });
-   } else if (data.spectate === true) {
-      spectate({ color: data.color, skin: data.skin, team: data.team });
-   }
-}
-
-/**
- * Event listener called when user presses a key
- * @return boolean false: disables default behaviors
- */
-function keyPressed() {
-   switch (keyCode) {
-      case Controls.ability1.code:
-         // X by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.extend.activated == true && ability.extend.can == true) {
-               extend(org.player); // Extend self
-            } else if (ability.compress.activated == true && ability.compress.can == true) {
-               shoot(0, 1);
-               // for (let i = 0; i < game.info.count; i++) {
-               //    if (org.target == game.players[i]) { // Find targeted org
-               //       compress(org.target); // Compress targeted org
-               //       break;
-               //    }
-               // }
-            } else if (ability.tag.activated == true && ability.tag.can == true) {
-               shoot(0, 1);
-            }
-            // if (ability.speed.activated == true) { // Speed/Slow; OLD
-            //    speed(org.player);
-            // } else if (ability.slow.activated == true) {
-            //    slow(org.target);
-            // }
-         }
-         break;
-      case Controls.ability2.code:
-         // C by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.immortality.activated == true && ability.immortality.can == true) {
-               immortality(org.player); // Immortalize self
-            } else if (ability.freeze.activated == true && ability.freeze.can == true) {
-               shoot(1, 1);
-               // for (let i = 0; i < game.info.count; i++) {
-               //    if (org.target == game.players[i]) { // Find targeted org
-               //       freeze(org.target); // Freeze targeted org
-               //       break;
-               //    }
-               // }
-            }
-         }
-         break;
-      case Controls.ability3.code:
-         // V by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
-            //    stimulate(org.player); // Stimulate self
-            // } else if (ability.poison.activated == true && ability.poison.can == true) {
-            //    shoot(2, 1);
-            //    // for (let i = 0; i < game.info.count; i++) {
-            //    //    if (org.target == game.players[i]) { // Find targeted org
-            //    //       poison(org.target); // Poison targeted org
-            //    //       break;
-            //    //    }
-            //    // }
-            // }
-            if (ability.neutralize.activated == true && ability.neutralize.can == true) {
-               neutralize(org.player);
-            } else if (ability.toxin.activated == true && ability.toxin.can == true) {
-               toxin(org.player);
-            }
-         }
-         break;
-      case Controls.ability4.code:
-         // SPACE by default
-         if ((state === 'game' || state === 'tutorial') && org.alive) {
-            if (ability.spore.value == false && ability.secrete.value == false) {
-               spore();
-            } else if (ability.spore.value == true && ability.secrete.value == false) {
-               secrete();
-            }
-         }
-         break;
-      case Controls.respawn.code:
-         // R by default
-         if (state == 'spectate' && org.alive == false && org.spawn == true) {
-            if (game.players.length < game.info.cap) {
-               socket.emit('Spectator Left', game.info);
-               renderMenu('respawn', game); // Load respawn menu
-            } else {
-               alert('Game is at maximum player capacity');
-               // Return to spectate mode
-            }
-         }
-         break;
-      case Controls.pause.code:
-         {
-            // ESC by default
-            switch (state) {// Used as the back key for menus (variable pause key may be used as well)
-               case 'createMenu':
-               case 'browser':
-                  renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
-                  break;
-               case 'joinMenu':
-                  if (game.info.host === socket.id) {
-                     // If player is host (If player is joining directly after creating the game)
-                     socket.emit('Game Ended', game);
-                     renderTitle();
-                  } else {
-                     renderBrowser();
-                  }
-                  break;
-               case 'spectateMenu':
-                  renderBrowser();
-                  break;
-               case 'game':
-                  renderMenu('pauseGame', game);
-                  break;
-               case 'spectate':
-                  renderMenu('pauseSpectate', game);
-                  break;
-               case 'tutorial':
-                  renderMenu('pauseTutorial', tutorial);
-                  break;
-               case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
-               case 'respawnMenu':
-                  // Respawn is included because 'back' for respawn should return to spectate
-                  state = 'spectate';
-                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-                  break;
-               case 'pauseGameMenu':
-                  var skip = false;
-                  for (var i = 0; i < game.players.length; i++) {
-                     if (game.players[i] === socket.id) {
-                        // If still is a player
-                        state = 'game';
-                        skip = true;
-                        break;
-                     }
-                  }
-                  if (!skip) {
-                     for (var _i = 0; _i < game.spectators.length; _i++) {
-                        if (game.spectators[_i] === socket.id) {
-                           state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
-                           break;
-                        }
-                     }
-                  }
-                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-                  break;
-               case 'pauseTutorialMenu':
-                  state = 'tutorial';
-                  ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-                  break;
-            }
-            break;
-         }
-   }
-   // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
-   switch (keyCode) {
-      case 27 !== Controls.pause.code ? 27 : '':
-         // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
-         switch (state) {// Used as the back key for menus (variable pause key may be used as well)
-            case 'createMenu':
-            case 'browser':
-               renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
-               break;
-            case 'joinMenu':
-               if (game.info.host === socket.id) {
-                  // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
-                  renderTitle();
-               } else {
-                  renderBrowser();
-               }
-               break;
-            case 'spectate':
-               renderBrowser();
-               break;
-            case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
-            case 'respawnMenu':
-               // Respawn is included because 'back' for respawn should return to spectate
-               state = 'spectate';
-               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-               break;
-            case 'pauseGameMenu':
-               var _skip = false;
-               for (var _i2 = 0; _i2 < game.players.length; _i2++) {
-                  if (game.players[_i2] === socket.id) {
-                     // If still is a player
-                     state = 'game';
-                     _skip = true;
-                     break;
-                  }
-               }
-               if (!_skip) {
-                  for (var _i3 = 0; _i3 < game.spectators.length; _i3++) {
-                     if (game.spectators[_i3] === socket.id) {
-                        state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
-                        break;
-                     }
-                  }
-               }
-               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-               break;
-            case 'pauseTutorialMenu':
-               state = 'tutorial';
-               ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-               break;
-         }
-         break;
-   }
-}
-
-/**
- * Event listener called when any mouse button is clicked
- *    Not currently in use
- * @return boolean false should disable default behaviors
- */
-function mouseClicked() {
-   if (mouseButton == LEFT) {
-      // if (state == 'game') { // DO NOT DELETE (Click detection is very long)
-      //    { // Targeting
-      //       org.target = undefined; // Clear target if click not on opponent org
-      //       for (let i = 0; i < game.info.count; i++) {
-      //          if (game.orgs[i].player == org.player) { // If org is player's org
-      //             continue; // Cannot target oneself
-      //          }
-      //          if (mouseX + org.off.x >= game.orgs[i].clickbox.left && mouseX + org.off.x <= game.orgs[i].clickbox.right && mouseY + org.off.y >= game.orgs[i].clickbox.top && mouseY + org.off.y <= game.orgs[i].clickbox.bottom) { // If clicked another org
-      //             org.target = game.orgs[i].player;
-      //             break;
-      //          }
-      //       }
-      //    }
-      // }
-      return false; // Supposedly negates default behavior
-   } else if (mouseButton == RIGHT) {
-      return false; // Supposedly negates default behavior
-   } else if (mouseButton == CENTER) {
-      return false; // Supposedly negates default behavior
-   }
-}
-
-/**
- * Event listener for when the browser's window frame is resized
- *    Resizes the canvas to match the window
- *    Resizes the world to match the canvas
- *    Updates variables to match changes
- * @return void
- */
-function windowResized() {
-   center = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2
+   this.pickup = function (carrier) {
+      _this.carried = true; // Org picks up flag
+      _this.carrier = carrier;
+      socket.emit('Flag', { flag: _this, host: game.info.host });
    };
-   var src = getSrc();
-   if (state === 'title' || state === 'browser' || state === 'tutorial') {
-      src.resize(0, 0, window.innerWidth, window.innerHeight);
-   } else if (state === 'game' || state === 'spectate') {
-      org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
-      org.off.y = org.pos.y - center.y;
-      ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-   } else if (state.indexOf('Menu') !== -1) {
-      var type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
-      var data = type === 'join' || type === 'spectate' || type === 'respawn' ? game : null; // Only join, spectate, and respawn menus use game variable as data
-      renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
-      if (src.src === 'title') {
-         // ^^ Cut out Menu at end of state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
-         src.resize(0, 0, window.innerWidth, window.innerHeight);
-      } else if (src.src === 'game') {
-         // If menu during game (player or spectator)
-         org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
-         org.off.y = org.pos.y - center.y;
-      } else if (src.src === 'tutorial') {
-         src.resize(0, 0, window.innerWidth, window.innerHeight);
-      } // Resize the content of the canvas in the background of menus
-   }
-}
-'use strict';
+};
+"use strict";
 
 function itemize(iteM, widtH, coloR, X, Y) {
    var item = iteM; // Directional array
@@ -2013,33 +3850,44 @@ function itemize(iteM, widtH, coloR, X, Y) {
    noStroke();
    rect(x, y, width, width);
    for (var i = 0; i < count; i++) {
-      if (item[i] == 'l') {
+      if (item[i] === 0) {
          x -= width;
-      } else if (item[i] == 'u') {
+      } else if (item[i] === 1) {
          y -= width;
-      } else if (item[i] == 'r') {
+      } else if (item[i] === 3) {
          x += width;
-      } else if (item[i] == 'd') {
+      } else if (item[i] === 2) {
          y += width;
+      } else {
+         console.error("Itemize(): Directional value out of bounds\n\t" + item[i] + " !== 0, 1, 2, or 3");
       }
       rect(x, y, width, width);
    }
 }
 
+/**
+ * Contains list of directions to draw pixels like a pen
+ * Encoding:
+ *    0: Left
+ *    1: Up
+ *    2: Down
+ *    3: Right
+ * @type {Object}
+ */
 var items = {
-   tag: ['u', 'l', 'd', 'l', 'l', 'r', 'r', 'd', 'r', 'd', 'd', 'u', 'u', 'r', 'u', 'r', 'r', 'l', 'l', 'u', 'l', 'u', 'u', 'u', 'u', 'u', 'u', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'd', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'd', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'l', 'd', 'l', 'l', 'l', 'u', 'r', 'u', 'u', 'u', 'u', 'u', 'u', 'l', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'r', 'd', 'd', 'l', 'l', 'd', 'l', 'u', 'l', 'd', 'l', 'u', 'l', 'd', 'l', 'u', 'l', 'd', 'u', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'u', 'u', 'u', 'u', 'u', 'u', 'r', 'u', 'r', 'r', 'r', 'd', 'l', 'd', 'd', 'd', 'd', 'd', 'd', 'r'],
-   extend: ['d', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'd', 'd', 'd', 'l', 'u', 'u', 'u', 'u', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'd', 'l', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'l', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'd', 'l', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'l', 'u', 'u', 'u', 'u', 'd', 'l', 'd', 'd', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'r', 'd', 'r', 'u', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'd', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'r', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'd', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'r', 'u', 'u', 'u', 'u', 'd', 'r', 'd', 'd'],
-   compress: ['l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'u', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'd', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'r', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'd', 'r', 'd', 'd', 'd', 'd', 'd', 'd', 'u', 'r', 'u', 'u', 'u', 'u', 'd', 'r', 'd', 'd', 'r', 'd', 'u', 'u', 'u', 'u', 'r', 'u', 'd', 'd', 'd', 'd', 'd', 'd', 'r', 'd', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'r', 'u', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'r', 'd', 'r', 'u', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'r', 'd', 'd', 'd', 'd', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u', 'r', 'd', 'd', 'd', 'd', 'r', 'u', 'u', 'u', 'u'],
+   tag: [1, 0, 2, 0, 0, 3, 3, 2, 3, 2, 2, 1, 1, 3, 1, 3, 3, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 3, 3, 3, 3, 3, 3, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 2, 3, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 0, 1, 3, 1, 1, 1, 1, 1, 1, 0, 3, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 0, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 1, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 3, 1, 3, 3, 3, 2, 0, 2, 2, 2, 2, 2, 2, 3],
+   extend: [2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 1, 1, 1, 1, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 2, 2, 2, 2, 2, 2, 1, 0, 1, 1, 1, 1, 2, 0, 2, 2, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 3, 2, 2, 2, 3, 1, 1, 1, 3, 2, 2, 2, 3, 1, 1, 1, 3, 2, 2, 2, 3, 1, 1, 1, 3, 2, 3, 1, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 2, 3, 2, 2],
+   compress: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 1, 1, 2, 3, 2, 2, 3, 2, 1, 1, 1, 1, 3, 1, 2, 2, 2, 2, 2, 2, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 3, 1, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 1, 0, 3, 2, 2, 2, 2, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1, 3, 2, 2, 2, 2, 3, 1, 1, 1, 1],
    // speed: [], 
    // slow: [], 
-   immortality: ['d', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'l', 'd', 'd', 'r', 'l', 'l', 'd', 'l', 'l', 'u', 'r', 'r', 'u', 'l', 'l', 'l', 'd', 'l', 'u', 'r', 'u', 'l', 'l', 'd', 'u', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'r', 'r', 'r', 'u', 'l', 'l', 'r', 'u', 'r', 'r', 'u', 'd', 'd', 'r', 'u', 'u', 'r', 'd', 'd', 'r', 'u', 'r', 'd', 'd', 'l', 'r', 'r', 'u', 'd', 'r', 'd', 'l', 'r', 'r', 'd', 'l', 'r', 'd', 'r', 'u', 'r', 'd', 'u', 'r', 'u', 'l', 'r', 'u', 'r', 'd', 'u', 'u', 'r', 'u', 'r', 'd', 'd', 'l', 'r', 'u', 'r', 'u', 'u', 'r', 'd', 'd', 'r', 'u', 'u', 'd', 'r', 'r', 'd', 'l', 'd', 'r', 'r', 'u', 'd', 'd', 'r', 'u', 'd', 'r', 'd', 'l', 'r', 'r', 'd', 'l', 'd', 'r', 'd', 'l', 'd', 'r', 'l', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'd', 'd', 'l', 'u', 'u', 'd', 'l', 'd', 'd', 'l', 'u', 'u', 'l', 'd', 'd', 'u', 'l', 'u', 'u', 'l', 'd', 'd', 'u', 'l', 'u', 'u', 'l', 'd', 'u', 'u', 'l', 'd', 'u', 'u'],
-   freeze: ['r', 'r', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'r', 'r', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'd', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'd', 'd', 'r', 'u', 'r', 'd', 'r', 'd', 'l', 'r', 'r', 'd', 'l', 'd', 'r', 'r', 'd', 'l', 'd', 'r', 'd', 'r', 'd', 'l', 'd', 'r', 'd', 'l', 'd', 'r', 'l', 'd', 'l', 'd', 'r', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'r', 'r', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'd', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'd', 'l', 'u', 'l', 'd', 'l', 'u', 'l', 'd', 'u', 'u', 'l', 'd', 'l', 'u', 'l', 'd', 'u', 'u', 'l', 'd', 'l', 'u', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'u', 'l', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'r', 'u', 'r', 'u', 'l', 'u', 'r'],
-   // stimulate: ['r', 'r', 'u', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'u', 'u', 'u', 'r', 'u', 'u', 'l', 'u', 'l', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'u', 'l', 'u', 'l', 'u', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'l', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'u', 'd', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'd', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'd', 'l', 'u', 'l', 'l', 'd', 'l', 'd', 'l', 'd', 'd', 'l', 'u'], 
-   // poison: ['l', 'l', 'l', 'l', 'l', 'l', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'l', 'd', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'l', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'd', 'r', 'r', 'r', 'r', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'l'], 
-   neutralize: ['r', 'r', 'u', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'u', 'u', 'u', 'r', 'u', 'u', 'l', 'u', 'l', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'r', 'd', 'u', 'l', 'u', 'l', 'u', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'l', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'u', 'd', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'd', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'd', 'l', 'u', 'l', 'l', 'd', 'l', 'd', 'l', 'd', 'd', 'l', 'u'],
-   toxin: ['l', 'l', 'l', 'l', 'l', 'l', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'l', 'd', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'd', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'r', 'r', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'u', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'l', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'd', 'r', 'r', 'r', 'r', 'u', 'u', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'l', 'l', 'u', 'l', 'l', 'l', 'l', 'l'], // Same as stimulate
-   spore: ['u', 'l', 'u', 'u', 'l', 'u', 'l', 'u', 'u', 'u', 'u', 'r', 'u', 'r', 'r', 'r', 'r', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'l', 'l', 'd', 'l', 'l', 'd', 'r', 'l', 'l', 'd', 'r', 'd', 'l', 'd', 'l', 'd', 'r', 'd', 'l', 'd', 'r', 'd', 'l', 'r', 'd', 'r', 'd', 'l', 'd', 'r', 'r', 'd', 'l', 'r', 'r', 'd', 'l', 'r', 'r', 'r', 'd', 'l', 'l', 'r', 'r', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'u', 'r', 'r', 'r', 'u', 'l', 'l', 'r', 'r', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'u', 'r', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'l', 'u', 'l', 'u', 'r', 'u', 'l', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'l', 'l', 'l', 'u', 'l', 'l', 'l', 'd', 'd', 'd', 'd', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'd', 'd', 'd', 'd', 'l', 'd', 'l', 'd', 'd', 'r', 'r', 'u', 'r', 'u', 'r', 'r', 'r', 'r', 'd', 'd', 'd', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'd', 'd', 'd', 'l', 'l', 'l', 'l', 'u', 'l', 'u', 'l', 'l', 'd', 'd', 'r', 'd', 'r', 'd', 'd', 'd', 'd', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'd', 'd', 'd', 'd', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'r', 'u', 'r', 'u', 'u', 'l', 'l', 'd', 'l', 'd', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'd', 'r', 'd', 'r', 'r', 'd', 'd', 'r', 'r', 'u', 'u', 'l'],
-   secrete: ['u', 'l', 'u', 'u', 'l', 'u', 'l', 'u', 'u', 'u', 'u', 'r', 'u', 'r', 'r', 'r', 'r', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'l', 'd', 'l', 'r', 'r', 'r', 'l', 'l', 'd', 'l', 'l', 'd', 'r', 'l', 'l', 'd', 'r', 'd', 'l', 'd', 'l', 'd', 'r', 'd', 'l', 'd', 'r', 'd', 'l', 'r', 'd', 'r', 'd', 'l', 'd', 'r', 'r', 'd', 'l', 'r', 'r', 'd', 'l', 'r', 'r', 'r', 'd', 'l', 'l', 'r', 'r', 'r', 'd', 'r', 'u', 'r', 'd', 'r', 'u', 'r', 'd', 'u', 'r', 'r', 'r', 'u', 'l', 'l', 'r', 'r', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'r', 'r', 'u', 'l', 'u', 'r', 'u', 'r', 'u', 'l', 'u', 'r', 'u', 'l', 'u', 'r', 'l', 'u', 'l', 'u', 'r', 'u', 'l', 'l', 'u', 'r', 'l', 'l', 'u', 'r', 'l', 'l', 'l', 'u', 'l', 'l', 'l', 'd', 'd', 'd', 'd', 'u', 'u', 'u', 'u', 'r', 'r', 'r', 'd', 'd', 'd', 'd', 'l', 'd', 'l', 'd', 'd', 'r', 'r', 'u', 'r', 'u', 'r', 'r', 'r', 'r', 'd', 'd', 'd', 'l', 'l', 'l', 'l', 'r', 'r', 'r', 'r', 'd', 'd', 'd', 'l', 'l', 'l', 'l', 'u', 'l', 'u', 'l', 'l', 'd', 'd', 'r', 'd', 'r', 'd', 'd', 'd', 'd', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'd', 'd', 'd', 'd', 'l', 'l', 'l', 'u', 'u', 'u', 'u', 'r', 'u', 'r', 'u', 'u', 'l', 'l', 'd', 'l', 'd', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'l', 'l', 'l', 'l', 'u', 'u', 'u', 'r', 'r', 'r', 'r', 'd', 'r', 'd', 'r', 'r', 'd', 'd', 'r', 'r', 'u', 'u', 'l'] // Same as spore (Should not differ)
+   immortality: [2, 2, 0, 1, 2, 2, 0, 1, 2, 2, 0, 1, 2, 2, 0, 1, 0, 2, 2, 3, 0, 0, 2, 0, 0, 1, 3, 3, 1, 0, 0, 0, 2, 0, 1, 3, 1, 0, 0, 2, 1, 0, 1, 3, 0, 0, 1, 3, 0, 0, 1, 3, 1, 0, 1, 3, 1, 0, 3, 3, 1, 0, 3, 3, 1, 0, 3, 3, 3, 1, 0, 0, 3, 1, 3, 3, 1, 2, 2, 3, 1, 1, 3, 2, 2, 3, 1, 3, 2, 2, 0, 3, 3, 1, 2, 3, 2, 0, 3, 3, 2, 0, 3, 2, 3, 1, 3, 2, 1, 3, 1, 0, 3, 1, 3, 2, 1, 1, 3, 1, 3, 2, 2, 0, 3, 1, 3, 1, 1, 3, 2, 2, 3, 1, 1, 2, 3, 3, 2, 0, 2, 3, 3, 1, 2, 2, 3, 1, 2, 3, 2, 0, 3, 3, 2, 0, 2, 3, 2, 0, 2, 3, 0, 2, 0, 1, 2, 2, 0, 1, 2, 2, 0, 1, 2, 2, 0, 1, 1, 2, 0, 2, 2, 0, 1, 1, 0, 2, 2, 1, 0, 1, 1, 0, 2, 2, 1, 0, 1, 1, 0, 2, 1, 1, 0, 2, 1, 1],
+   freeze: [3, 3, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 1, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 1, 0, 0, 0, 3, 3, 3, 1, 3, 2, 3, 1, 3, 2, 3, 1, 2, 2, 3, 1, 3, 2, 3, 1, 2, 2, 3, 1, 3, 2, 3, 2, 0, 3, 3, 2, 0, 2, 3, 3, 2, 0, 2, 3, 2, 3, 2, 0, 2, 3, 2, 0, 2, 3, 0, 2, 0, 2, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 3, 3, 3, 3, 3, 2, 0, 0, 0, 0, 0, 3, 3, 3, 3, 2, 0, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0, 2, 3, 3, 3, 0, 0, 0, 2, 0, 1, 0, 2, 0, 1, 0, 2, 1, 1, 0, 2, 0, 1, 0, 2, 1, 1, 0, 2, 0, 1, 0, 1, 3, 0, 0, 1, 3, 1, 0, 0, 1, 3, 1, 0, 1, 3, 0, 0, 1, 3, 1, 0, 1, 3, 1, 0, 3, 1, 3, 1, 0, 1, 3],
+   // stimulate: [3, 3, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 0, 1, 0, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 0, 1, 0, 1, 0, 0, 0, 2, 0, 3, 3, 3, 2, 0, 0, 0, 0, 2, 3, 3, 3, 0, 0, 0, 0, 0, 1, 2, 0, 2, 0, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 3, 3, 3, 3, 0, 2, 0, 2, 0, 1, 0, 0, 2, 0, 2, 0, 2, 2, 0, 1], 
+   // poison: [0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 3, 3, 3, 2, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 0, 0, 0, 0, 0], 
+   neutralize: [3, 3, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 1, 0, 1, 0, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 0, 1, 0, 1, 0, 0, 0, 2, 0, 3, 3, 3, 2, 0, 0, 0, 0, 2, 3, 3, 3, 0, 0, 0, 0, 0, 1, 2, 0, 2, 0, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3, 3, 3, 3, 3, 0, 2, 0, 2, 0, 1, 0, 0, 2, 0, 2, 0, 2, 2, 0, 1],
+   toxin: [0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 3, 3, 3, 3, 3, 0, 2, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 3, 3, 3, 2, 3, 3, 3, 3, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 0, 0, 0, 0, 0], // Same as stimulate
+   spore: [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 3, 1, 3, 3, 3, 3, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 0, 0, 2, 0, 0, 2, 3, 0, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 2, 3, 2, 0, 3, 2, 3, 2, 0, 2, 3, 3, 2, 0, 3, 3, 2, 0, 3, 3, 3, 2, 0, 0, 3, 3, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 1, 3, 3, 3, 1, 0, 0, 3, 3, 3, 1, 0, 3, 3, 1, 0, 3, 3, 1, 0, 1, 3, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 0, 1, 0, 1, 3, 1, 0, 0, 1, 3, 0, 0, 1, 3, 0, 0, 0, 1, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 3, 3, 3, 2, 2, 2, 2, 0, 2, 0, 2, 2, 3, 3, 1, 3, 1, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 0, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2, 3, 2, 3, 2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1, 3, 1, 3, 1, 1, 0, 0, 2, 0, 2, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 2, 3, 3, 1, 1, 0],
+   secrete: [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 3, 1, 3, 3, 3, 3, 2, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 3, 3, 0, 0, 2, 0, 0, 2, 3, 0, 0, 2, 3, 2, 0, 2, 0, 2, 3, 2, 0, 2, 3, 2, 0, 3, 2, 3, 2, 0, 2, 3, 3, 2, 0, 3, 3, 2, 0, 3, 3, 3, 2, 0, 0, 3, 3, 3, 2, 3, 1, 3, 2, 3, 1, 3, 2, 1, 3, 3, 3, 1, 0, 0, 3, 3, 3, 1, 0, 3, 3, 1, 0, 3, 3, 1, 0, 1, 3, 1, 3, 1, 0, 1, 3, 1, 0, 1, 3, 0, 1, 0, 1, 3, 1, 0, 0, 1, 3, 0, 0, 1, 3, 0, 0, 0, 1, 0, 0, 0, 2, 2, 2, 2, 1, 1, 1, 1, 3, 3, 3, 2, 2, 2, 2, 0, 2, 0, 2, 2, 3, 3, 1, 3, 1, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 0, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2, 3, 2, 3, 2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 1, 1, 1, 1, 3, 1, 3, 1, 1, 0, 0, 2, 0, 2, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2, 2, 3, 3, 1, 1, 0] // Same as spore (Should not differ)
 };
 'use strict';
 
@@ -4473,1459 +6321,6 @@ var messageWidth = function messageWidth(message) {
 };
 'use strict';
 
-var org;
-var Org = function Org(data) {
-   var _this = this;
-
-   // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
-   this.player = data.player;
-   this.color = data.color;
-   this.skin = data.skin;
-   this.team = data.team;
-   var src = getSrc();
-   if (src != undefined && src.src == 'game') {
-      if (game.rounds.util == true) {
-         this.ready = false; // org.ready ensures that org will only be forcibly respawned once
-      }
-      if (game.info.mode == 'srv' && game.rounds.waiting == false) {
-         this.spawn = false;
-      } else {
-         this.spawn = true; // Allowance to spawn
-      }
-      for (var i = 0; i < game.board.list.length; i++) {
-         if (game.board.list[i].player == this.player) {
-            // Find player name in leaderboard list
-            this.name = game.board.list[i].name;
-         }
-      }
-   }
-   if (data.spectate == true) {
-      this.speed = _spectatespeed; // Faster movement when spectating
-   } else {
-      this.speed = _movespeed; // Speed of position movement
-   }
-   this.cells = [];
-   this.count = 0;
-   this.x = function () {
-      // The average of all cell x values 
-      var sum = 0;
-      for (var i = 0; i < this.count; i++) {
-         sum += this.cells[i].x;
-      }
-      var average = sum / this.count;
-      return average;
-   };
-   this.y = function () {
-      // The average of all cell y values
-      var sum = 0;
-      for (var i = 0; i < this.count; i++) {
-         sum += this.cells[i].y;
-      }
-      var average = sum / this.count;
-      return average;
-   };
-   if (data.pos != undefined) {
-      this.pos = data.pos;
-   } else {
-      do {
-         this.pos = { // Position is the target's location in the world
-            x: floor(random(game.world.x + 50 + _cellwidth / 2, game.world.x + game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
-            y: floor(random(game.world.y + 50 + _cellwidth / 2, game.world.y + game.world.height - 50 - _cellwidth / 2))
-         };
-         var rePos = false;
-         if (game.world.type == 'rectangle') {
-            if (this.pos.x < game.world.x || this.pos.x > game.world.x + game.world.width || this.pos.y < game.world.y || this.pos.y > game.world.y + game.world.height) {
-               rePos = false;
-            }
-         } else if (game.world.type == 'ellipse') {
-            if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
-               rePos = true;
-            }
-         }
-         for (var _i = 0; _i < game.info.count; _i++) {
-            // Org Overlap
-            for (var j = 0; j < game.orgs[_i].count; j++) {
-               if (game.orgs[_i].cells[j].x - game.orgs[_i].cells[j].width <= this.pos.x && game.orgs[_i].cells[j].x + game.orgs[_i].cells[j].width >= this.pos.x && game.orgs[_i].cells[j].y - game.orgs[_i].cells[j].height <= this.pos.y && game.orgs[_i].cells[j].y + game.orgs[_i].cells[j].height >= this.pos.y) {
-                  // If position collides with enemy cell (Full width buffer is intended)
-                  rePos = true;
-                  break;
-               }
-            }
-            if (rePos == true) {
-               break;
-            }
-            var abilitY = game.abilities[_i];
-            if (abilitY.secrete.value == true) {
-               // Spore Secretions Overlap
-               for (var _j = 0; _j < abilitY.spore.count; _j++) {
-                  var cell = abilitY.spore.spores[_j];
-                  if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= abilitY.secrete.radius) {
-                     rePos = true;
-                     break;
-                  }
-               }
-            }
-            for (var _j2 = 0; _j2 < 3; _j2++) {
-               // Shoot Secretions Overlap
-               if (abilitY.shoot.secrete[_j2].value == true) {
-                  var _cell = abilitY.shoot.spore[_j2];
-                  var sec = abilitY.shoot.secrete[_j2];
-                  if (sqrt(sq(this.pos.x - _cell.x) + sq(this.pos.y - _cell.y)) <= sec.radius) {
-                     rePos = true;
-                     break;
-                  }
-               }
-            }
-            if (abilitY.toxin.value == true) {
-               // Toxin Overlap
-               if (sqrt(sq(this.pos.x - abilitY.toxin.x) + sq(this.pos.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
-                  rePos = true;
-               }
-            }
-            if (rePos == true) {
-               break;
-            }
-         }
-      } while (rePos == true);
-   }
-   this.off = { // Offset is the difference between pos and center
-      x: this.pos.x - center.x,
-      y: this.pos.y - center.y
-   };
-   this.col = 10; // Collision radius (square) for crosshair (used in collision detection with flag)
-   // this.target = undefined; // ID of player which this org is currently targeting (NOT IN USE)
-   // this.clickbox = { // Targeting box for other orgs to click (NOT IN USE)
-   //    width: undefined,
-   //    height: undefined,
-   //    x: undefined,
-   //    y: undefined,
-   //    left: this.pos.x,
-   //    right: this.pos.x,
-   //    top: this.pos.y,
-   //    bottom: this.pos.y,
-   //    buffer: _cellwidth / 2,
-   //    color: this.color
-   // };
-   this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
-   this.range = 50;
-   this.alive = false;
-   this.hit = undefined;
-   this.count = this.cells.length;
-   this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
-   /**
-    * Clear the growth interval(s) in this org
-    * @return void
-    */
-   this.clearIntervals = function () {
-      for (var _i2 = 0; _i2 < _this.intervals.length; _i2++) {
-         clearInterval(_this.intervals[_i2]);
-      }
-      _this.intervals = [];
-   };
-   this.tracker = { // Used to ensure no double org growth intervals
-      start: undefined,
-      end: undefined,
-      elap: undefined
-   };
-};
-
-var Cell = function Cell(x, y, org) {
-   this.player = org.player;
-   this.width = _cellwidth; // or 3x3
-   this.height = _cellwidth;
-   this.x = x;
-   this.y = y;
-   this.color = org.color;
-   this.r = function () {
-      // Distance from org center
-      var distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
-      return distance;
-   };
-   this.d = function (org) {
-      // Distance from target (Position in world)
-      var distance = sqrt(sq(this.x - org.pos.x) + sq(this.y - org.pos.y));
-      return distance;
-   };
-};
-
-function renderOrgs() {
-   var src = getSrc();
-   for (var i = 0; i < src.orgs.length; i++) {
-      for (var j = 0; j < src.orgs[i].count; j++) {
-         var cell = src.orgs[i].cells[j];
-         fill(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
-         if (src.orgs[i].skin == 'grid') {
-            stroke(40, 40, 40); // Draw constant grid (natural grid is variable)
-            strokeWeight(.25);
-            rect(cell.x, cell.y, cell.width, cell.height);
-         } else if (src.orgs[i].skin == 'circles') {
-            noStroke();
-            ellipse(cell.x, cell.y, cell.width / 2, cell.height / 2);
-         } else if (src.orgs[i].skin == 'ghost') {
-            noFill();
-            stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b);
-            strokeWeight(1);
-            rect(cell.x, cell.y, cell.width, cell.height);
-         } else if (src.orgs[i].skin == 'none') {
-            stroke(src.orgs[i].color.r, src.orgs[i].color.g, src.orgs[i].color.b); // Stroke over natural grid
-            strokeWeight(1);
-            rect(cell.x, cell.y, cell.width, cell.height);
-         }
-      }
-   }
-}
-
-var getRegionInfo = function getRegionInfo(orG) {
-   var enclosed = [];
-   var exposed = [];
-   var adjacent = [];
-   for (var i = 0; i < orG.count; i++) {
-      var test = { x: undefined, y: undefined };
-      var left = false;
-      var top = false;
-      var right = false;
-      var bottom = false;
-      for (var _j3 = 0; _j3 < orG.count; _j3++) {
-         if (i != _j3) {
-            test = { // Left
-               x: orG.cells[i].x - orG.cells[i].width,
-               y: orG.cells[i].y
-            };
-            if (test.x == orG.cells[_j3].x && test.y == orG.cells[_j3].y) {
-               left = true; // There is a friendly cell to the left
-            }
-            test = { // Top
-               x: orG.cells[i].x,
-               y: orG.cells[i].y - orG.cells[i].height
-            };
-            if (test.x == orG.cells[_j3].x && test.y == orG.cells[_j3].y) {
-               top = true; // There is a friendly cell to the top
-            }
-            test = { // Right
-               x: orG.cells[i].x + orG.cells[i].width,
-               y: orG.cells[i].y
-            };
-            if (test.x == orG.cells[_j3].x && test.y == orG.cells[_j3].y) {
-               right = true; // There is a friendly cell to the right
-            }
-            test = { // Bottom
-               x: orG.cells[i].x,
-               y: orG.cells[i].y + orG.cells[i].height
-            };
-            if (test.x == orG.cells[_j3].x && test.y == orG.cells[_j3].y) {
-               bottom = true; // There is a friendly cell to the bottom
-            }
-         }
-      }
-      if (left == true && top == true && right == true && bottom == true) {
-         // If cell is enclosed on all sides by friendly cells
-         enclosed.push(orG.cells[i]);
-      } else {
-         // If cell is not enclosed on all sides by friendly cells
-         exposed.push(orG.cells[i]);
-      }
-      if (left == false) {
-         // Push all empty regions adjacent to org
-         adjacent.push({ x: orG.cells[i].x - orG.cells[i].width, y: orG.cells[i].y });
-      }
-      if (top == false) {
-         adjacent.push({ x: orG.cells[i].x, y: orG.cells[i].y - orG.cells[i].height });
-      }
-      if (right == false) {
-         adjacent.push({ x: orG.cells[i].x + orG.cells[i].width, y: orG.cells[i].y });
-      }
-      if (bottom == false) {
-         adjacent.push({ x: orG.cells[i].x, y: orG.cells[i].y + orG.cells[i].height });
-      }
-   }
-   for (var j = 0; j < adjacent.length; j++) {
-      // Splice out empty regions adjacent to multiple cells
-      for (var k = 0; k < adjacent.length; k++) {
-         if (j != k) {
-            // If adjacent[j] and adjacent[k] are different regions
-            if (adjacent[k].x == adjacent[j].x && adjacent[k].y == adjacent[j].y) {
-               // If region is repeated
-               adjacent.splice(k, 1);
-               k--;
-            }
-            if (j >= adjacent.length) {
-               continue;
-            }
-         }
-      }
-   }
-   return {
-      enclosed: enclosed,
-      exposed: exposed,
-      adjacent: adjacent
-   };
-};
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-function spawn(data) {
-   // data: { color: {}, skin: '', team: '' }
-   state = 'game';
-   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
-   org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-   org.count++;
-   socket.emit('Player Joined', { info: game.info, org: org, ability: ability });
-}
-
-function spectate(data) {
-   // data: { color: {}, pos: {}, skin: '', team: '' }
-   state = 'spectate';
-   socket.emit('Spectator Joined', game);
-   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectate: true });
-}
-
-function renderUI() {
-   var src = getSrc();
-   // Crosshair
-   if (src.src != 'tutorial') {
-      noFill();
-      stroke(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b);
-      strokeWeight(1);
-      line(org.pos.x - 4, org.pos.y, org.pos.x + 4, org.pos.y);
-      line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
-   }
-
-   // // Targeting
-   // if (org.target) { // If org is targenting a player (NOT IN USE)
-   //    for (let i = 0; i < src.orgs.length; i++) {
-   //       if (src.orgs[i].player == org.target) { // Find targeted org
-   //          noFill();
-   //          stroke(src.orgs[i].clickbox.color.r, src.orgs[i].clickbox.color.g, src.orgs[i].clickbox.color.b);
-   //          strokeWeight(1);
-   //          rect(src.orgs[i].clickbox.x, src.orgs[i].clickbox.y, src.orgs[i].clickbox.width, src.orgs[i].clickbox.height, 2); // Draw Target Box
-   //       }
-   //    }
-   // }
-
-   // Screen Name Labels
-   if (Labels == true && src.src == 'game') {
-      fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
-      noStroke();
-      textFont('Helvetica');
-      if (game.world.color == 'black') {
-         textStyle(NORMAL);
-      } else if (game.world.color == 'white') {
-         textStyle(BOLD);
-      }
-      textSize(10);
-
-      var _loop = function _loop(i) {
-         for (var j = 0; j < game.board.list.length; j++) {
-            if (game.orgs[i].player == game.board.list[j].player) {
-               var x = function x() {
-                  // x() and y() cannot be accessed through orgs array, so code is copied and edited from org file
-                  var sum = 0;
-                  for (var k = 0; k < game.orgs[i].count; k++) {
-                     sum += game.orgs[i].cells[k].x;
-                  }
-                  var average = sum / game.orgs[i].count;
-                  return average;
-               };
-               var y = function y() {
-                  var sum = 0;
-                  for (var k = 0; k < game.orgs[i].count; k++) {
-                     sum += game.orgs[i].cells[k].y;
-                  }
-                  var average = sum / game.orgs[i].count;
-                  return average;
-               };
-               if (game.board.list[j].name.length <= 30) {
-                  text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
-               } else {
-                  text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
-               }
-            }
-         }
-      };
-
-      for (var i = 0; i < game.info.count; i++) {
-         _loop(i);
-      }
-   }
-
-   // Ability Cooldowns
-   if (src.stopped != true) {
-      for (var i in ability) {
-         // Regular Cooldowns
-         if (_typeof(ability[i]) == 'object' && i !== 'shoot') {
-            if (ability[i].cooling == true) {
-               cooldown(ability[i]);
-            }
-         }
-      }
-      for (var _i = 0; _i < ability.shoot.value.length; _i++) {
-         // Shoot Cooldown
-         if (ability.shoot.cooling[_i] == true) {
-            cooldown(ability.shoot);
-            break;
-         }
-      }
-   }
-
-   // Ability Tooltips
-   translate(org.off.x, org.off.y);
-   var current;
-   if (src.stopped == true) {
-      current = src.stopdate;
-   } else {
-      current = new Date(); // Set current time
-   }
-   if (ability.tag.activated == false) {
-      for (var _i2 = 0; _i2 < 4; _i2++) {
-         for (var j in ability) {
-            if (_typeof(ability[j]) == 'object') {
-               if (ability[j].i == _i2) {
-                  // Find corresponding ability set to tooltip
-                  if (ability[j].activated == true) {
-                     // Find corresponding activated ability to tooltip
-                     if (j == 'spore' && ability.secrete.value == true) {
-                        continue; // Do not draw spore
-                     }
-                     if (j == 'secrete' && ability.secrete.value == false) {
-                        continue; // Do not draw secrete
-                     }
-                     fill(215);
-                     stroke(0);
-                     strokeWeight(1);
-                     rect(center.x - 150 + _i2 * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
-                     var letter = void 0;
-                     if (_i2 == 0) {
-                        letter = Controls.ability1.key;
-                     } else if (_i2 == 1) {
-                        letter = Controls.ability2.key;
-                     } else if (_i2 == 2) {
-                        letter = Controls.ability3.key;
-                     } else if (_i2 == 3) {
-                        if (Controls.ability4.key == ' ') {
-                           letter = '_'; // Display space bar as underscore
-                        } else {
-                           letter = Controls.ability4.key;
-                        }
-                     }
-                     fill(0);
-                     noStroke();
-                     textSize(14);
-                     textFont('Consolas');
-                     textStyle(BOLD);
-                     text(letter, center.x - 150 + _i2 * 100 - textWidth(letter) / 2, height * 9 / 10 + 30 + 13);
-                     fill(0);
-                     stroke(0);
-                     strokeWeight(1);
-                     ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 30); // Background ellipse; Necessary to cover the key tip
-                     fill(215);
-                     noStroke();
-                     if (ability[j].j == 0) {
-                        // If defensive ability (or spore)
-                        // Ability
-                        if (ability[j].value == true) {
-                           // If during ability
-                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-                        } else if (ability[j].value == false && ability[j].can == false) {
-                           // If during cooldown
-                           arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
-                        } else if (ability[j].value == false && ability[j].can == true) {
-                           // If idling
-                           ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
-                        }
-                     } else if (ability[j].j == 1) {
-                        // If offensive ability
-                        if (ability[j].i < 3) {
-                           // If one of first three abilities (not secrete)
-                           noStroke();
-                           // Ability
-                           if (ability[j].can == true) {
-                              // Idle
-                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
-                           } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) {
-                              // If during ability
-                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (current - ability[j].start) / ability[j].time * 360); // Ability timeout timer
-                           } else if (ability[j].can == false && current - ability[j].start > ability[j].time) {
-                              // If during cooldown
-                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 + (current - ability[j].end) / ability[j].cooldown * 360); // Ability cooldown timer
-                           }
-                           // Shoot
-                           if (j != 'toxin') {
-                              // Toxin does not shoot
-                              stroke(0);
-                              if (ability.shoot.value[_i2] == false && ability.shoot.can[_i2] == true) {
-                                 // Idle
-                                 ellipse(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8);
-                              } else if (ability.shoot.value[_i2] == true && ability.shoot.can[_i2] == false) {
-                                 // If is shooting
-                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[_i2]) / ability.shoot.time * 360); // Ability timeout timer
-                              } else if (ability.shoot.secrete[_i2].value == true) {
-                                 // If is secreting
-                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360 - (current - ability.shoot.secrete[_i2].start) / ability.secrete.time * (360 - (ability.shoot.end[_i2] - ability.shoot.start[_i2]) / ability.shoot.time * 360)); // Secretion timer
-                              } else if (current - ability.shoot.secrete[_i2].end < ability.shoot.cooldown[_i2]) {
-                                 arc(center.x - 150 + _i2 * 100 - 41, height * 9 / 10, 8, 8, -90, -90 + (current - ability.shoot.secrete[_i2].end) / ability.shoot.cooldown[_i2] * 360); // Shoot cooldown timer (if no hit)
-                              }
-                           }
-                        } else if (ability[j].i == 3) {
-                           // Secrete
-                           if (ability[j].can == true) {
-                              // Idle
-                              ellipse(center.x - 150 + _i2 * 100, height * 9 / 10, 29);
-                           } else if (ability[j].can == false && current - ability[j].start <= ability[j].time) {
-                              // If during ability
-                              arc(center.x - 150 + _i2 * 100, height * 9 / 10, 29, 29, -90, -90 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360 - (current - ability[j].start) / ability[j].time * (360 - (ability.spore.end - ability.spore.start) / ability.spore.time * 360)); // Ability cooldown timer
-                           }
-                        }
-                     }
-                     itemize(items[j], 1, { r: 0, g: 0, b: 0 }, center.x - 150 + _i2 * 100, height * 9 / 10);
-                  }
-                  if (ability[j].value == true && ability[j].i < 3) {
-                     // Ability Activated Tooltip (Not for spore/secrete)
-                     if (ability[j].j == 0 || ability[j].i == 3) {
-                        // If defensive ability (+ secrete)
-                        fill(66, 244, 176); // Green
-                        noStroke();
-                        ellipse(center.x - 150 + _i2 * 100 - 9, height * 9 / 10 - 37, 5, 5);
-                     } else if (ability[j].j == 1 && ability[j].i != 3) {
-                        // If offensive ability (No secrete)
-                        fill(255, 141, 135); // Red
-                        noStroke();
-                        ellipse(center.x - 150 + _i2 * 100 + 9, height * 9 / 10 - 37, 5, 5);
-                     }
-                  }
-                  // fill(215);
-                  // ellipse(center.x - 150 + 3 * 100, height * 9 / 10, 29);
-               }
-            }
-         }
-      }
-   } else if (ability.tag.activated == true) {
-      fill(215);
-      stroke(0);
-      strokeWeight(1);
-      rect(center.x, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
-      var _letter = void 0;
-      if (ability.tag.i == 0) {
-         _letter = Controls.ability1.key;
-      } else if (ability.tag.i == 1) {
-         _letter = Controls.ability2.key;
-      } else if (ability.tag.i == 2) {
-         _letter = Controls.ability3.key;
-      } else if (ability.tag.i == 3) {
-         if (Controls.ability4.key == ' ') {
-            _letter = '_';
-         } else {
-            _letter = Controls.ability4.key;
-         }
-      }
-      fill(0);
-      noStroke();
-      textSize(14);
-      textFont('Consolas');
-      textStyle(BOLD);
-      text(_letter, center.x - textWidth(_letter) / 2, height * 9 / 10 + 30 + 13); // Letter text
-      // Ability Circles
-      fill(0);
-      stroke(0);
-      strokeWeight(1);
-      ellipse(center.x, height * 9 / 10, 30); // Background ellipse
-      fill(215);
-      noStroke();
-      if (ability.tag.can == true) {
-         // Idle
-         ellipse(center.x, height * 9 / 10, 29);
-      } else if (ability.tag.can == false && current - ability.tag.start <= ability.tag.time) {
-         // If during ability
-         arc(center.x, height * 9 / 10, 29, 29, -90, -90 - (current - ability.tag.start) / ability.tag.time * 360); // Ability timeout timer
-      } else if (ability.tag.can == false && current - ability.tag.start > ability.tag.time) {
-         // If during cooldown
-         arc(center.x, height * 9 / 10, 29, 29, -90, -90 + (current - ability.tag.end) / ability.tag.cooldown * 360); // Ability cooldown timer
-      }
-      itemize(items.tag, 1, { r: 0, g: 0, b: 0 }, center.x, height * 9 / 10);
-      // Shoot
-      fill(215);
-      stroke(0);
-      if (ability.shoot.value[ability.tag.i] == false && ability.shoot.can[ability.tag.i] == true) {
-         // Idle
-         ellipse(center.x - 41, height * 9 / 10, 8);
-      } else if (ability.shoot.value[ability.tag.i] == true && ability.shoot.can[ability.tag.i] == false) {
-         // If is shooting
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (current - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360); // Ability timeout timer
-      } else if (ability.shoot.secrete[ability.tag.i].value == true) {
-         // If is secreting
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360 - (current - ability.shoot.secrete[ability.tag.i].start) / ability.secrete.time * (360 - (ability.shoot.end[ability.tag.i] - ability.shoot.start[ability.tag.i]) / ability.shoot.time * 360)); // Secretion timer
-      } else if (current - ability.shoot.secrete[ability.tag.i].end < ability.shoot.cooldown[ability.tag.i]) {
-         arc(center.x - 41, height * 9 / 10, 8, 8, -90, -90 + (current - ability.shoot.secrete[ability.tag.i].end) / ability.shoot.cooldown[ability.tag.i] * 360); // Shoot cooldown timer (if no hit)
-      }
-      if (ability.tag.value == true) {
-         // Ability Activated Tooltip (only green for tag)
-         fill(66, 244, 176); // Green
-         noStroke();
-         ellipse(center.x - 9, height * 9 / 10 - 37, 5, 5);
-      }
-   }
-   translate(-org.off.x, -org.off.y);
-}
-
-var getSrc = function getSrc() {
-   var src = void 0;
-   switch (state) {
-      case 'game':
-      case 'spectate':
-      case 'respawnMenu':
-      case 'pauseGameMenu':
-      case 'pauseSpectateMenu':
-         src = game;
-         break;
-      case 'title':
-      case 'browser':
-      case 'createMenu':
-      case 'joinMenu':
-      case 'spectateMenu':
-         src = title;
-         break;
-      case 'tutorial':
-      case 'pauseTutorialMenu':
-         src = tutorial;
-         break;
-   }
-   return src;
-};
-
-function move() {
-   var keys = '';
-   if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) {
-      keys += 'l';
-   }
-   if (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code)) {
-      keys += 'u';
-   }
-   if (keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) {
-      keys += 'r';
-   }
-   if (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) {
-      keys += 'd';
-   }
-   switch (keys) {
-      case 'l':
-         org.pos.x -= org.speed;
-         break;
-      case 'u':
-         org.pos.y -= org.speed;
-         break;
-      case 'r':
-         org.pos.x += org.speed;
-         break;
-      case 'd':
-         org.pos.y += org.speed;
-         break;
-      case 'lu':
-         org.pos.x -= org.speed * cos45;
-         org.pos.y -= org.speed * cos45;
-         break;
-      case 'lr':
-         // Net zero
-         break;
-      case 'ld':
-         org.pos.x -= org.speed * cos45;
-         org.pos.y += org.speed * cos45;
-         break;
-      case 'ur':
-         org.pos.x += org.speed * cos45;
-         org.pos.y -= org.speed * cos45;
-         break;
-      case 'ud':
-         // Net zero
-         break;
-      case 'rd':
-         org.pos.x += org.speed * cos45;
-         org.pos.y += org.speed * cos45;
-         break;
-      case 'lur':
-         org.pos.y -= org.speed; // Net up
-         break;
-      case 'lud':
-         org.pos.x -= org.speed; // Net left
-         break;
-      case 'lrd':
-         org.pos.y += org.speed; // Net down
-         break;
-      case 'urd':
-         org.pos.x += org.speed; // Net right
-         break;
-      case 'lurd':
-         // Net zero
-         break;
-   }
-   if (keys != '') {
-      org.off.x = org.pos.x - center.x;
-      org.off.y = org.pos.y - center.y;
-   }
-}
-
-/**
- * Enter game by starting game interval (runLoop()) (with org growth)
- * @return void
- */
-function enter() {
-   if (!org.intervals.length) {
-      // org.intervals array must be of length 0
-      org.intervals.push(setInterval(function () {
-         return runLoop();
-      }, _ofrequency));
-   }
-}
-
-function runLoop() {
-   // Rounds
-   var current = new Date();
-   if (game.rounds.util) {
-      if (game.info.host == socket.id) {
-         // Only if player is host
-         if (game.rounds.waiting == true && game.rounds.delayed == false && game.info.count >= game.rounds.min) {
-            // If waiting, not delayed, and have minimum players
-            socket.emit('Round Delay', game);
-            game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-         } else if (game.rounds.waiting == true && game.rounds.delayed == true && current - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) {
-            // Only host; If 1 second left in round-begin delay
-            socket.emit('Force Spawn', game.info);
-         }
-      }
-      if (game.info.mode == 'srv') {
-         // Survival End-Game
-         if (game.rounds.waiting == false && game.rounds.delayed == false && game.info.count == 1 && game.players[0] == socket.id) {
-            // If during game and player is winner
-            for (var i = 0; i < game.board.list.length; i++) {
-               if (game.board.list[i].player == socket.id) {
-                  socket.emit('Round End', game.info);
-                  game.board.list[i].wins++;
-                  orderBoard(game.board.list);
-                  socket.emit('Board', { list: game.board.list, host: game.board.host });
-               }
-            }
-         }
-      }
-   }
-
-   grow(org);
-
-   // // Targeting DO NOT DELETE
-   // org.clickbox.left = org.x();
-   // org.clickbox.right = org.clickbox.left;
-   // org.clickbox.top = org.y();
-   // org.clickbox.bottom = org.clickbox.top;
-   // for (let i = 0; i < org.count; i++) { // Set the size of clickbox
-   //    if (org.cells[i].x - org.cells[i].width / 2 < org.clickbox.left) {
-   //       org.clickbox.left = org.cells[i].x - org.cells[i].width / 2;
-   //    }
-   //    if (org.cells[i].x + org.cells[i].width / 2 > org.clickbox.right) {
-   //       org.clickbox.right = org.cells[i].x + org.cells[i].width / 2;
-   //    }
-   //    if (org.cells[i].y - org.cells[i].height / 2 < org.clickbox.top) {
-   //       org.clickbox.top = org.cells[i].y - org.cells[i].height / 2;
-   //    }
-   //    if (org.cells[i].y + org.cells[i].height / 2 > org.clickbox.bottom) {
-   //       org.clickbox.bottom = org.cells[i].y + org.cells[i].height / 2;
-   //    }
-   // }
-   // org.clickbox.left -= org.clickbox.buffer;
-   // org.clickbox.right += org.clickbox.buffer;
-   // org.clickbox.top -= org.clickbox.buffer;
-   // org.clickbox.bottom += org.clickbox.buffer;
-   // org.clickbox.width = org.clickbox.right - org.clickbox.left;
-   // org.clickbox.height = org.clickbox.bottom - org.clickbox.top;
-   // org.clickbox.x = org.clickbox.left + org.clickbox.width / 2;
-   // org.clickbox.y = org.clickbox.top + org.clickbox.height / 2;
-
-   // CTF
-   if (game.info.mode === 'ctf') {
-      if (!game.flag.carried) {
-         if (org.pos.x - org.col > game.flag.x - game.flag.width / 2 && org.pos.x + org.col < game.flag.x + game.flag.width / 2 && org.pos.y - org.col > game.flag.y - game.flag.height / 2 && org.pos.y + org.col < game.flag.y + game.flag.height / 2) {
-            game.flag.carried = true;
-            game.flag.carrier = socket.id;
-            socket.emit('Flag', { flag: game.flag, host: game.info.host });
-         }
-      }
-   }
-
-   socket.emit('Org Update', [org.alive, // Only the following attributes of org need to be updated
-   org.cells, // Latency is decreased by only sending necessary data
-   org.off, org.pos, org.color, org.skin, org.team, org.coefficient, org.range]);
-   if (org.count === 0) {
-      for (var _i3 = 0; _i3 < game.board.list.length; _i3++) {
-         if (game.board.list[_i3].player === socket.id) {
-            // Add death to leaderboard
-            game.board.list[_i3].deaths++; // Add 1 to deaths counter
-            orderBoard(game.board.list); // Sort the list by kills then deaths
-            socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
-         }
-      }
-      if (org.hit !== org.player) {
-         // Cannot gain kill for suicide
-         for (var _i4 = 0; _i4 < game.board.list.length; _i4++) {
-            if (game.board.list[_i4].player === org.hit) {
-               // Find killer in leaderboard list
-               game.board.list[_i4].kills++;
-               orderBoard(game.board.list);
-               socket.emit('Board', { list: game.board.list, host: game.board.host });
-               break;
-            }
-         }
-      }
-      die(true);
-   }
-}
-
-function grow(org_) {
-   var org = org_;
-   // Avoid double intervals
-   if (org.tracker.start) {
-      // If tracker has been started
-      org.tracker.end = Date.now();
-      org.tracker.elap = org.tracker.end - org.tracker.start;
-   }
-   if (org.tracker.elap < _ofrequency * .6) {
-      // If org is growing ~twice as frequently as it should
-      switch (state) {// Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
-         case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
-         case 'pauseGameMenu':
-            org.clearIntervals();
-            org.intervals.push(setInterval(function () {
-               return runLoop();
-            }, _ofrequency));
-            break;
-      }
-   }
-   var src = getSrc();
-   var ability = void 0;
-   for (var i = 0; i < src.abilities.length; i++) {
-      if (src.abilities[i].player == org.player) {
-         ability = src.abilities[i];
-         break;
-      }
-   }
-   // Birth
-   var regions = getRegionInfo(org);
-   if (ability.freeze.value === false) {
-      // If org is not Frozen (cannot birth or die naturally)
-      // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
-      // if (ability.poison.value == true) {
-      //    if (random(0, ability.poison.factor) >= 1) { // Divide runs by factor of poison (Runs 1 / factor)
-      //       continue;
-      //    }
-      // }
-      for (var _i5 = 0; _i5 < regions.adjacent.length; _i5++) {
-         // Only Adjacent Regions Can Produce New Cells
-         // Don't birth new cell outside world boundary
-         if (src.world) {
-            if (src.world.type === 'rectangle') {
-               if (regions.adjacent[_i5].x - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].x + _cellwidth / 2 >= src.world.x + src.world.width || regions.adjacent[_i5].y - _cellwidth / 2 <= src.world.x || regions.adjacent[_i5].y + _cellwidth / 2 >= src.world.y + src.world.height) {
-                  // If new cell would be outside world boundary
-                  continue;
-               }
-            } else if (src.world.type === 'ellipse') {
-               var a = src.world.width / 2;
-               var b = src.world.height / 2;
-               var x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
-               var y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
-                  // If top-left corner is outside ellipse
-                  continue;
-               }
-               x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
-               y = regions.adjacent[_i5].y - _cellwidth / 2 - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
-                  // If top-right corner is outside ellipse
-                  continue;
-               }
-               x = regions.adjacent[_i5].x + _cellwidth / 2 - a;
-               y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
-                  // If bottom-right corner is outside ellipse
-                  continue;
-               }
-               x = regions.adjacent[_i5].x - _cellwidth / 2 - a;
-               y = regions.adjacent[_i5].y + _cellwidth / 2 - b;
-               if (sq(x) / sq(a) + sq(y) / sq(b) >= 1) {
-                  // If bottom-left corner is outside ellipse
-                  continue;
-               }
-            }
-         }
-         // Don't birth new cell on top of an opponent org
-         var overlap = false;
-         for (var j = 0; j < src.orgs.length; j++) {
-            if (src.orgs[j].player === org.player) {
-               // If org is player's org
-               continue;
-            }
-            for (var k = 0; k < src.orgs[j].count; k++) {
-               if (regions.adjacent[_i5].x + _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x + _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
-                  // If right side collides
-                  if (regions.adjacent[_i5].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
-                     // If bottom side collides
-                     overlap = true;
-                  } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
-                     // If top side collides
-                     overlap = true;
-                  }
-               } else if (regions.adjacent[_i5].x - _cellwidth / 2 >= src.orgs[j].cells[k].x - _cellwidth / 2 && regions.adjacent[_i5].x - _cellwidth / 2 <= src.orgs[j].cells[k].x + _cellwidth / 2) {
-                  // If left side collides
-                  if (regions.adjacent[_i5].y + _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y + _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
-                     // If bottom side collides
-                     overlap = true;
-                  } else if (regions.adjacent[_i5].y - _cellwidth / 2 >= src.orgs[j].cells[k].y - _cellwidth / 2 && regions.adjacent[_i5].y - _cellwidth / 2 <= src.orgs[j].cells[k].y + _cellwidth / 2) {
-                     // If top side collides
-                     overlap = true;
-                  }
-               }
-            }
-         }
-         if (overlap === true) {
-            continue;
-         }
-         // Birth new cell accordingly
-         if (ability.compress.value ^ ability.extend.value == 0) {
-            // compress.value NOT XOR extend.value
-            org.coefficient = -27.5;
-            org.range = _range;
-         } else if (ability.compress.value == true) {
-            org.coefficient = -31.5;
-            org.range = _range - 10;
-         } else if (ability.extend.value == true) {
-            org.coefficient = -25.5;
-            org.range = _range + 20;
-         }
-         var chance = org.coefficient * Math.log(sqrt(sq(regions.adjacent[_i5].x - org.pos.x) + sq(regions.adjacent[_i5].y - org.pos.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
-         if (random(0, 100) <= chance) {
-            var repeat = false;
-            for (var _j = 0; _j < org.count; _j++) {
-               if (regions.adjacent[_i5].x == org.cells[_j].x && regions.adjacent[_i5].y == org.cells[_j].y) {
-                  repeat = true;
-                  break;
-               }
-            }
-            if (repeat === false) {
-               org.cells.push(new Cell(regions.adjacent[_i5].x, regions.adjacent[_i5].y, org));
-               org.count++;
-            }
-         }
-      }
-   }
-
-   // Natural Death
-   if (ability.freeze.value === false) {
-      // If org is not Frozen (cannot birth or die naturally)
-      if (ability.immortality.value === false) {
-         // If org is not Immortal
-         for (var _i6 = 0; _i6 < regions.exposed.length; _i6++) {
-            // Only Exposed Cells Can Die
-            var _chance = org.coefficient * Math.log(-regions.exposed[_i6].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
-            if (regions.exposed[_i6].d(org) > org.range) {
-               // If exposed cell is outside maximum radius
-               for (var _j2 = 0; _j2 < org.count; _j2++) {
-                  if (regions.exposed[_i6].x === org.cells[_j2].x && regions.exposed[_i6].y === org.cells[_j2].y) {
-                     // Find exposed cell within org cells array
-                     org.cells.splice(_j2, 1);
-                     org.count--;
-                     regions.exposed.splice(_i6, 1);
-                     _i6--;
-                     _j2--;
-                     break;
-                  }
-               }
-               continue;
-            }
-            if (src.world.type == 'rectangle' && (regions.exposed[_i6].x < src.world.x || regions.exposed[_i6].x > src.world.x + src.world.width || regions.exposed[_i6].y < src.world.y || regions.exposed[_i6].y > src.world.y + src.world.height)) {
-               // If cell is outside rectangular world
-               for (var _j3 = 0; _j3 < org.count; _j3++) {
-                  if (regions.exposed[_i6].x === org.cells[_j3].x && regions.exposed[_i6].y === org.cells[_j3].y) {
-                     org.cells.splice(_j3, 1);
-                     org.count--;
-                     regions.exposed.splice(_i6, 1);
-                     _i6--;
-                     _j3--;
-                     break;
-                  }
-               }
-            } else if (src.world.type === 'ellipse' && sq(regions.exposed[_i6].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[_i6].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) {
-               // If outside elliptical world
-               for (var _j4 = 0; _j4 < org.count; _j4++) {
-                  if (regions.exposed[_i6].x === org.cells[_j4].x && regions.exposed[_i6].y === org.cells[_j4].y) {
-                     // Identify cell
-                     org.cells.splice(_j4, 1);
-                     org.count--;
-                     regions.exposed.splice(_i6, 1);
-                     _i6--;
-                     _j4--;
-                     break;
-                  }
-               }
-            }
-            if (random(0, 100) <= _chance) {
-               for (var _j5 = 0; _j5 < org.count; _j5++) {
-                  if (regions.exposed[_i6].x === org.cells[_j5].x && regions.exposed[_i6].y === org.cells[_j5].y) {
-                     org.cells.splice(_j5, 1);
-                     org.count--;
-                     regions.exposed.splice(_i6, 1);
-                     _i6--;
-                     _j5--;
-                     break;
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   // Abilities
-   for (var _i7 = 0; _i7 < src.orgs.length; _i7++) {
-      if (src.orgs[_i7].team === org.team && typeof team === 'string' && src.orgs[_i7].player !== socket.id) {
-         // If is friendly org but not own org
-         continue; // No friendly fire but can hurt self
-      }
-      if (src.abilities[_i7].secrete.value === true) {
-         // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
-         for (var _j6 = 0; _j6 < org.count; _j6++) {
-            for (var _k = 0; _k < src.abilities[_i7].spore.count; _k++) {
-               if (sqrt(sq(org.cells[_j6].x - src.abilities[_i7].spore.spores[_k].x) + sq(org.cells[_j6].y - src.abilities[_i7].spore.spores[_k].y)) <= src.abilities[_i7].secrete.radius) {
-                  // If center of cell is within secrete circle (subject to change)
-                  var skip = false;
-                  for (var l = 0; l < src.abilities.length; l++) {
-                     if (src.abilities[l].neutralize.value === true && sqrt(sq(org.cells[_j6].x - src.abilities[l].neutralize.x) + sq(org.cells[_j6].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) {
-                        // If center of cell is within neutralize circle
-                        skip = true;
-                        break;
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.hit = src.abilities[_i7].player;
-                  if (src.src === 'game' && org.hit !== org.player) {
-                     // Only for game; Only for other player hits
-                     for (var _l = 0; _l < src.teams.length; _l++) {
-                        // Search teams
-                        if (src.teams[_l].indexOf(org.hit) !== -1 && src.teams[_l].indexOf(org.player) !== -1) {
-                           // If player and hitter are on same team
-                           skip = true;
-                           break;
-                        }
-                     }
-                  }
-                  if (skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.cells.splice(_j6, 1);
-                  org.count--;
-                  _j6--;
-                  break;
-               }
-            }
-         }
-      }
-      for (var _j7 = 0; _j7 < 3; _j7++) {
-         // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
-         if (src.abilities[_i7].shoot.secrete[_j7].value == true) {
-            for (var _k2 = 0; _k2 < org.count; _k2++) {
-               if (sqrt(sq(org.cells[_k2].x - src.abilities[_i7].shoot.spore[_j7].x) + sq(org.cells[_k2].y - src.abilities[_i7].shoot.spore[_j7].y)) <= src.abilities[_i7].shoot.secrete[_j7].radius) {
-                  // If center of cell is within shoot circle (subject to change)
-                  var _skip = false;
-                  for (var _l2 = 0; _l2 < src.abilities.length; _l2++) {
-                     if (src.abilities[_l2].neutralize.value == true && sqrt(sq(org.cells[_j7].x - src.abilities[_l2].neutralize.x) + sq(org.cells[_j7].y - src.abilities[_l2].neutralize.y)) <= src.abilities[_l2].neutralize.radius) {
-                        // If center of cell is within neutralize circle
-                        _skip = true;
-                        break;
-                     }
-                  }
-                  if (_skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.hit = src.abilities[_i7].player;
-                  if (src.src === 'game' && org.hit !== org.player) {
-                     // Only for game; Only for other player hits
-                     for (var _l3 = 0; _l3 < src.teams.length; _l3++) {
-                        // Search teams
-                        if (src.teams[_l3].indexOf(org.hit) !== -1 && src.teams[_l3].indexOf(org.player) !== -1) {
-                           // If player and hitter are on same team
-                           _skip = true;
-                           break;
-                        }
-                     }
-                  }
-                  if (_skip == true) {
-                     continue; // Acid is ineffectual when neutralized
-                  }
-                  org.cells.splice(_k2, 1);
-                  org.count--;
-                  _k2--;
-                  // break; // Break causes cells to die one at a time (not default)
-               }
-            }
-         }
-      }
-      if (src.abilities[_i7].toxin.value == true) {
-         // Toxin
-         for (var _j8 = 0; _j8 < org.count; _j8++) {
-            if (org.player == src.abilities[_i7].player) {
-               // If is own org's toxin
-               continue; // Do not kill own cells
-            }
-            if (sqrt(sq(org.cells[_j8].x - src.abilities[_i7].toxin.x) + sq(org.cells[_j8].y - src.abilities[_i7].toxin.y)) <= src.abilities[_i7].toxin.radius) {
-               // If center of cell is within toxin circle
-               var _skip2 = false;
-               for (var _l4 = 0; _l4 < src.abilities.length; _l4++) {
-                  if (src.abilities[_l4].neutralize.value == true && sqrt(sq(org.cells[_j8].x - src.abilities[_l4].neutralize.x) + sq(org.cells[_j8].y - src.abilities[_l4].neutralize.y)) <= src.abilities[_l4].neutralize.radius) {
-                     // If center of cell is within neutralize circle
-                     _skip2 = true;
-                     break;
-                  }
-               }
-               if (_skip2 == true) {
-                  continue; // Acid is ineffectual when neutralized
-               }
-               org.hit = src.abilities[_i7].player;
-               if (src.src === 'game' && org.hit !== org.player) {
-                  // Only for game; Only for other player hits
-                  for (var _l5 = 0; _l5 < src.teams.length; _l5++) {
-                     // Search teams
-                     if (src.teams[_l5].indexOf(org.hit) !== -1 && src.teams[_l5].indexOf(org.player) !== -1) {
-                        // If player and hitter are on same team
-                        _skip2 = true;
-                        break;
-                     }
-                  }
-               }
-               if (_skip2 == true) {
-                  continue; // Acid is ineffectual when neutralized
-               }
-               org.cells.splice(_j8, 1); // Kill cell
-               org.count--;
-               _j8--;
-               // break; // Break causes cells to die one at a time (not default)
-            }
-         }
-      }
-   }
-
-   if (org.count == 0) {
-      org.alive = false;
-   } else {
-      org.alive = true;
-   }
-   org.tracker.start = Date.now();
-}
-
-function die(spectating) {
-   socket.emit('Dead', spectating);
-   org.clearIntervals();
-   for (var i in ability) {
-      // Reset Ability Cooldowns
-      if (_typeof(ability[i]) === 'object' && i !== 'shoot') {
-         // Avoid reference error
-         if (ability[i].activated != undefined && ability[i].activated == true) {
-            // If is a usable ability
-            clearTimeout(ability[i].timeout);
-            ability[i].value = false;
-            ability[i].can = true;
-            ability[i].cooling = false;
-            ability[i].start = undefined;
-            ability[i].end = undefined;
-         }
-      }
-   }
-   for (var _i8 = 0; _i8 < 3; _i8++) {
-      // Reset shoots
-      clearTimeout(ability.shoot.timeout[_i8]);
-      ability.shoot.value[_i8] = false;
-      ability.shoot.can[_i8] = true;
-      ability.shoot.spore[_i8] = undefined;
-      ability.shoot.secrete[_i8] = {};
-      ability.shoot.start[_i8] = undefined;
-      ability.shoot.end[_i8] = undefined;
-   }
-   socket.emit('Ability', ability);
-}
-'use strict';
-
-var socket = void 0; // Initialize in global scope
-var gamesInterval = void 0; // "
-// let emitGameInterval; // "
-function connectSocket() {
-   if (DEV) {
-      socket = io.connect('localhost:' + PORT); // Local server (Development only)
-   } else {
-      if (HEROKU) {
-         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
-      } else {
-         socket = io.connect('24.55.26.67:' + PORT); // Local Server
-      }
-   }
-
-   gamesInterval = setInterval(function () {
-      if (state !== 'game' && state !== 'spectate') {
-         socket.emit('Games Request');
-      }
-   }, 250);
-
-   // emitGameInterval = setInterval(() => {
-   //    if (state === 'game' || state === 'spectate') {
-   //       socket.emit('Game', { game: game });
-   //    }
-   // }, _renderfrequency);
-
-   socket.on('Games', function (data) {
-      // data: { games: , connections: }
-      games = data.games;
-      connections = data.connections;
-      if (state === 'browser') renderBrowser();
-   });
-
-   socket.on('Enter', function () {
-      return enter();
-   }); // Begin growth
-
-   socket.on('Force Spawn', function () {
-      die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
-      for (var i = 0; i < game.spectators.length; i++) {
-         if (game.spectators[i] === socket.id) {
-            // If player is spectator
-            socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
-         }
-      }
-      if (state === 'pauseSpectateMenu') {
-         renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
-      } else if (state === 'respawnMenu') {
-         renderMenu('pauseGame', game);
-         menus.pauseGame.submit();
-      }
-      spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
-      org.spawn = false;
-      org.ready = true; // org.ready ensures that org will only be forcibly respawned once
-   });
-
-   socket.on('Game', function (gamE) {
-      game = gamE;
-      if (ability.spore.value === true) {
-         ability.spore.interval();
-      }
-      for (var i = 0; i < 3; i++) {
-         if (ability.shoot.value[i] === true) {
-            ability.shoot.interval[i]();
-         }
-      }
-      switch (state) {
-         case 'game':
-         case 'pauseGameMenu':
-            {
-               translate(-org.off.x, -org.off.y);
-               renderWorld();
-               for (var _i = 0; _i < game.info.count; _i++) {
-                  renderToxin(game.abilities[_i]);
-               }
-               for (var _i2 = 0; _i2 < game.info.count; _i2++) {
-                  renderSecretions(game.abilities[_i2]);
-               }
-               for (var _i3 = 0; _i3 < game.info.count; _i3++) {
-                  renderNeutralize(game.abilities[_i3]);
-               }
-               renderOrgs();
-               for (var _i4 = 0; _i4 < game.info.count; _i4++) {
-                  renderSpores(game.abilities[_i4]);
-               }
-               renderUI();
-               renderLeaderboard();
-               translate(org.off.x, org.off.y);
-            }
-            renderMessages(); // Render messages outside translation
-            if (state === 'game') {
-               move(); // Move goes at the end so player does not render his movements before others
-            }
-            break;
-         case 'spectate':
-         case 'pauseSpectateMenu':
-         case 'respawnMenu':
-            {
-               translate(-org.off.x, -org.off.y);
-               renderWorld();
-               for (var _i5 = 0; _i5 < game.info.count; _i5++) {
-                  renderToxin(game.abilities[_i5]);
-               }
-               for (var _i6 = 0; _i6 < game.info.count; _i6++) {
-                  renderSecretions(game.abilities[_i6]);
-               }
-               for (var _i7 = 0; _i7 < game.info.count; _i7++) {
-                  renderNeutralize(game.abilities[_i7]);
-               }
-               renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
-               for (var _i8 = 0; _i8 < game.info.count; _i8++) {
-                  renderSpores(game.abilities[_i8]);
-               }
-               renderLeaderboard();
-               translate(org.off.x, org.off.y);
-            }
-            renderMessages();
-            if (state === 'spectate') {
-               move(); // Move is after messages so everything has same offset
-            }
-            break;
-      }
-   });
-
-   socket.on('Game Ended', function (game) {
-      if (game.info.host !== socket.id) {
-         // Don't alert host (he already knows)
-         alert('The game has ended');
-      }
-      renderTitle();
-   });
-
-   socket.on('Spectate', function () {
-      return spectate({ color: org.color, pos: org.pos, skin: org.skin, team: org.team });
-   });
-
-   {
-      // Abilities
-      socket.on('Tag', function () {
-         ability.tag.value = true;
-         clearTimeout(ability.tag.timeout);
-         socket.emit('Ability', ability);
-         if (game.info.mode === '') {
-            ability.tag.timeout = setTimeout(function () {
-               ability.tag.value = false;
-               socket.emit('Ability', ability);
-            }, ability.tag.time);
-         }
-      });
-
-      socket.on('Extend', function () {
-         ability.extend.value = true;
-         clearTimeout(ability.extend.timeout);
-         ability.extend.start = new Date();
-         socket.emit('Ability', ability);
-         ability.extend.timeout = setTimeout(function () {
-            // End ability
-            ability.extend.value = false;
-            ability.extend.end = new Date();
-            ability.extend.cooling = true;
-            socket.emit('Ability', ability);
-         }, ability.extend.time);
-      });
-
-      socket.on('Compress', function () {
-         ability.compress.value = true;
-         clearTimeout(ability.compress.timeout);
-         socket.emit('Ability', ability);
-         ability.compress.timeout = setTimeout(function () {
-            ability.compress.value = false;
-            socket.emit('Ability', ability);
-         }, ability.compress.time);
-      });
-
-      // socket.on('Speed', () => { // Not updated
-      //    ability.speed.value = true;
-      //    org.speed *= ability.speed.factor;
-      //    clearTimeout(ability.speed.timeout);
-      //    socket.emit('Ability', ability);
-      //    ability.speed.timeout = setTimeout(() => { // End ability
-      //       org.speed /= ability.speed.factor;
-      //       ability.speed.value = false;
-      //       socket.emit('Ability', ability);
-      //    }, ability.speed.time);
-      // });
-
-      // socket.on('Slow', () => { // Not updated
-      //    ability.slow.value = true;
-      //    org.speed /= ability.slow.factor; // Divide speed by factor
-      //    clearTimeout(ability.slow.timeout);
-      //    socket.emit('Ability', ability);
-      //    ability.slow.timeout = setTimeout(() => { // End ability
-      //       org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
-      //       ability.slow.value = false;
-      //       socket.emit('Ability', ability);
-      //    }, ability.slow.time);
-      // });
-
-      socket.on('Immortality', function () {
-         ability.immortality.value = true;
-         clearTimeout(ability.immortality.timeout);
-         ability.immortality.start = new Date();
-         socket.emit('Ability', ability);
-         ability.immortality.timeout = setTimeout(function () {
-            // End ability
-            ability.immortality.value = false;
-            ability.immortality.end = new Date();
-            ability.immortality.cooling = true;
-         }, ability.immortality.time);
-      });
-
-      socket.on('Freeze', function () {
-         ability.freeze.value = true;
-         clearTimeout(ability.freeze.timeout);
-         socket.emit('Ability', ability);
-         ability.freeze.timeout = setTimeout(function () {
-            // End ability
-            ability.freeze.value = false;
-            socket.emit('Ability', ability);
-         }, ability.freeze.time);
-      });
-
-      // socket.on('Stimulate', () => {
-      //    ability.stimulate.value = true;
-      //    clearTimeout(ability.stimulate.timeout);
-      //    ability.stimulate.start = new Date();
-      //    socket.emit('Ability', ability);
-      //    ability.stimulate.timeout = setTimeout(() => { // End ability
-      //       ability.stimulate.value = false;
-      //       ability.stimulate.end = new Date();
-      //       ability.stimulate.cooling = true;
-      //       socket.emit('Ability', ability);
-      //    }, ability.stimulate.time);
-      // });
-
-      // socket.on('Poison', () => {
-      //    ability.poison.value = true;
-      //    clearTimeout(ability.poison.timeout);
-      //    socket.emit('Ability', ability);
-      //    ability.poison.timeout = setTimeout(() => { // End ability
-      //       ability.poison.value = false;
-      //       socket.emit('Ability', ability);
-      //    }, ability.poison.time);
-      // });
-
-      socket.on('Neutralize', function () {
-         ability.neutralize.value = true;
-         ability.neutralize.start = new Date();
-         clearTimeout(ability.neutralize.timeout);
-         ability.neutralize.x = org.pos.x;
-         ability.neutralize.y = org.pos.y;
-         socket.emit('Ability', ability);
-         ability.neutralize.timeout = setTimeout(function () {
-            ability.neutralize.value = false;
-            ability.neutralize.end = new Date();
-            ability.neutralize.cooling = true;
-            socket.emit('Ability', ability);
-         }, ability.neutralize.time);
-      });
-
-      socket.on('Toxin', function () {
-         ability.toxin.value = true;
-         ability.toxin.start = new Date();
-         clearTimeout(ability.toxin.timeout);
-         ability.toxin.x = org.pos.x;
-         ability.toxin.y = org.pos.y;
-         socket.emit('Ability', ability);
-         ability.toxin.timeout = setTimeout(function () {
-            ability.toxin.value = false;
-            ability.toxin.end = new Date();
-            ability.toxin.cooling = true;
-            socket.emit('Ability', ability);
-         }, ability.toxin.time);
-      });
-   }
-}
-'use strict';
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -6015,7 +6410,7 @@ var Title = function Title() {
       }{
          // Calculate
          for (var _i = 0; _i < _this.orgs.length; _i++) {
-            grow(_this.orgs[_i]);
+            _this.orgs[_i].grow();
          }
       }
    }, _ofrequency);
@@ -6160,345 +6555,6 @@ var Shade = function Shade() {
       zIndex: '-1'
    };
    return React.createElement('div', { id: 'shade', style: style });
-};
-'use strict';
-
-var tutorial;
-
-function renderTutorial() {
-   clearInterval(title.interval);
-   ReactDOM.render(React.createElement(CanvasCont, null), eid('cont'));
-   state = 'tutorial';
-}
-
-var Tutorial = function Tutorial() {
-   var _this = this;
-
-   this.src = 'tutorial';
-   this.task = 'move';
-   this.taskTimeout = undefined;
-   this.margin = _margin;
-   this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin });{
-      // Org
-      var colors = [];
-      for (var j in orgColors.black) {
-         if (j != 'sun' && j != 'sky') {
-            // No bright colors which would obscure the crosshair in tutorial to minimize confusion
-            colors.push(orgColors.black[j]);
-         }
-      }
-      var color = random(colors);
-      org = new Org({ player: socket.id, color: color, skin: 'none', spectate: false, pos: { x: center.x, y: center.y }, title: false });
-      org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-      org.count++;
-   }
-   this.orgs = [org];
-   this.abilities = [ability];
-   this.ointerval = setInterval(function () {
-      for (var i = 0; i < _this.orgs.length; i++) {
-         grow(_this.orgs[i]);
-         if (org.count == 0) {
-            _this.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-            _this.orgs[i].count++;
-         }
-      }
-   }, _ofrequency); // 70ms
-   this.rinterval = setInterval(function () {
-      {
-         // Render
-         // Background
-         background(_this.world.backdrop.r, _this.world.backdrop.g, _this.world.backdrop.b);
-
-         // Shadows
-         {
-            // World
-            fill(_this.world.backdrop.r - 20, _this.world.backdrop.g - 20, _this.world.backdrop.b - 20);
-            noStroke();
-            rect(_this.world.x + _this.world.width / 2 + 7, _this.world.y + _this.world.height / 2 + 6, _this.world.width, _this.world.height);
-         }{
-            // Messages
-            if (Messages == true) {
-               textFont('Helvetica');
-               textStyle(NORMAL);
-               var message = currentMessage();
-               if (message != undefined) {
-                  var breaks = freq(message, '\n');
-                  var width = messageWidth(message);
-                  rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
-               }
-            }
-         }
-
-         // World
-         fill(_this.world.background.r, _this.world.background.g, _this.world.background.b);
-         stroke(_this.world.border.color.r, _this.world.border.color.g, _this.world.border.color.b);
-         strokeWeight(1);
-         rect(_this.world.x + _this.world.width / 2, _this.world.y + _this.world.height / 2, _this.world.width, _this.world.height);
-
-         // Game
-         renderToxin(ability);
-         renderSecretions(ability);
-         renderNeutralize(ability);
-         renderOrgs();
-         renderSpores(ability);
-         if (_this.task != 'move' && _this.task != 'survive') {
-            translate(-org.off.x, -org.off.y);
-            renderUI();
-            translate(org.off.x, org.off.y);
-         }
-         noFill(); // Crosshair
-         stroke(_this.world.border.color.r, _this.world.border.color.g, _this.world.border.color.b);
-         strokeWeight(1);
-         line(org.pos.x - 4, org.pos.y, org.pos.x + 4, org.pos.y);
-         line(org.pos.x, org.pos.y - 4, org.pos.x, org.pos.y + 4);
-         renderMessages(); // Render messages outside translation
-      }{
-         // Calculate
-         if (_this.stopped == false) {
-            if (ability.spore.value == true) {
-               ability.spore.interval();
-            }
-            for (var i = 0; i < 3; i++) {
-               if (ability.shoot.value[i] == true) {
-                  ability.shoot.interval[i]();
-               }
-            }
-            if (state == 'tutorial') {
-               move();
-            }
-         }
-         _this.detect();
-      }
-   }, _renderfrequency); // 40ms
-   this.clear = function () {
-      clearInterval(this.ointerval);
-      clearInterval(this.rinterval);
-   };
-   this.stopped = false;
-   this.stopdate = undefined;
-   this.stop = function () {
-      this.stopped = true;
-      this.stopdate = new Date();
-      clearInterval(this.ointerval);
-   };
-   this.resize = function (x, y, w, h) {
-      center.x = window.innerWidth / 2;
-      center.y = window.innerHeight / 2;
-      var old_x = this.world.x - this.margin;
-      var old_y = this.world.y - this.margin;
-      for (var i = 0; i < this.orgs.length; i++) {
-         this.orgs[i].pos.x = (this.orgs[i].pos.x - this.margin - old_x) / this.world.width * (w - this.margin * 2) + (this.margin + x); // Reposition org correctly
-         this.orgs[i].pos.y = (this.orgs[i].pos.y - this.margin - old_y) / this.world.height * (h - this.margin * 2) + (this.margin + y); // Must be before new world creation so can find percentage of former world size
-         this.orgs[i].cells = [];
-         this.orgs[i].cells[0] = new Cell(this.orgs[i].pos.x, this.orgs[i].pos.y, this.orgs[i]);
-         this.orgs[i].count = 1;
-      }
-      this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
-      if (state === 'tutorial') renderTutorial(); // Only render if state is 'tutorial'; otherwise, will render over pause menu
-   };
-   this.detect = function () {
-      var _this2 = this;
-
-      switch (this.task) {
-         case 'move':
-            {
-               if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) {
-                  // If a directional key is pressed
-                  this.task = 'fullscreen';
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        _this2.task = 'survive';
-                     }, 3500);
-                  }
-               }
-               break;
-            }
-         case 'survive':
-            {
-               if (this.taskTimeout == undefined) {
-                  this.taskTimeout = setTimeout(function () {
-                     _this2.taskTimeout = undefined;
-                     _this2.task = 'extend';
-                     ability.extend.activated = true;
-                     ability.extend.can = true;
-                     socket.emit('Ability', ability);
-                  }, 4500);
-               }
-               break;
-            }
-         case 'extend':
-            {
-               if (keyIsDown(Controls.ability1.code)) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.extend.activated = false;
-                        ability.extend.can = false;
-                        _this2.task = 'immortality';
-                        ability.immortality.activated = true;
-                        ability.immortality.can = true;
-                        socket.emit('Ability', ability);
-                     }, ability.extend.time);
-                  }
-               }
-               break;
-            }
-         case 'immortality':
-            {
-               if (keyIsDown(Controls.ability2.code)) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.immortality.activated = false;
-                        ability.immortality.can = false;
-                        _this2.task = 'neutralize';
-                        ability.neutralize.activated = true;
-                        ability.neutralize.can = true;
-                        socket.emit('Ability', ability);
-                     }, ability.immortality.time);
-                  }
-               }
-               break;
-            }
-         case 'neutralize':
-            {
-               if (keyIsDown(Controls.ability3.code)) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.neutralize.activated = false;
-                        ability.neutralize.can = false;
-                        _this2.task = 'shoot';
-                        ability.compress.activated = true;
-                        ability.compress.can = true;
-                        ability.freeze.activated = true;
-                        ability.freeze.can = true;
-                        socket.emit('Ability', ability);
-                     }, ability.neutralize.time);
-                  }
-               }
-               break;
-            }
-         case 'shoot':
-            {
-               if (this.taskTimeout == undefined) {
-                  this.taskTimeout = setTimeout(function () {
-                     _this2.taskTimeout = undefined;
-                     ability.freeze.activated = false;
-                     ability.freeze.can = false;
-                     _this2.task = 'compress';
-                     ability.compress.activated = true; // Redundancy
-                     ability.compress.can = true; // Redundancy
-                  }, 10000);
-               }
-               break;
-            }
-         case 'compress':
-            {
-               if (this.orgs.length == 1) {
-                  var _colors = [];
-                  for (var _j in orgColors.black) {
-                     if (_j != 'sun' && _j != 'lime') _colors.push(orgColors.black[_j]);
-                  }
-                  var _color = random(_colors);
-                  var pos = void 0;
-                  do {
-                     pos = { x: random(this.world.width), y: random(this.world.height) };
-                  } while (sqrt(sq(pos.x - org.pos.x) + sq(pos.y - org.pos.y)) < _range + 30); // _range + 20 is maximum extend range
-                  this.orgs.push(new Org({ player: 'bot' + 1, color: _color, skin: 'none', spectate: false, pos: pos, title: false }));
-                  this.orgs[1].cells[0] = new Cell(this.orgs[1].pos.x, this.orgs[1].pos.y, this.orgs[1]); // Create first cell in org
-                  this.orgs[1].count++;
-                  this.abilities[1] = new Ability({ player: 'bot' + 1 });
-               }
-               if (ability.compress.applied == true) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.compress.activated = false;
-                        ability.compress.can = false;
-                        ability.freeze.activated = true;
-                        ability.freeze.can = true;
-                        _this2.task = 'freeze';
-                     }, ability.compress.time);
-                  }
-               }
-               break;
-            }
-         case 'freeze':
-            {
-               if (ability.freeze.applied == true) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.freeze.activated = false;
-                        ability.freeze.can = false;
-                        ability.toxin.activated = true;
-                        ability.toxin.can = true;
-                        _this2.task = 'toxin';
-                     }, ability.freeze.time);
-                  }
-               }
-               break;
-            }
-         case 'toxin':
-            {
-               if (keyIsDown(Controls.ability3.code)) {
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.toxin.activated = false;
-                        ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
-                        _this2.task = 'spore';
-                        ability.spore.activated = true;
-                        ability.spore.can = true;
-                        ability.secrete.activated = true; // .can = false
-                        socket.emit('Ability', ability);
-                     }, ability.toxin.time);
-                  }
-               }
-               break;
-            }
-         case 'spore':
-            {
-               var current = new Date();
-               if (ability.secrete.value == true) {
-                  if (this.stopped == true) {
-                     this.stopped = false;
-                     this.ointerval = setInterval(function () {
-                        // Restart
-                        for (var i = 0; i < _this2.orgs.length; i++) {
-                           grow(_this2.orgs[i]);
-                           if (org.count == 0) {
-                              _this2.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
-                              _this2.orgs[i].count++;
-                           }
-                        }
-                     }, _ofrequency); // 70ms
-                     ability.spore.end = new Date();
-                     ability.secrete.start = new Date();
-                  }
-                  if (this.taskTimeout == undefined) {
-                     this.taskTimeout = setTimeout(function () {
-                        _this2.taskTimeout = undefined;
-                        ability.spore.activated = false;
-                        ability.spore.can = false;
-                        ability.secrete.activated = false;
-                        ability.secrete.can = false;
-                        _this2.task = 'done';
-                     }, ability.secrete.time);
-                  }
-               } else if (ability.spore.value == true && current - ability.spore.start >= ability.spore.time / 2) {
-                  if (this.stopped == false) {
-                     clearInterval(ability.spore.interval);
-                     clearTimeout(ability.spore.timeout);
-                     this.stop();
-                  }
-               }
-               break;
-            }
-      }
-   };
 };
 'use strict';
 

@@ -27,7 +27,7 @@ var Tutorial = function() {
    this.abilities = [ability];
    this.ointerval = setInterval(() => {
       for (let i = 0; i < this.orgs.length; i++) {
-         grow(this.orgs[i]);
+         this.orgs[i].grow();
          if (org.count == 0) {
             this.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
             this.orgs[i].count++;
@@ -293,7 +293,7 @@ var Tutorial = function() {
                      this.stopped = false;
                      this.ointerval = setInterval(() => { // Restart
                         for (let i = 0; i < this.orgs.length; i++) {
-                           grow(this.orgs[i]);
+                           this.orgs[i].grow();
                            if (org.count == 0) {
                               this.orgs[i].cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
                               this.orgs[i].count++;
