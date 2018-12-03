@@ -311,20 +311,20 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       this.naturalDeath();
       this.checkAbilities();
 
-      org.checkAlive();
+      this.checkAlive();
 
       socket.emit('Org Update', [
-         org.alive, // Only the following attributes of org need to be updated
-         org.cells, // Latency is decreased by only sending necessary data
-         org.off,
-         org.pos,
-         org.color,
-         org.skin,
-         org.team,
-         org.coefficient,
-         org.range
+         this.alive, // Only the following attributes of org need to be updated
+         this.cells, // Latency is decreased by only sending necessary data
+         this.off,
+         this.pos,
+         this.color,
+         this.skin,
+         this.team,
+         this.coefficient,
+         this.range
       ]);
-      if (org.count === 0) {
+      if (this.count === 0) {
          for (let i = 0; i < game.board.list.length; i++) {
             if (game.board.list[i].player === socket.id) { // Add death to leaderboard
                game.board.list[i].deaths++; // Add 1 to deaths counter
@@ -332,9 +332,9 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
             }
          }
-         if (org.hit !== org.player) { // Cannot gain kill for suicide
+         if (this.hit !== this.player) { // Cannot gain kill for suicide
             for (let i = 0; i < game.board.list.length; i++) {
-               if (game.board.list[i].player === org.hit) { // Find killer in leaderboard list
+               if (game.board.list[i].player === this.hit) { // Find killer in leaderboard list
                   game.board.list[i].kills++;
                   orderBoard(game.board.list);
                   socket.emit('Board', { list: game.board.list, host: game.board.host });
@@ -345,7 +345,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
          die(true);
       }
       
-      org.tracker.start = Date.now();
+      this.tracker.start = Date.now();
    };
    /**
     * Determine if and where cells should be born during a single tick
@@ -454,12 +454,12 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
          if (ability.immortality.value === false) { // If org is not Immortal
             for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
-               let chance = org.coefficient * Math.log(-regions.exposed[i].d(org) + (org.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
-               if (regions.exposed[i].d(org) > org.range) { // If exposed cell is outside maximum radius
-                  for (let j = 0; j < org.count; j++) {
-                     if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) { // Find exposed cell within org cells array
-                        org.cells.splice(j, 1);
-                        org.count--;
+               let chance = this.coefficient * Math.log(-regions.exposed[i].d(this) + (this.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100
+               if (regions.exposed[i].d(this) > this.range) { // If exposed cell is outside maximum radius
+                  for (let j = 0; j < this.count; j++) {
+                     if (regions.exposed[i].x === this.cells[j].x && regions.exposed[i].y === this.cells[j].y) { // Find exposed cell within org cells array
+                        this.cells.splice(j, 1);
+                        this.count--;
                         regions.exposed.splice(i, 1);
                         i--;
                         j--;
@@ -469,10 +469,10 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                   continue;
                }
                if (src.world.type == 'rectangle' && (regions.exposed[i].x < src.world.x || regions.exposed[i].x > src.world.x + src.world.width || regions.exposed[i].y < src.world.y || regions.exposed[i].y > src.world.y + src.world.height)) { // If cell is outside rectangular world
-                  for (let j = 0; j < org.count; j++) {
-                     if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) {
-                        org.cells.splice(j, 1);
-                        org.count--;
+                  for (let j = 0; j < this.count; j++) {
+                     if (regions.exposed[i].x === this.cells[j].x && regions.exposed[i].y === this.cells[j].y) {
+                        this.cells.splice(j, 1);
+                        this.count--;
                         regions.exposed.splice(i, 1);
                         i--;
                         j--;
@@ -480,10 +480,10 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                      }
                   }
                } else if (src.world.type === 'ellipse' && sq(regions.exposed[i].x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(regions.exposed[i].y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) { // If outside elliptical world
-                  for (let j = 0; j < org.count; j++) {
-                     if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) { // Identify cell
-                        org.cells.splice(j, 1);
-                        org.count--;
+                  for (let j = 0; j < this.count; j++) {
+                     if (regions.exposed[i].x === this.cells[j].x && regions.exposed[i].y === this.cells[j].y) { // Identify cell
+                        this.cells.splice(j, 1);
+                        this.count--;
                         regions.exposed.splice(i, 1);
                         i--;
                         j--;
@@ -492,10 +492,10 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                   }
                }
                if (random(0, 100) <= chance) {
-                  for (let j = 0; j < org.count; j++) {
-                     if (regions.exposed[i].x === org.cells[j].x && regions.exposed[i].y === org.cells[j].y) {
-                        org.cells.splice(j, 1);
-                        org.count--;
+                  for (let j = 0; j < this.count; j++) {
+                     if (regions.exposed[i].x === this.cells[j].x && regions.exposed[i].y === this.cells[j].y) {
+                        this.cells.splice(j, 1);
+                        this.count--;
                         regions.exposed.splice(i, 1);
                         i--;
                         j--;
@@ -509,37 +509,37 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
    };
    this.checkAbilities = () => {
       for (let i = 0; i < src.orgs.length; i++) {
-         if ((src.orgs[i].team === org.team && typeof team === 'string') && src.orgs[i].player !== socket.id) { // If is friendly org but not own org
+         if ((src.orgs[i].team === this.team && typeof team === 'string') && src.orgs[i].player !== socket.id) { // If is friendly org but not own org
             continue; // No friendly fire but can hurt self
          }
          if (src.abilities[i].secrete.value === true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
-            for (let j = 0; j < org.count; j++) {
+            for (let j = 0; j < this.count; j++) {
                for (let k = 0; k < src.abilities[i].spore.count; k++) {
-                  if (sqrt(sq(org.cells[j].x - src.abilities[i].spore.spores[k].x) + sq(org.cells[j].y - src.abilities[i].spore.spores[k].y)) <= src.abilities[i].secrete.radius) { // If center of cell is within secrete circle (subject to change)
+                  if (sqrt(sq(this.cells[j].x - src.abilities[i].spore.spores[k].x) + sq(this.cells[j].y - src.abilities[i].spore.spores[k].y)) <= src.abilities[i].secrete.radius) { // If center of cell is within secrete circle (subject to change)
                      let skip = false;
                      for (let l = 0; l < src.abilities.length; l++) {
-                        if (src.abilities[l].neutralize.value === true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+                        if (src.abilities[l].neutralize.value === true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
                            skip = true;
                            break;
                         }
                      }
-                     if (skip == true) {
+                     if (skip) {
                         continue; // Acid is ineffectual when neutralized
                      }
-                     org.hit = src.abilities[i].player;
-                     if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
+                     this.hit = src.abilities[i].player;
+                     if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                         for (let l = 0; l < src.teams.length; l++) { // Search teams
-                           if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
+                           if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
                               skip = true;
                               break;
                            }
                         }
                      }
-                     if (skip == true) {
+                     if (skip) {
                         continue; // Acid is ineffectual when neutralized
                      }
-                     org.cells.splice(j, 1);
-                     org.count--;
+                     this.cells.splice(j, 1);
+                     this.count--;
                      j--;
                      break;
                   }
@@ -548,32 +548,32 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
          }
          for (let j = 0; j < 3; j++) { // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
             if (src.abilities[i].shoot.secrete[j].value == true) {
-               for (let k = 0; k < org.count; k++) {
-                  if (sqrt(sq(org.cells[k].x - src.abilities[i].shoot.spore[j].x) + sq(org.cells[k].y - src.abilities[i].shoot.spore[j].y)) <= src.abilities[i].shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
+               for (let k = 0; k < this.count; k++) {
+                  if (sqrt(sq(this.cells[k].x - src.abilities[i].shoot.spore[j].x) + sq(this.cells[k].y - src.abilities[i].shoot.spore[j].y)) <= src.abilities[i].shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
                      let skip = false;
                      for (let l = 0; l < src.abilities.length; l++) {
-                        if (src.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+                        if (src.abilities[l].neutralize.value == true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
                            skip = true;
                            break;
                         }
                      }
-                     if (skip == true) {
+                     if (skip) {
                         continue; // Acid is ineffectual when neutralized
                      }
-                     org.hit = src.abilities[i].player;
-                     if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
+                     this.hit = src.abilities[i].player;
+                     if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                         for (let l = 0; l < src.teams.length; l++) { // Search teams
-                           if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
+                           if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
                               skip = true;
                               break;
                            }
                         }
                      }
-                     if (skip == true) {
+                     if (skip) {
                         continue; // Acid is ineffectual when neutralized
                      }
-                     org.cells.splice(k, 1);
-                     org.count--;
+                     this.cells.splice(k, 1);
+                     this.count--;
                      k--;
                      // break; // Break causes cells to die one at a time (not default)
                   }
@@ -581,35 +581,35 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
             }
          }
          if (src.abilities[i].toxin.value == true) { // Toxin
-            for (let j = 0; j < org.count; j++) {
-               if (org.player == src.abilities[i].player) { // If is own org's toxin
+            for (let j = 0; j < this.count; j++) {
+               if (this.player == src.abilities[i].player) { // If is own org's toxin
                   continue; // Do not kill own cells
                }
-               if (sqrt(sq(org.cells[j].x - src.abilities[i].toxin.x) + sq(org.cells[j].y - src.abilities[i].toxin.y)) <= src.abilities[i].toxin.radius) { // If center of cell is within toxin circle
+               if (sqrt(sq(this.cells[j].x - src.abilities[i].toxin.x) + sq(this.cells[j].y - src.abilities[i].toxin.y)) <= src.abilities[i].toxin.radius) { // If center of cell is within toxin circle
                   let skip = false;
                   for (let l = 0; l < src.abilities.length; l++) {
-                     if (src.abilities[l].neutralize.value == true && sqrt(sq(org.cells[j].x - src.abilities[l].neutralize.x) + sq(org.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
+                     if (src.abilities[l].neutralize.value == true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
                         skip = true;
                         break;
                      }
                   }
-                  if (skip == true) {
+                  if (skip) {
                      continue; // Acid is ineffectual when neutralized
                   }
-                  org.hit = src.abilities[i].player;
-                  if (src.src === 'game' && org.hit !== org.player) { // Only for game; Only for other player hits
+                  this.hit = src.abilities[i].player;
+                  if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                      for (let l = 0; l < src.teams.length; l++) { // Search teams
-                        if (src.teams[l].indexOf(org.hit) !== -1 && src.teams[l].indexOf(org.player) !== -1) { // If player and hitter are on same team
+                        if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
                            skip = true;
                            break;
                         }
                      }
                   }
-                  if (skip == true) {
+                  if (skip) {
                      continue; // Acid is ineffectual when neutralized
                   }
-                  org.cells.splice(j, 1); // Kill cell
-                  org.count--;
+                  this.cells.splice(j, 1); // Kill cell
+                  this.count--;
                   j--;
                   // break; // Break causes cells to die one at a time (not default)
                }
