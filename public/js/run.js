@@ -393,7 +393,7 @@ function roundBehaviors() {
             socket.emit('Force Spawn', game.info);
          }
       }
-      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count == 1 && game.players[0] === socket.id) { // Survival end-game: if during game and player is winner
+      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count <= 1 && game.players[0] === socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
          for (let i = 0; i < game.board.list.length; i++) {
             if (game.board.list[i].player == socket.id) {
                socket.emit('Round End', game.info);

@@ -460,7 +460,6 @@ io.sockets.on('connection', socket => {
 
    /*
       * Update Server Org
-      *
       * @param data: [
       *     org.alive,
       *     org.cells,

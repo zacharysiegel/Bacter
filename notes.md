@@ -143,7 +143,7 @@
       ✓ Change toxin to center on crosshair
       ✓ Fix return to menu no-org bug
       ✓ Fix subsequent game (in single session) spawn bug
-      Fix survival bug if multiple last players die on same tick
+      ✓ Fix survival bug if multiple last players die on same tick
       Fix survival bug where rounds after first have increased shrink frequency
       Fix password bug
    a3.2.0 - Capture the Flag + Infection + King of the Hill

@@ -316,7 +316,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       socket.emit('Org Update', [
          this.alive, // Only the following attributes of org need to be updated
          this.cells, // Latency is decreased by only sending necessary data
-         this.off,
+         this.off, // Order of this array matters and is encoded in /src/app.js @ socket.on('Org Update')
          this.pos,
          this.color,
          this.skin,
