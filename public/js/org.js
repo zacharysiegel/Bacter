@@ -352,7 +352,8 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
     * @return void
     */
    this.birth = () => {
-      var regions = this.getRegionInfo();
+      let src = getSrc();
+      let regions = this.getRegionInfo();
       if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
          // for (let a = 0; a < ability.stimulate.factor; a++) { // Multiply runs by factor of stimulate OLD
          // if (ability.poison.value == true) {
@@ -451,6 +452,8 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
     * @return void
     */
    this.naturalDeath = () => {
+      let src = getSrc();
+      let regions = this.getRegionInfo();
       if (ability.freeze.value === false) { // If org is not Frozen (cannot birth or die naturally)
          if (ability.immortality.value === false) { // If org is not Immortal
             for (let i = 0; i < regions.exposed.length; i++) { // Only Exposed Cells Can Die
@@ -508,6 +511,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       }
    };
    this.checkAbilities = () => {
+      let src = getSrc();
       for (let i = 0; i < src.orgs.length; i++) {
          if ((src.orgs[i].team === this.team && typeof team === 'string') && src.orgs[i].player !== socket.id) { // If is friendly org but not own org
             continue; // No friendly fire but can hurt self
