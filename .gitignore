@@ -58,7 +58,7 @@ typings/
 .env
 
 # Static Versions
-Previous Versions.zip
+archives/Previous Versions.zip
 
 # Sublime
 *.sublime-project
