@@ -278,10 +278,10 @@ io.sockets.on('connection', socket => {
       let granted = false;
       let hasPassword = false;
       for (let i = 0; i < passwords.length; i++) {
-         if (passwords[i].title == data.title) { // Identify game
+         if (passwords[i].title === data.title) { // Identify game
             hasPassword = true;
             for (let j = 0; j < passwords[i].permissed.length; j++) {
-               if (passwords[i].permissed[j] == socket.id) {
+               if (passwords[i].permissed[j] === socket.id) {
                   granted = true;
                   break;
                }
@@ -291,7 +291,7 @@ io.sockets.on('connection', socket => {
       }
       if (hasPassword === false || granted === true) {
          socket.emit('Permission Granted', data);
-      } else if (hasPassword == true && granted == false) {
+      } else if (hasPassword === true && granted === false) {
          socket.emit('Permission Denied', data);
       }
    });

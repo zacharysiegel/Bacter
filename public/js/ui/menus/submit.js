@@ -280,6 +280,8 @@ function submit(menuType) {
             socket.on('Permission Granted', grantedJoin.bind(this));
 
             function deniedJoin() {
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
                ok = false;
                if (password === '' || typeof password !== 'string') {
                   issues.push({ ['password']: 'A password is required for this game' });
@@ -288,11 +290,12 @@ function submit(menuType) {
                   issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
-               socket.off('Permission Denied');
                this.issue(issues);
             }
 
             function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
                if (ok) { // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
@@ -434,7 +437,6 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
-               socket.off('Permission Granted');
             }
          }
          break;
@@ -468,11 +470,13 @@ function submit(menuType) {
                }
             }
          } { // Password
-            socket.emit('Check Permission', { title: game.info.title, type: 'spectate' });
+            socket.emit('Check Permission', { title: game.info.title });
             socket.on('Permission Denied', deniedSpectate.bind(this));
             socket.on('Permission Granted', grantedSpectate.bind(this));
 
             function deniedSpectate() {
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
                ok = false;
                if (!password) {
                   issues.push({ ['password']: 'A password is required for this game' });
@@ -481,11 +485,12 @@ function submit(menuType) {
                   issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
-               socket.off('Permission Denied');
                this.issue(issues);
             }
 
             function grantedSpectate() {
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
                if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
@@ -513,7 +518,6 @@ function submit(menuType) {
                } else {
                   this.issue(issues);
                }
-               socket.off('Permission Granted');
             }
          }
          break;

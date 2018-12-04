@@ -223,3 +223,4 @@
    Fixed breaking bug in survival after multiple last players die on same tick  
    Fixed bug in survival where the world shrinks faster in successive rounds  
    Fixed incorrect or required password issue indication  
+   Fixed password listener bug  

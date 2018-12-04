@@ -147,6 +147,8 @@
       ✓ Fix survival bug where rounds after first have increased shrink frequency
       ✓ Fix incorrect or required password issue indicator
    a3.2.0 - Capture the Flag + Infection + King of the Hill
+      Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
+      Fix spectate password denial
       CTF
          ✓ Round system
             Round end at 3 captures
