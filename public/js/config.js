@@ -65,7 +65,7 @@ const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
 // Configurations
-const _ofrequency      = 70;    // Org update frequency
+const _orgfrequency      = 70;    // Org update frequency
 const _renderfrequency = 40;    // Rendering update frequency
 const _range           = 50;    // Org default maximum size
 const _cellwidth       = 6;     // Width of single cell (pixels)

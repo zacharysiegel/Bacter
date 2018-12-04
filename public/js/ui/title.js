@@ -78,7 +78,7 @@ var Title = function() {
             this.orgs[i].grow();
          }
       }
-   }, _ofrequency);
+   }, _orgfrequency);
 
    /**
     * Resize the title screen to fit the window dimensions

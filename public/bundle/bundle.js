@@ -789,7 +789,7 @@ var cos45 = 0.70710678118;
 var root2 = 1.41421356;
 
 // Configurations
-var _ofrequency = 70; // Org update frequency
+var _orgfrequency = 70; // Org update frequency
 var _renderfrequency = 40; // Rendering update frequency
 var _range = 50; // Org default maximum size
 var _cellwidth = 6; // Width of single cell (pixels)
@@ -1540,7 +1540,7 @@ var Org = function Org(data) {
          _this.tracker.end = Date.now();
          _this.tracker.elap = _this.tracker.end - _this.tracker.start;
       }
-      if (_this.tracker.elap < _ofrequency * .6) {
+      if (_this.tracker.elap < _orgfrequency * .6) {
          // If org is growing ~twice as frequently as it should
          switch (state) {// Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
             case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
@@ -1548,7 +1548,7 @@ var Org = function Org(data) {
                _this.clearIntervals();
                _this.intervals.push(setInterval(function () {
                   return runLoop();
-               }, _ofrequency));
+               }, _orgfrequency));
                break;
          }
       }
@@ -1569,7 +1569,8 @@ var Org = function Org(data) {
 
       socket.emit('Org Update', [_this.alive, // Only the following attributes of org need to be updated
       _this.cells, // Latency is decreased by only sending necessary data
-      _this.off, _this.pos, _this.color, _this.skin, _this.team, _this.coefficient, _this.range]);
+      _this.off, // Order of this array matters and is encoded in /src/app.js @ socket.on('Org Update')
+      _this.pos, _this.color, _this.skin, _this.team, _this.coefficient, _this.range]);
       if (_this.count === 0) {
          for (var _i5 = 0; _i5 < game.board.list.length; _i5++) {
             if (game.board.list[_i5].player === socket.id) {
@@ -2373,7 +2374,7 @@ function enter() {
       // org.intervals array must be of length 0
       org.intervals.push(setInterval(function () {
          return runLoop();
-      }, _ofrequency));
+      }, _orgfrequency));
    }
 }
 
@@ -2403,8 +2404,8 @@ function roundBehaviors() {
             socket.emit('Force Spawn', game.info);
          }
       }
-      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count == 1 && game.players[0] === socket.id) {
-         // Survival end-game: if during game and player is winner
+      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count <= 1 && game.players[0] === socket.id) {
+         // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
          for (var i = 0; i < game.board.list.length; i++) {
             if (game.board.list[i].player == socket.id) {
                socket.emit('Round End', game.info);
@@ -2766,7 +2767,7 @@ var Tutorial = function Tutorial() {
             _this.orgs[i].count++;
          }
       }
-   }, _ofrequency); // 70ms
+   }, _orgfrequency); // 70ms
    this.rinterval = setInterval(function () {
       {
          // Render
@@ -3038,7 +3039,7 @@ var Tutorial = function Tutorial() {
                               _this2.orgs[i].count++;
                            }
                         }
-                     }, _ofrequency); // 70ms
+                     }, _orgfrequency); // 70ms
                      ability.spore.end = new Date();
                      ability.secrete.start = new Date();
                   }
@@ -5682,16 +5683,15 @@ function submit(menuType) {
          }{
             var deniedJoin = function deniedJoin() {
                ok = false;
-               if (password == '' || typeof password !== 'string') {
-                  ok = false;
+               if (password === '' || typeof password !== 'string') {
                   issues.push(_defineProperty({}, 'password', 'A password is required for this game'));
                   // alert('A password is required for this game');
                } else {
-                  ok = false;
                   issues.push(_defineProperty({}, 'password', 'Password is invalid'));
                   // alert('Password is invalid');
                }
                socket.off('Permission Denied');
+               this.issue(issues);
             };
 
             var grantedJoin = function grantedJoin() {
@@ -5891,12 +5891,10 @@ function submit(menuType) {
             var deniedSpectate = function deniedSpectate() {
                ok = false;
                if (!password) {
-                  ok = false;
-                  issues.push('A password is required for this game');
+                  issues.push(_defineProperty({}, 'password', 'A password is required for this game'));
                   // alert('A password is required for this game');
                } else {
-                  ok = false;
-                  issues.push('Password is invalid');
+                  issues.push(_defineProperty({}, 'password', 'Password is invalid'));
                   // alert('Password is invalid');
                }
                socket.off('Permission Denied');
@@ -6431,7 +6429,7 @@ var Title = function Title() {
             _this.orgs[_i].grow();
          }
       }
-   }, _ofrequency);
+   }, _orgfrequency);
 
    /**
     * Resize the title screen to fit the window dimensions

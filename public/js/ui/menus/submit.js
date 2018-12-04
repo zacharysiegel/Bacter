@@ -281,16 +281,15 @@ function submit(menuType) {
 
             function deniedJoin() {
                ok = false;
-               if (password == '' || typeof password !== 'string') {
-                  ok = false;
+               if (password === '' || typeof password !== 'string') {
                   issues.push({ ['password']: 'A password is required for this game' });
                   // alert('A password is required for this game');
                } else {
-                  ok = false;
                   issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
                socket.off('Permission Denied');
+               this.issue(issues);
             }
 
             function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
@@ -476,12 +475,10 @@ function submit(menuType) {
             function deniedSpectate() {
                ok = false;
                if (!password) {
-                  ok = false;
-                  issues.push('A password is required for this game');
+                  issues.push({ ['password']: 'A password is required for this game' });
                   // alert('A password is required for this game');
                } else {
-                  ok = false;
-                  issues.push('Password is invalid');
+                  issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
                socket.off('Permission Denied');

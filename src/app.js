@@ -366,7 +366,12 @@ io.sockets.on('connection', socket => {
       }
    });
 
-   // Round End
+   /**
+    * Round End
+    *    Received upon round of survival ending after only one player stands (or zero if multiple die on same tick)
+    * @param  {Object} data: game.info
+    * @return {void}
+    */
    socket.on('Round End', (data) => { // data is game.info
       for (let i = 0; i < games.length; i++) {
          if (games[i].info.host == data.host) { // Identify game
@@ -386,17 +391,18 @@ io.sockets.on('connection', socket => {
          }
          io.in(data.title).emit('Force Spawn');
       }, config._delaytime);
-      if (data.mode == 'srv') {
-         for (let i = 0; i < shrinkIntervals.length; i++) { // Remove shrink interval
-            if (shrinkIntervals[i].host == data.host) { // Identify shrink interval
+      if (data.mode === 'srv') {
+         for (let i = 0; i < shrinkIntervals.length; i++) {
+            if (shrinkIntervals[i].host === data.host) { // Identify shrink interval
                clearInterval(shrinkIntervals[i].interval);
-               for (let i = 0; i < games.length; i++) {
-                  if (games[i].info.host == data.host) {
-                     games[i].world.width = shrinkIntervals[i].width; // shrinkIntervals[i].world is preserved from 'Round Delay'
-                     games[i].world.height = shrinkIntervals[i].height; // Reset world width and height
+               for (let j = 0; j < games.length; j++) {
+                  if (games[j].info.host === data.host) {
+                     games[j].world.width = shrinkIntervals[i].width; // shrinkIntervals[i].world is preserved from 'Round Delay'
+                     games[j].world.height = shrinkIntervals[i].height; // Reset world width and height
+                     break;
                   }
                }
-               shrinkIntervals.splice(i, 1);
+               shrinkIntervals.splice(i, 1); // Remove shrink interval
                break;
             }
          }
@@ -415,27 +421,25 @@ io.sockets.on('connection', socket => {
       }
       let delay = setTimeout(() => {
          for (let i = 0; i < games.length; i++) {
-            if (games[i].info.host == game.info.host) { // Identify game
+            if (games[i].info.host === game.info.host) { // Identify game
                games[i].rounds.waiting = false; // Start Round
                games[i].rounds.delayed = false;
-               if (game.info.mode == 'srv') { // If is survival mode
+               if (game.info.mode === 'srv') { // If is survival mode
                   shrinkIntervals.push({ // Shrink the world
-                     host: game.info.host, 
-                     width: game.world.width, 
-                     height: game.world.height, 
+                     host: game.info.host,
+                     width: game.world.width, // Preserve initial width of world
+                     height: game.world.height, // Preserve initial height of world
                      interval: setInterval(() => {
-                        for (let i = 0; i < games.length; i++) {
-                           if (games[i].info.host == game.info.host) { // Identify game
-                              if (games[i].world.width > 200 && games[i].world.height > 200) { // If both dimensions are greater than minimum
-                                 games[i].world.width -= config._shrinkrate;
-                                 games[i].world.height -= config._shrinkrate;
-                                 games[i].world.x += config._shrinkrate / 2; // World shrinks to center
-                                 games[i].world.y += config._shrinkrate / 2;
-                                 break;
-                              }
+                        for (let j = 0; j < games.length; j++) {
+                           if (games[j].info.host === game.info.host && (games[j].world.width > 200 && games[j].world.height > 200)) { // Identify game; If both dimensions are greater than minimum
+                              games[j].world.width -= config._shrinkrate;
+                              games[j].world.height -= config._shrinkrate;
+                              games[j].world.x += config._shrinkrate / 2; // World shrinks to center
+                              games[j].world.y += config._shrinkrate / 2;
+                              break;
                            }
                         }
-                     }, 40) // Same frequency as game interval
+                     }, config._renderfrequency) // Same frequency as game interval
                   });
                }
                games[i].rounds.start = (new Date()).valueOf();

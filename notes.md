@@ -144,8 +144,8 @@
       ✓ Fix return to menu no-org bug
       ✓ Fix subsequent game (in single session) spawn bug
       ✓ Fix survival bug if multiple last players die on same tick
-      Fix survival bug where rounds after first have increased shrink frequency
-      Fix password bug
+      ✓ Fix survival bug where rounds after first have increased shrink frequency
+      ✓ Fix incorrect or required password issue indicator
    a3.2.0 - Capture the Flag + Infection + King of the Hill
       CTF
          ✓ Round system

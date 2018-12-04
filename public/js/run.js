@@ -366,7 +366,7 @@ function move() {
  */
 function enter() {
    if (!org.intervals.length) { // org.intervals array must be of length 0
-      org.intervals.push(setInterval(() => runLoop(), _ofrequency));
+      org.intervals.push(setInterval(() => runLoop(), _orgfrequency));
    }
 }
 

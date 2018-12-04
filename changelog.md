@@ -220,4 +220,6 @@
    Fixed latency issues  
    Fixed current color detection in spawn and pause menus  
    Fixed in-game window resizing issue  
-   Fixed bug where multiple last players die on same tick in survival  
+   Fixed breaking bug in survival after multiple last players die on same tick  
+   Fixed bug in survival where the world shrinks faster in successive rounds  
+   Fixed incorrect or required password issue indication  

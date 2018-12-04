@@ -33,7 +33,7 @@ var Tutorial = function() {
             this.orgs[i].count++;
          }
       }
-   }, _ofrequency); // 70ms
+   }, _orgfrequency); // 70ms
    this.rinterval = setInterval(() => {
       { // Render
          // Background
@@ -299,7 +299,7 @@ var Tutorial = function() {
                               this.orgs[i].count++;
                            }
                         }
-                     }, _ofrequency); // 70ms
+                     }, _orgfrequency); // 70ms
                      ability.spore.end = new Date();
                      ability.secrete.start = new Date();
                   }

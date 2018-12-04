@@ -289,12 +289,12 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
          this.tracker.end = Date.now();
          this.tracker.elap = this.tracker.end - this.tracker.start;
       }
-      if (this.tracker.elap < _ofrequency * .6) { // If org is growing ~twice as frequently as it should
+      if (this.tracker.elap < _orgfrequency * .6) { // If org is growing ~twice as frequently as it should
          switch (state) { // Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
             case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
             case 'pauseGameMenu':
                this.clearIntervals();
-               this.intervals.push(setInterval(() => runLoop(), _ofrequency));
+               this.intervals.push(setInterval(() => runLoop(), _orgfrequency));
                break;
          }
       }
