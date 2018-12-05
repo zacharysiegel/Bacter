@@ -210,8 +210,6 @@
    Fixed minor player cap bug  
 
 ## a3.1.2
-   Added analytics by Google  
-   Added Google search console verification  
    Changed neutralize/toxin center from center of mass to crosshair  
    Changed text in respawn menu from 'Respawn' to 'Spawn'  
    Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'  
@@ -224,3 +222,5 @@
    Fixed bug in survival where the world shrinks faster in successive rounds  
    Fixed incorrect or required password issue indication  
    Fixed password listener bug  
+   Fixed spectator password denial  
+   Fixed spectate menu double issue indicators  

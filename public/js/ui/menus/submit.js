@@ -275,7 +275,7 @@ function submit(menuType) {
                renderTitle();
             }
          } { // Password
-            socket.emit('Check Permission', { title: game.info.title, type: 'join' });
+            socket.emit('Check Permission', { title: game.info.title });
             socket.on('Permission Denied', deniedJoin.bind(this)); // Call bound function so this.issues() can be called from within
             socket.on('Permission Granted', grantedJoin.bind(this));
 

@@ -1,4 +1,4 @@
-const PRINT_DEV = true; // Developer mode for printing to the console
+const PRINT_DEV = false; // Developer mode for printing to the console
 
 /**
  * Same functionality as console.log() if print developer mode is enabled (PRINT_DEV === true)

@@ -1,5 +1,5 @@
 // Socket Settings
-const DEV = true;
+const DEV = false;
 const HEROKU = true;
 const PORT = 80;
 

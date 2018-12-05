@@ -4467,9 +4467,9 @@ var Menu = function (_React$Component) {
                }
             }
          }
+         stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu; Buffer of empty array is necessary
          if (issues.length) {
             // If there are any remaining issues (issues with instance '' which do not apply to any single input)
-            stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu
             for (var _i = 0; _i < count; _i++) {
                // count is the number of remaining issues
                var key = getKeys(issues[_i])[0];
@@ -5240,7 +5240,7 @@ var Text = function (_React$Component) {
       value: function applyInstance() {
          switch (this.instance) {
             case 'password':
-               if (this.menuType === 'join') // Caution: password instance exists in create and join menus
+               if (this.menuType === 'join' || this.menuType === 'spectate') // Caution: password instance exists in create and join/spectate menus
                   socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
                break;
          }
@@ -5259,7 +5259,7 @@ var Text = function (_React$Component) {
       value: function handleChange(e) {
          // e.target is dom element of target
          this.props.update(this.instance, e.target.value);
-         if (this.instance === 'password' && this.menuType === 'join') {
+         if (this.instance === 'password' && (this.menuType === 'join' || this.menuType === 'spectate')) {
             socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
          }
       }
@@ -5851,7 +5851,7 @@ function submit(menuType) {
             };
 
             // Password
-            socket.emit('Check Permission', { title: game.info.title, type: 'join' });
+            socket.emit('Check Permission', { title: game.info.title });
             socket.on('Permission Denied', deniedJoin.bind(this)); // Call bound function so this.issues() can be called from within
             socket.on('Permission Granted', grantedJoin.bind(this));
          }
@@ -5938,7 +5938,7 @@ function submit(menuType) {
             };
 
             // Password
-            socket.emit('Check Permission', { title: game.info.title, type: 'spectate' });
+            socket.emit('Check Permission', { title: game.info.title });
             socket.on('Permission Denied', deniedSpectate.bind(this));
             socket.on('Permission Granted', grantedSpectate.bind(this));
          }

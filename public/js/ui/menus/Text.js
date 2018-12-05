@@ -19,7 +19,7 @@ class Text extends React.Component { // Each input-type component renders a tabl
    applyInstance() {
       switch (this.instance) {
          case 'password':
-            if (this.menuType === 'join') // Caution: password instance exists in create and join menus
+            if (this.menuType === 'join' || this.menuType === 'spectate') // Caution: password instance exists in create and join/spectate menus
                socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
             break;
       }
@@ -34,7 +34,7 @@ class Text extends React.Component { // Each input-type component renders a tabl
    }
    handleChange(e) { // e.target is dom element of target
       this.props.update(this.instance, e.target.value);
-      if (this.instance === 'password' && this.menuType === 'join') {
+      if (this.instance === 'password' && (this.menuType === 'join' || this.menuType === 'spectate')) {
          socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
       }
    }

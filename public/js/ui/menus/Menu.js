@@ -192,8 +192,8 @@ class Menu extends React.Component {
             }
          }
       }
+      stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu; Buffer of empty array is necessary
       if (issues.length) { // If there are any remaining issues (issues with instance '' which do not apply to any single input)
-         stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu
          for (let i = 0; i < count; i++) { // count is the number of remaining issues
             let key = getKeys(issues[i])[0];
             stateIssues[stateIssues.length - 1].push(issues[i][key]); // Add reamining issues to last index of state issues array because they are displayed after all other issues at the bottom of the menu

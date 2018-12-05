@@ -264,8 +264,8 @@ io.sockets.on('connection', socket => {
    // Verify Password on Join or Spectate
    socket.on('Ask Permission', (data) => {
       for (let i = 0; i < passwords.length; i++) {
-         if (data.info.title == passwords[i].title) {
-            if (data.pass == passwords[i].pass) {
+         if (data.info.title === passwords[i].title) {
+            if (data.pass === passwords[i].pass) {
                passwords[i].permissed.push(socket.id);
             }
             break;
@@ -292,6 +292,7 @@ io.sockets.on('connection', socket => {
       if (hasPassword === false || granted === true) {
          socket.emit('Permission Granted', data);
       } else if (hasPassword === true && granted === false) {
+         console.log('denied');
          socket.emit('Permission Denied', data);
       }
    });

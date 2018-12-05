@@ -27,7 +27,6 @@
       "run": "run.sh"
    },
    "babel": {
-      "babelrc": "false",
       "presets": [
          "env",
          "react"

@@ -146,9 +146,12 @@
       ✓ Fix survival bug if multiple last players die on same tick
       ✓ Fix survival bug where rounds after first have increased shrink frequency
       ✓ Fix incorrect or required password issue indicator
+      ✓ Fix double issue notification for spectate password
+      ✓ Fix spectate password denial
    a3.2.0 - Capture the Flag + Infection + King of the Hill
       Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
-      Fix spectate password denial
+      Fix 'there is an issue with the skin detection' in respawn menu
+      Fix game doesn't appear in browser if all players are dead
       CTF
          ✓ Round system
             Round end at 3 captures
