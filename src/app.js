@@ -1,20 +1,20 @@
-/*
-NPM Version: 5.6.0
-   Update npm code: <npm install npm@latest -g>
-Node.js Version: 9.4.0
-*/
+/**
+ * NPM Version: 5.6.0
+ *    Update npm code: <npm install npm@latest -g>
+ * Node.js Version: 9.4.0
+ */
 
-/*
-socket.emit('ID', data) // Emit to specific client
-socket.broadcast.emit('ID', data); // Emit to all other clients
-io.sockets.emit('ID', data); // Emit to all clients
-socket.to('ROOM').emit('ID', data); // Emit to all clients in a room except sender
-io.in('ROOM').emit('ID', data); // Emit to all clients in a room (including sender)
-socket.to('SOCKET.ID').emit('ID', data); // Emit to only specific client
-socket.on('ID', function(parameter) {});
-io.sockets.sockets returns an array of the socket objects of all connected clients
-io.engine.clients returns an array of the socket.id strings of all connected clients
-*/
+/**
+ * socket.emit('ID', data) // Emit to specific client
+ * socket.broadcast.emit('ID', data); // Emit to all other clients
+ * io.sockets.emit('ID', data); // Emit to all clients
+ * socket.to('ROOM').emit('ID', data); // Emit to all clients in a room except sender
+ * io.in('ROOM').emit('ID', data); // Emit to all clients in a room (including sender)
+ * socket.to('SOCKET.ID').emit('ID', data); // Emit to only specific client
+ * socket.on('ID', function(parameter) {});
+ * io.sockets.sockets returns an array of the socket objects of all connected clients
+ * io.engine.clients returns an array of the socket.id strings of all connected clients
+ */
 
 // Express
 let port = process.env.PORT || 80; // process.env.PORT is fed by Heroku
@@ -311,7 +311,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-      }, config._renderfrequency));
+      }, config.render_frequency));
    });
 
    /**
@@ -391,7 +391,7 @@ io.sockets.on('connection', socket => {
             }
          }
          io.in(data.title).emit('Force Spawn');
-      }, config._delaytime);
+      }, config.delay_time);
       if (data.mode === 'srv') {
          for (let i = 0; i < shrinkIntervals.length; i++) {
             if (shrinkIntervals[i].host === data.host) { // Identify shrink interval
@@ -433,24 +433,24 @@ io.sockets.on('connection', socket => {
                      interval: setInterval(() => {
                         for (let j = 0; j < games.length; j++) {
                            if (games[j].info.host === game.info.host && (games[j].world.width > 200 && games[j].world.height > 200)) { // Identify game; If both dimensions are greater than minimum
-                              games[j].world.width -= config._shrinkrate;
-                              games[j].world.height -= config._shrinkrate;
-                              games[j].world.x += config._shrinkrate / 2; // World shrinks to center
-                              games[j].world.y += config._shrinkrate / 2;
+                              games[j].world.width -= config.shrink_rate;
+                              games[j].world.height -= config.shrink_rate;
+                              games[j].world.x += config.shrink_rate / 2; // World shrinks to center
+                              games[j].world.y += config.shrink_rate / 2;
                               break;
                            }
                         }
-                     }, config._renderfrequency) // Same frequency as game interval
+                     }, config.render_frequency) // Same frequency as game interval
                   });
                }
                games[i].rounds.start = (new Date()).valueOf();
                break;
             }
          }
-      }, config._delaytime);
+      }, config.delay_time);
       let spawndelay = setTimeout(() => { // Force spawns 1 second before round starts so one player does not join before the others and automatically win game
          io.in(game.info.title).emit('Force Spawn');
-      }, config._delaytime - 1000);
+      }, config.delay_time - 1000);
    });
 
    // Update Server Leaderboard

@@ -1,13 +1,14 @@
-const PRINT_DEV = true; // Developer mode for printing to the console
-
 /**
- * Same functionality as console.log() if print developer mode is enabled (PRINT_DEV === true)
+ * Same functionality as console.log() if print developer mode is enabled (config.print_dev === true)
  *    else do nothing
  * @param  {convertible to string} ...args Same parameter requirements as console.log()
  * @return void
  */
+
+let config = require('./config.json');
+
 let print_dev = (...args) => {
-   if (PRINT_DEV) {
+   if (config.print_dev) {
       console.log(...args);
    }
 };
