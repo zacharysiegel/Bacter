@@ -722,11 +722,6 @@ function cooldown(abilitY) {
 }
 'use strict';
 
-// Socket Settings
-var DEV = true;
-var HEROKU = true;
-var PORT = 80;
-
 // Repertoires
 var worldColors = {
    black: { r: 0, g: 0, b: 0 }, // Only black is currently in use
@@ -2454,15 +2449,7 @@ var socket = void 0; // Initialize in global scope
 var gamesInterval = void 0; // "
 // let emitGameInterval; // "
 function connectSocket() {
-   if (DEV) {
-      socket = io.connect('localhost:' + PORT); // Local server (Development only)
-   } else {
-      if (HEROKU) {
-         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
-      } else {
-         socket = io.connect('24.55.26.67:' + PORT); // Local Server
-      }
-   }
+   socket = io.connect();
 
    gamesInterval = setInterval(function () {
       if (state !== 'game' && state !== 'spectate') {

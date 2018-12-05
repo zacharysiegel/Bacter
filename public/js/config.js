@@ -1,8 +1,3 @@
-// Socket Settings
-const DEV = false;
-const HEROKU = true;
-const PORT = 80;
-
 // Repertoires
 const worldColors = {
    black:            { r: 0,     g: 0,    b: 0   }, // Only black is currently in use

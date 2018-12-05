@@ -2,15 +2,7 @@ let socket; // Initialize in global scope
 let gamesInterval; // "
 // let emitGameInterval; // "
 function connectSocket() {
-   if (DEV) {
-      socket = io.connect('localhost:' + PORT); // Local server (Development only)
-   } else {
-      if (HEROKU) {
-         socket = io.connect('https://bacter.herokuapp.com:' + PORT); // Heroku Server
-      } else {
-         socket = io.connect('24.55.26.67:' + PORT); // Local Server
-      }
-   }
+   socket = io.connect();
 
    gamesInterval = setInterval(() => {
       if (state !== 'game' && state !== 'spectate') {
