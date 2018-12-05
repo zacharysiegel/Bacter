@@ -130,28 +130,12 @@
       Spectator has not yet been added to spectators array
 
 ## To-Do:
-   a3.1.2 - Lag Reduction
-      ✓ Google Analytics
-      ✓ Fix current color detection in respawn and pause menus
-      ✓ Change 'Leave Game' text in pause tutorial menu to 'Leave Tutorial'
-      ✓ File system overhaul
-      ✓ Replace $() with eid() (defined in z.js)
-      ✓ Lag Reduction
-         ? Consolidate game updates to server into single emit
-            ? Set as interval with _renderfrequency
-         ✓ Send less superfluous data
-      ✓ Change toxin to center on crosshair
-      ✓ Fix return to menu no-org bug
-      ✓ Fix subsequent game (in single session) spawn bug
-      ✓ Fix survival bug if multiple last players die on same tick
-      ✓ Fix survival bug where rounds after first have increased shrink frequency
-      ✓ Fix incorrect or required password issue indicator
-      ✓ Fix double issue notification for spectate password
-      ✓ Fix spectate password denial
    a3.2.0 - Capture the Flag + Infection + King of the Hill
+      Populate README.md
       Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
       Fix 'there is an issue with the skin detection' in respawn menu
       Fix game doesn't appear in browser if all players are dead
+      Fix browser button inconsistent row background
       CTF
          ✓ Round system
             Round end at 3 captures
@@ -182,9 +166,7 @@
       More applicable freeze tooltip art
       Images for tooltip art
          Higher detail/resolution
-      Fix browser button inconsistent row background
-   a3.3.0
-   	Quick Match
+   a3.3.0 Quick Match
       Images for ability tooltips
       Add controls settings menu
          Ability keys

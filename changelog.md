@@ -224,3 +224,5 @@
    Fixed password listener bug  
    Fixed spectator password denial  
    Fixed spectate menu double issue indicators  
+
+## a3.2.0
