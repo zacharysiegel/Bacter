@@ -4702,6 +4702,61 @@ var MenuFooter = function (_React$Component) {
 }(React.Component);
 'use strict';
 
+var menus = {
+   create: {
+      header: 'Game Creation Options',
+      button: 'Create',
+      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
+      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
+   },
+   join: {
+      header: 'Join Game Options',
+      button: 'Join',
+      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
+      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
+   },
+   spectate: {
+      header: 'Spectate Game Options',
+      button: 'Spectate',
+      options: ['Screen Name', 'Password'],
+      values: ['text', 'text']
+   },
+   respawn: {
+      header: 'Spawn Options',
+      button: 'Spawn',
+      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
+      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
+   },
+   pauseGame: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
+      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
+   },
+   pauseSpectate: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: ['Name Labels', 'Messages', 'Leave Game'],
+      values: ['1 radio', '1 radio', 'button']
+   },
+   pauseTutorial: {
+      header: 'Pause Options',
+      button: 'Back',
+      options: ['Leave Tutorial'],
+      values: ['button']
+   }
+};
+
+function renderMenu(type, data) {
+   if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) {
+      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+      ReactDOM.unmountComponentAtNode(eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+   }
+   ReactDOM.render(React.createElement(Menu, { type: type, data: data }), eid('cont')); // Render instance of Menu component class in container with id 'cont'
+   state = type + 'Menu'; // Game state - not component state
+}
+'use strict';
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -5186,172 +5241,6 @@ var Radios = function (_React$Component) {
 
    return Radios;
 }(React.Component);
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Text = function (_React$Component) {
-   _inherits(Text, _React$Component);
-
-   // Each input-type component renders a table row containing the input type
-   function Text(props) {
-      _classCallCheck(this, Text);
-
-      var _this = _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).call(this, props));
-
-      _this.state = {
-         value: props.value,
-         focused: false, // If the user is focused on the field
-         backgroundColor: 'rgb(255, 255, 255)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
-      };
-      _this.style = {};
-      _this.menuType = props.menuType;
-      _this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
-
-      _this.applyInstance = _this.applyInstance.bind(_this);
-      _this.handleFocus = _this.handleFocus.bind(_this);
-      _this.handleChange = _this.handleChange.bind(_this);
-      _this.handleKeyDown = _this.handleKeyDown.bind(_this);
-      return _this;
-   }
-
-   _createClass(Text, [{
-      key: 'applyInstance',
-      value: function applyInstance() {
-         switch (this.instance) {
-            case 'password':
-               if (this.menuType === 'join' || this.menuType === 'spectate') // Caution: password instance exists in create and join/spectate menus
-                  socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
-               break;
-         }
-      }
-   }, {
-      key: 'handleFocus',
-      value: function handleFocus(e) {
-         if (e.type === 'focus') {
-            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
-         } else if (e.type === 'blur') {
-            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
-         }
-      }
-   }, {
-      key: 'handleChange',
-      value: function handleChange(e) {
-         // e.target is dom element of target
-         this.props.update(this.instance, e.target.value);
-         if (this.instance === 'password' && (this.menuType === 'join' || this.menuType === 'spectate')) {
-            socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
-         }
-      }
-   }, {
-      key: 'handleKeyDown',
-      value: function handleKeyDown(e) {
-         if (e.keyCode === 13) // If ENTER key is down
-            this.props.submit(this.menuType);
-      }
-   }, {
-      key: 'componentWillMount',
-      value: function componentWillMount() {
-         this.applyInstance();
-      }
-   }, {
-      key: 'componentDidMount',
-      value: function componentDidMount() {
-         this.props.update(this.instance, this.state.value);
-      }
-   }, {
-      key: 'componentWillReceiveProps',
-      value: function componentWillReceiveProps(next) {
-         this.setState({ value: next.value });
-      }
-   }, {
-      key: 'render',
-      value: function render() {
-         var style = {};
-         for (var i in this.style) {
-            style[i] = this.style[i];
-         }
-         style.backgroundColor = this.state.backgroundColor;
-
-         return React.createElement('input', {
-            id: this.instance + ' input',
-            className: 'menuinput',
-            type: 'text',
-            value: this.state.value,
-            autoComplete: 'off',
-            style: style,
-            onFocus: this.handleFocus,
-            onBlur: this.handleFocus,
-            onChange: this.handleChange,
-            onKeyDown: this.handleKeyDown
-         });
-      }
-   }]);
-
-   return Text;
-}(React.Component);
-'use strict';
-
-var menus = {
-   create: {
-      header: 'Game Creation Options',
-      button: 'Create',
-      options: ['Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode'],
-      values: ['text', 'text', 'list', 'number', 'number', 'number', 'number', 'number', 'number', 'list']
-   },
-   join: {
-      header: 'Join Game Options',
-      button: 'Join',
-      options: ['Screen Name', 'Password', 'Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign'],
-      values: ['text', 'text', 'list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio']
-   },
-   spectate: {
-      header: 'Spectate Game Options',
-      button: 'Spectate',
-      options: ['Screen Name', 'Password'],
-      values: ['text', 'text']
-   },
-   respawn: {
-      header: 'Spawn Options',
-      button: 'Spawn',
-      options: ['Color', 'Skin', '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game'],
-      values: ['list', '3 radio', '2 radio', '2 radio', '2 radio', 'list', '1 radio', 'button']
-   },
-   pauseGame: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Color', 'Skin', 'Name Labels', 'Messages', 'Leave Game'],
-      values: ['list', '3 radio', '1 radio', '1 radio', 'button']
-   },
-   pauseSpectate: {
-      header: 'Pause Options',
-      button: 'Apply',
-      options: ['Name Labels', 'Messages', 'Leave Game'],
-      values: ['1 radio', '1 radio', 'button']
-   },
-   pauseTutorial: {
-      header: 'Pause Options',
-      button: 'Back',
-      options: ['Leave Tutorial'],
-      values: ['button']
-   }
-};
-
-function renderMenu(type, data) {
-   if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) {
-      // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
-      ReactDOM.unmountComponentAtNode(eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
-   }
-   ReactDOM.render(React.createElement(Menu, { type: type, data: data }), eid('cont')); // Render instance of Menu component class in container with id 'cont'
-   state = type + 'Menu'; // Game state - not component state
-}
 'use strict';
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -6199,6 +6088,117 @@ function submit(menuType) {
          break;
    }
 }
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Text = function (_React$Component) {
+   _inherits(Text, _React$Component);
+
+   // Each input-type component renders a table row containing the input type
+   function Text(props) {
+      _classCallCheck(this, Text);
+
+      var _this = _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).call(this, props));
+
+      _this.state = {
+         value: props.value,
+         focused: false, // If the user is focused on the field
+         backgroundColor: 'rgb(255, 255, 255)' // Initialize backgroundColor style in state so it can be edited and re-rendered with React
+      };
+      _this.style = {};
+      _this.menuType = props.menuType;
+      _this.instance = props.instance;
+      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+
+      _this.applyInstance = _this.applyInstance.bind(_this);
+      _this.handleFocus = _this.handleFocus.bind(_this);
+      _this.handleChange = _this.handleChange.bind(_this);
+      _this.handleKeyDown = _this.handleKeyDown.bind(_this);
+      return _this;
+   }
+
+   _createClass(Text, [{
+      key: 'applyInstance',
+      value: function applyInstance() {
+         switch (this.instance) {
+            case 'password':
+               if (this.menuType === 'join' || this.menuType === 'spectate') // Caution: password instance exists in create and join/spectate menus
+                  socket.emit('Ask Permission', { pass: this.state.value, info: game.info }); // Add player to permissed list on server (if there is no password for game)
+               break;
+         }
+      }
+   }, {
+      key: 'handleFocus',
+      value: function handleFocus(e) {
+         if (e.type === 'focus') {
+            this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
+         } else if (e.type === 'blur') {
+            this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
+         }
+      }
+   }, {
+      key: 'handleChange',
+      value: function handleChange(e) {
+         // e.target is dom element of target
+         this.props.update(this.instance, e.target.value);
+         if (this.instance === 'password' && (this.menuType === 'join' || this.menuType === 'spectate')) {
+            socket.emit('Ask Permission', { pass: e.target.value, info: game.info }); // Add player to permissed list on server (if correct password)
+         }
+      }
+   }, {
+      key: 'handleKeyDown',
+      value: function handleKeyDown(e) {
+         if (e.keyCode === 13) // If ENTER key is down
+            this.props.submit(this.menuType);
+      }
+   }, {
+      key: 'componentWillMount',
+      value: function componentWillMount() {
+         this.applyInstance();
+      }
+   }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+         this.props.update(this.instance, this.state.value);
+      }
+   }, {
+      key: 'componentWillReceiveProps',
+      value: function componentWillReceiveProps(next) {
+         this.setState({ value: next.value });
+      }
+   }, {
+      key: 'render',
+      value: function render() {
+         var style = {};
+         for (var i in this.style) {
+            style[i] = this.style[i];
+         }
+         style.backgroundColor = this.state.backgroundColor;
+
+         return React.createElement('input', {
+            id: this.instance + ' input',
+            className: 'menuinput',
+            type: 'text',
+            value: this.state.value,
+            autoComplete: 'off',
+            style: style,
+            onFocus: this.handleFocus,
+            onBlur: this.handleFocus,
+            onChange: this.handleChange,
+            onKeyDown: this.handleKeyDown
+         });
+      }
+   }]);
+
+   return Text;
+}(React.Component);
 'use strict';
 
 var currentMessage = function currentMessage() {
