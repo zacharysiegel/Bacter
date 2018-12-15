@@ -16,8 +16,8 @@
    "devDependencies": {
       "@babel/cli": "^7.2.0",
       "@babel/core": "^7.2.0",
-      "babel-preset-env": "^1.7.0",
-      "babel-preset-react": "^6.24.1",
+      "@babel/preset-env": "^7.2.0",
+      "@babel/preset-react": "^7.0.0",
       "eslint": "^4.19.1",
       "eslint-plugin-react": "^7.11.1",
       "npx": "^10.2.0"
@@ -27,10 +27,10 @@
       "run": "run.sh"
    },
    "babel": {
-      "presets": [
-         "env",
-         "react"
-      ]
+   	"presets": [
+         "@babel/preset-env",
+         "@babel/preset-react"
+   	]
    },
    "repository": {
       "type": "git",
