@@ -1,4 +1,5 @@
 {
+   "_print_dev": true, // Developer mode for printing to the console
    "_delaytime": 10000,
    "_shrinkrate": 0.2,
    "_renderfrequency": 40
