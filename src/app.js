@@ -17,7 +17,7 @@
  */
 
 // Express
-let port = process.env.PORT || 80; // process.env.PORT is fed by Heroku
+let port = process.env.PORT || 80; // process.env.PORT is fed by Heroku; 80 is default http port
 let express = require('express');
 let app = express();
 let server = app.listen(port);

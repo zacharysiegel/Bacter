@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # ./src/build.sh must be run from directory './'
 
 cd ./public/bundle
