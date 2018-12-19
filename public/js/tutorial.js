@@ -19,7 +19,7 @@ var Tutorial = function() {
          }
       }
       let color = random(colors);
-      org = new Org({ player: socket.id, color: color, skin: 'none', spectate: false, pos: { x: center.x, y: center.y }, title: false });
+      org = new Org({ player: socket.id, color: color, skin: 'none', spectating: false, pos: { x: center.x, y: center.y }, title: false });
       org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
       org.count++;
    }
@@ -232,7 +232,7 @@ var Tutorial = function() {
                   do {
                      pos = { x: random(this.world.width), y: random(this.world.height) };
                   } while (sqrt(sq(pos.x - org.pos.x) + sq(pos.y - org.pos.y)) < _range + 30); // _range + 20 is maximum extend range
-                  this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', spectate: false, pos: pos, title: false }));
+                  this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', spectating: false, pos: pos, title: false }));
                   this.orgs[1].cells[0] = new Cell(this.orgs[1].pos.x, this.orgs[1].pos.y, this.orgs[1]); // Create first cell in org
                   this.orgs[1].count++;
                   this.abilities[1] = new Ability({ player: 'bot' + 1 });

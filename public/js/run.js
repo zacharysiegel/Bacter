@@ -1,6 +1,6 @@
 function spawn(data) { // data: { color: {}, skin: '', team: '' }
    state = 'game';
-   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectate: false });
+   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectating: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
    let compressedOrg = org.getCompressed();
@@ -10,7 +10,7 @@ function spawn(data) { // data: { color: {}, skin: '', team: '' }
 function spectate(data) { // data: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
    socket.emit('Spectator Joined', game);
-   org = new Org( { player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectate: true } );
+   org = new Org( { player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectating: true } );
 }
 
 function renderUI() {

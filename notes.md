@@ -130,9 +130,9 @@
       Spectator has not yet been added to spectators array  
 
 ## To-Do:
-   a3.2.0 - Capture the Flag + Infection + King of the Hill  
-      Populate README.md  
-      Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'  
+   a3.2.0 - Capture the Flag  
+      ✓ Populate README.md  
+      ✓ Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'  
       Fix 'there is an issue with the skin detection' in respawn menu  
       Fix game doesn't appear in browser if all players are dead  
       Fix browser button inconsistent row background  
@@ -146,26 +146,18 @@
          ✓ Color team bases  
          Flag placement  
          Base collision detection  
+   a3.3.0 - Infection  
       INF  
          Round system  
             Randomize teams each round  
          ✓ No friendly fire  
          ✓ Tag  
          Boost ability  
+   a3.4.0 - King of the Hill  
       KTH  
          Round system  
          Score counting - time  
          Hill placement  
-      Polygon skin  
-         Random number of vertices  
-         Random radians between using perlin noise  
-         Fill color  
-      Fullscreen button  
-      Mouse click, in, and out behavior correction  
-         Do not change background color on mouse down, only on mouse hover  
-      More applicable freeze tooltip art  
-      Images for tooltip art  
-         Higher detail/resolution  
    a3.3.0 Quick Match  
       Images for ability tooltips  
       Add controls settings menu  
@@ -180,6 +172,16 @@
          On birth, release sparks particle effect  
       Fix ctf base world corner rendering bug  
    aX.1.0 - Visual Enhancement  
+      Polygon skin  
+         Random number of vertices  
+         Random radians between using perlin noise  
+         Fill color  
+      Fullscreen button  
+      Mouse click, in, and out behavior correction  
+         Do not change background color on mouse down, only on mouse hover  
+      More applicable freeze tooltip art  
+      Images for tooltip art  
+         Higher detail/resolution  
       Add substance to the world (background)  
          Pickups that lower cooldowns  
          Pickups that increase radius  

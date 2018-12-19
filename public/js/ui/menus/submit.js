@@ -276,8 +276,12 @@ function submit(menuType) {
             }
          } { // Password
             socket.emit('Check Permission', { title: game.info.title });
-            socket.on('Permission Denied', deniedJoin.bind(this)); // Call bound function so this.issues() can be called from within
+            socket.on('Permission Denied', deniedJoin.bind(this)); // Use __.bind(this) so this.issues() can be called from within
             socket.on('Permission Granted', grantedJoin.bind(this));
+            setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
+            }, 10000);
 
             function deniedJoin() {
                socket.off('Permission Denied');
@@ -471,8 +475,12 @@ function submit(menuType) {
             }
          } { // Password
             socket.emit('Check Permission', { title: game.info.title });
-            socket.on('Permission Denied', deniedSpectate.bind(this));
+            socket.on('Permission Denied', deniedSpectate.bind(this)); // Use __.bind(this) so this.issues() can be called from within
             socket.on('Permission Granted', grantedSpectate.bind(this));
+            setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
+               socket.off('Permission Denied');
+               socket.off('Permission Granted');
+            }, 10000);
 
             function deniedSpectate() {
                socket.off('Permission Denied');

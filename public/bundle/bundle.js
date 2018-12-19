@@ -1545,7 +1545,7 @@ var org;
 var Org = function Org(data) {
   var _this = this;
 
-  // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
+  // data: { player: , color: , skin: , team: , spectating: , pos: , title: } (color and skin are required)
   this.player = data.player;
   this.color = data.color;
   this.skin = data.skin;
@@ -1553,25 +1553,25 @@ var Org = function Org(data) {
   var src = getSrc();
 
   if (src != undefined && src.src == 'game') {
-    if (game.rounds.util == true) {
+    if (game.rounds.util) {
       this.ready = false; // org.ready ensures that org will only be forcibly respawned once
     }
 
-    if (game.info.mode == 'srv' && game.rounds.waiting == false) {
+    if (game.info.mode === 'srv' && !game.rounds.waiting) {
       this.spawn = false;
     } else {
       this.spawn = true; // Allowance to spawn
     }
 
     for (var i = 0; i < game.board.list.length; i++) {
-      if (game.board.list[i].player == this.player) {
+      if (game.board.list[i].player === this.player) {
         // Find player name in leaderboard list
         this.name = game.board.list[i].name;
       }
     }
   }
 
-  if (data.spectate == true) {
+  if (data.spectating) {
     this.speed = _spectatespeed; // Faster movement when spectating
   } else {
     this.speed = _movespeed; // Speed of position movement
@@ -2444,7 +2444,7 @@ function spawn(data) {
     color: data.color,
     skin: data.skin,
     team: data.team,
-    spectate: false
+    spectating: false
   });
   org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
 
@@ -2467,7 +2467,7 @@ function spectate(data) {
     skin: data.skin,
     team: data.team,
     pos: data.pos,
-    spectate: true
+    spectating: true
   });
 }
 
@@ -3345,7 +3345,7 @@ var Tutorial = function Tutorial() {
       player: socket.id,
       color: color,
       skin: 'none',
-      spectate: false,
+      spectating: false,
       pos: {
         x: center.x,
         y: center.y
@@ -3622,7 +3622,7 @@ var Tutorial = function Tutorial() {
               player: 'bot' + 1,
               color: _color,
               skin: 'none',
-              spectate: false,
+              spectating: false,
               pos: pos,
               title: false
             }));
