@@ -131,29 +131,32 @@
 
 ## To-Do:
    a3.2.0 - Capture the Flag + Infection + King of the Hill
-      Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
-      Fix 'there is an issue with the skin detection' in respawn menu
-      Fix game doesn't appear in browser if all players are dead
-      CTF
-         ✓ Round system
-            Round end at 3 captures
-         ✓ No friendly fire
-         ✓ Tag
-         ✓ Larger minimum world
-         ✓ Random spawn
-         ✓ Color team bases
-         Flag placement
-         Base collision detection
+   Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
+   Fix 'there is an issue with the skin detection' in respawn menu
+   Fix game doesn't appear in browser if all players are dead
+   CTF
+      ✓ Round system
+         Round end at 3 captures
+      ✓ No friendly fire
+      ✓ Tag
+      ✓ Larger minimum world
+      ✓ Random spawn
+      ✓ Color team bases
+      Flag placement
+      Base collision detection
+   a3.3.0
       INF
          Round system
             Randomize teams each round
          ✓ No friendly fire
          ✓ Tag
          Boost ability
+   a3.4.0
       KTH
          Round system
          Score counting - time
          Hill placement
+   a3.X.0
       Polygon skin
          Random number of vertices
          Random radians between using perlin noise
@@ -165,8 +168,7 @@
       Images for tooltip art
          Higher detail/resolution
       Fix browser button inconsistent row background
-   a3.3.0
-   	Quick Match
+      Matchmaking
       Images for ability tooltips
       Add controls settings menu
          Ability keys
