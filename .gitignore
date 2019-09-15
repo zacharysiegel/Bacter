@@ -65,4 +65,4 @@ archives/Previous Versions.zip
 *.sublime-workspace
 
 # WebStorm
-.idea/*
+.idea/
