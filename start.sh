@@ -1,22 +1,22 @@
 #!/bin/bash
 
 # Check if arguments include appropriate options
-echo " $@ " | grep -q -- \ --help\ 
-help=$?
-echo " $@ " | grep -q -- \ -b\ 
-b=$?
-echo " $@ " | grep -q -- \ --build\ 
-build=$?
-echo $@ | grep -q -- .
-args=$?
-if [[ $help -ne 0 && $b -ne 0 && $build -ne 0 && $args -eq 0 ]] # If no valid options/arguments are supplied, but there are still options/arguments, exit 1 and print illegal argument
+echo " $@ " | grep -qE -- "\ --help\ "
+help_code=$?
+echo " $@ " | grep -qE -- "\ -b\ "
+b_code=$?
+echo " $@ " | grep -qE -- "\ --build\ "
+build_code=$?
+echo $@ | grep -qE -- ".*"
+args_code=$?
+if [[ $help_code -ne 0 && $b_code -ne 0 && $build_code -ne 0 && $args_code -ne 0 ]] # If no valid options/arguments are supplied, but there are still options/arguments, exit 1 and print illegal argument
 then
    echo "Illegal Argument(s) Provided"
    exit 1
 fi
 
 # Respond to inclusion of options
-if test $help -eq 0
+if test $help_code -eq 0
 then
    echo "Usage: ./start.sh [OPTION]..."
    echo "Start the local application"
@@ -26,7 +26,7 @@ then
    echo "  -h, --help     Display this help text"
    exit 0
 fi
-if test $b -eq 0 -o $build -eq 0
+if test $b_code -eq 0 -o $build_code -eq 0
 then
    ./build.sh # User can specify -b or --build in order to build JavaScript before starting the application
    echo
