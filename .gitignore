@@ -57,9 +57,15 @@ typings/
 # dotenv environment variables file
 .env
 
+# NPM
+package-lock.json
+
 # Static Versions
 archives/Previous Versions.zip
 
 # Sublime
 *.sublime-project
 *.sublime-workspace
+
+# WebStorm
+.idea/

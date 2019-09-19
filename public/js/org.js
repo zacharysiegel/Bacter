@@ -1,15 +1,20 @@
-var org;
-var Org = function(data) { // data: { player: , color: , skin: , team: , spectating: , pos: , title: } (color and skin are required)
+let org;
+// class Org {
+//     constructor(data) {
+//
+//     }
+// }
+let Org = function (data) { // data: { player: , color: , skin: , team: , spectate: , pos: , title: } (color and skin are required)
    this.player = data.player;
    this.color = data.color;
    this.skin = data.skin;
    this.team = data.team;
    let src = getSrc();
-   if (src != undefined && src.src == 'game') {
-      if (game.rounds.util) {
+   if (src !== undefined && src.src === 'game') {
+      if (game.rounds.util === true) {
          this.ready = false; // org.ready ensures that org will only be forcibly respawned once
       }
-      if (game.info.mode === 'srv' && !game.rounds.waiting) {
+      if (game.info.mode === 'srv' && game.rounds.waiting === false) {
          this.spawn = false;
       } else {
          this.spawn = true; // Allowance to spawn
@@ -27,7 +32,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
    }
    this.cells = [];
    this.count = 0;
-   if (data.pos != undefined) {
+   if (data.pos !== undefined) {
       this.pos = data.pos;
    } else {
       do {
@@ -35,12 +40,12 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
             x: floor(random(game.world.x + 50 + _cellwidth / 2, game.world.x + game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
             y: floor(random(game.world.y + 50 + _cellwidth / 2, game.world.y + game.world.height - 50 - _cellwidth / 2))
          };
-         var rePos = false;
-         if (game.world.type == 'rectangle') {
+         let rePos = false;
+         if (game.world.type === 'rectangle') {
             if (this.pos.x < game.world.x || this.pos.x > game.world.x + game.world.width || this.pos.y < game.world.y || this.pos.y > game.world.y + game.world.height) {
                rePos = false;
             }
-         } else if (game.world.type == 'ellipse') {
+         } else if (game.world.type === 'ellipse') {
             if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
                rePos = true;
             }
@@ -52,9 +57,11 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                   break;
                }
             }
-            if (rePos == true) { break; }
+            if (rePos === true) {
+               break;
+            }
             let abilitY = game.abilities[i];
-            if (abilitY.secrete.value == true) { // Spore Secretions Overlap
+            if (abilitY.secrete.value === true) { // Spore Secretions Overlap
                for (let j = 0; j < abilitY.spore.count; j++) {
                   let cell = abilitY.spore.spores[j];
                   if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= abilitY.secrete.radius) {
@@ -64,7 +71,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                }
             }
             for (let j = 0; j < 3; j++) { // Shoot Secretions Overlap
-               if (abilitY.shoot.secrete[j].value == true) {
+               if (abilitY.shoot.secrete[j].value === true) {
                   let cell = abilitY.shoot.spore[j];
                   let sec = abilitY.shoot.secrete[j];
                   if (sqrt(sq(this.pos.x - cell.x) + sq(this.pos.y - cell.y)) <= sec.radius) {
@@ -73,14 +80,16 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                   }
                }
             }
-            if (abilitY.toxin.value == true) { // Toxin Overlap
+            if (abilitY.toxin.value === true) { // Toxin Overlap
                if (sqrt(sq(this.pos.x - abilitY.toxin.x) + sq(this.pos.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
                   rePos = true;
                }
             }
-            if (rePos == true) { break; }
+            if (rePos !== true) {
+               break;
+            }
          }
-      } while (rePos == true);
+      } while (rePos === true);
    }
    this.off = { // Offset is the difference between pos and center
       x: this.pos.x - center.x,
@@ -111,8 +120,8 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
     * @return void
     */
    this.tracker = { // Used to ensure no double org growth intervals
-      start: undefined, 
-      end: undefined, 
+      start: undefined,
+      end: undefined,
       elap: undefined
    };
 
@@ -155,7 +164,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       }
       this.intervals = [];
    };
-   this.x = () => { // The average of all cell x values 
+   this.x = () => { // The average of all cell x values
       let sum = 0;
       for (var i = 0; i < this.count; i++) {
          sum += this.cells[i].x;
@@ -209,7 +218,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
       var exposed = [];
       var adjacent = [];
       for (let i = 0; i < this.count; i++) {
-         let test = { x: undefined, y: undefined };
+         let test = {x: undefined, y: undefined};
          var left = false;
          var top = false;
          var right = false;
@@ -241,33 +250,33 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                   x: this.cells[i].x,
                   y: this.cells[i].y + this.cells[i].height
                };
-               if (test.x == this.cells[j].x && test.y == this.cells[j].y) {
+               if (test.x === this.cells[j].x && test.y === this.cells[j].y) {
                   bottom = true; // There is a friendly cell to the bottom
                }
             }
          }
-         if (left == true && top == true && right == true && bottom == true) { // If cell is enclosed on all sides by friendly cells
+         if (left === true && top === true && right === true && bottom === true) { // If cell is enclosed on all sides by friendly cells
             enclosed.push(this.cells[i]);
          } else { // If cell is not enclosed on all sides by friendly cells
             exposed.push(this.cells[i]);
          }
-         if (left == false) { // Push all empty regions adjacent to org
-            adjacent.push({ x: this.cells[i].x - this.cells[i].width, y: this.cells[i].y });
+         if (left === false) { // Push all empty regions adjacent to org
+            adjacent.push({x: this.cells[i].x - this.cells[i].width, y: this.cells[i].y});
          }
-         if (top == false) {
-            adjacent.push({ x: this.cells[i].x, y: this.cells[i].y - this.cells[i].height });
+         if (top === false) {
+            adjacent.push({x: this.cells[i].x, y: this.cells[i].y - this.cells[i].height});
          }
-         if (right == false) {
-            adjacent.push({ x: this.cells[i].x + this.cells[i].width, y: this.cells[i].y });
+         if (right === false) {
+            adjacent.push({x: this.cells[i].x + this.cells[i].width, y: this.cells[i].y});
          }
-         if (bottom == false) {
-            adjacent.push({ x: this.cells[i].x, y: this.cells[i].y + this.cells[i].height });
+         if (bottom === false) {
+            adjacent.push({x: this.cells[i].x, y: this.cells[i].y + this.cells[i].height});
          }
       }
       for (var j = 0; j < adjacent.length; j++) { // Splice out empty regions adjacent to multiple cells
          for (var k = 0; k < adjacent.length; k++) {
-            if (j != k) { // If adjacent[j] and adjacent[k] are different regions
-               if (adjacent[k].x == adjacent[j].x && adjacent[k].y == adjacent[j].y) { // If region is repeated
+            if (j !== k) { // If adjacent[j] and adjacent[k] are different regions
+               if (adjacent[k].x === adjacent[j].x && adjacent[k].y === adjacent[j].y) { // If region is repeated
                   adjacent.splice(k, 1);
                   k--;
                }
@@ -306,7 +315,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
             break;
          }
       }
-      
+
       this.birth();
       this.naturalDeath();
       this.checkAbilities();
@@ -329,7 +338,7 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
             if (game.board.list[i].player === socket.id) { // Add death to leaderboard
                game.board.list[i].deaths++; // Add 1 to deaths counter
                orderBoard(game.board.list); // Sort the list by kills then deaths
-               socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
+               socket.emit('Board', {list: game.board.list, host: game.board.host}); // Send updated board to server
             }
          }
          if (this.hit !== this.player) { // Cannot gain kill for suicide
@@ -337,14 +346,14 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
                if (game.board.list[i].player === this.hit) { // Find killer in leaderboard list
                   game.board.list[i].kills++;
                   orderBoard(game.board.list);
-                  socket.emit('Board', { list: game.board.list, host: game.board.host });
+                  socket.emit('Board', {list: game.board.list, host: game.board.host});
                   break;
                }
             }
          }
          die(true);
       }
-      
+
       this.tracker.start = Date.now();
    };
    /**
@@ -623,22 +632,6 @@ var Org = function(data) { // data: { player: , color: , skin: , team: , spectat
    };
 };
 
-var Cell = function(x, y, org) {
-   this.player = org.player;
-   this.width = _cellwidth; // or 3x3
-   this.height = _cellwidth;
-   this.x = x;
-   this.y = y;
-   this.color = org.color;
-   this.r = function() { // Distance from org center
-      let distance = sqrt(sq(this.x - org.x()) + sq(this.y - org.y()));
-      return distance;
-   };
-   this.d = function(org) { // Distance from target (Position in world)
-      let distance = sqrt(sq(this.x - org.pos.x) + sq(this.y - org.pos.y));
-      return distance;
-   };
-};
 
 function renderOrgs() {
    let src = getSrc();

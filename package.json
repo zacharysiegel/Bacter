@@ -5,7 +5,7 @@
    "main": "server.js",
    "dependencies": {
       "express": "^4.16.4",
-      "npm": "^6.4.1",
+      "npm": "^6.11.2",
       "react": "^16.6.1",
       "react-dom": "^16.6.1",
       "socket.io": "^2.1.1"
@@ -16,21 +16,14 @@
    "devDependencies": {
       "@babel/cli": "^7.2.0",
       "@babel/core": "^7.2.0",
-      "@babel/preset-env": "^7.2.0",
+      "@babel/preset-env": "^7.6.0",
       "@babel/preset-react": "^7.0.0",
       "eslint": "^4.19.1",
-      "eslint-plugin-react": "^7.11.1",
-      "npx": "^10.2.0"
+      "eslint-plugin-react": "^7.11.1"
    },
    "scripts": {
-      "build": "build.sh",
-      "run": "run.sh"
-   },
-   "babel": {
-   	"presets": [
-         "@babel/preset-env",
-         "@babel/preset-react"
-   	]
+      "build": "./build.sh",
+      "start": "./start.sh"
    },
    "repository": {
       "type": "git",

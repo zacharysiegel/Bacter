@@ -32,9 +32,6 @@ let config = require('./config.json');
 // Send Static Data
 app.use(express.static('./public'));
 
-// Bacter Module Imports
-let print_dev = require('./print_dev.js'); // print_dev only prints to console if print developer mode is enabled (defined in ./print_dev.js)
-
 // Start
 let connections = 0;
 let games = [];
@@ -48,10 +45,12 @@ let passwords = [
 let intervals = [];
 let shrinkIntervals = [];
 
-console.log('Running...'); // Uses console.log rather than print_dev so 'Running...' always prints to console
-print_dev('');
+console.log('Running...'); // 'Running...' always prints to console
+if (config.project_state === 'development') console.log('');
 
+/////////////////////////////////////////////////////////////////////
 //////////////////////////    Listeners    //////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 // New Connection
 io.sockets.on('connection', socket => {
@@ -62,7 +61,7 @@ io.sockets.on('connection', socket => {
       // orgs: []
    // }
    connections++;
-   print_dev('Client connected: ' + socket.id + '    (' + connections + ')'); // Server Message
+   if (config.project_state === 'development') console.log('Client connected: ' + socket.id + '    (' + connections + ')'); // Server Message
 
    socket.join('Lobby'); // Join 'Lobby' Room
    socket.emit('Games', { games: games, connections: connections }); // Copied from 'Games Request'
@@ -70,7 +69,7 @@ io.sockets.on('connection', socket => {
    // Disconnect
    socket.on('disconnect', () => {
       connections--;
-      print_dev('Client disconnected: ' + socket.id + ' (' + connections + ')'); // Server Message
+      if (config.project_state === 'development') console.log('Client disconnected: ' + socket.id + ' (' + connections + ')'); // Server Message
 
       // End Hosted Game
       for (let i = 0; i < games.length; i++) {
@@ -90,7 +89,7 @@ io.sockets.on('connection', socket => {
                   }
                }
             }
-            print_dev('                                               Game Deleted: ' + games[i].info.title + ' (' + games[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+            if (config.project_state === 'development') console.log('                                               Game Deleted: ' + games[i].info.title + ' (' + games[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
             for (let j = 0; j < passwords.length; j++) {
                if (passwords[j].title == games[i].info.title) {
                   passwords.splice(j, 1);
@@ -123,7 +122,7 @@ io.sockets.on('connection', socket => {
                   games[i].abilities.splice(j, 1); // Remove Player Abilities
                   games[i].info.count = games[i].orgs.length;
                   j--;
-                  print_dev('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  if (config.project_state === 'development') console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -132,7 +131,7 @@ io.sockets.on('connection', socket => {
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
-                  print_dev('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  if (config.project_state === 'development') console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -170,7 +169,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-         print_dev('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+         if (config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
             if (games[i].info.host == game.info.host) {
                games.splice(i, 1); // Delete Game
@@ -201,7 +200,7 @@ io.sockets.on('connection', socket => {
                   games[i].abilities.splice(j, 1); // Remove Player Abilities
                   games[i].info.count = games[i].orgs.length;
                   j--;
-                  print_dev('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  if (config.project_state === 'development') console.log('                                               Player Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -210,7 +209,7 @@ io.sockets.on('connection', socket => {
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
-                  print_dev('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
+                  if (config.project_state === 'development') console.log('                                               Spectator Left: ' + games[i].info.title + ' (' + socket.id + ')');
                   break;
                }
             }
@@ -243,7 +242,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-         print_dev('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
+         if (config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
             if (games[i].info.host == game.info.host) {
                games.splice(i, 1); // Delete Game
@@ -302,7 +301,7 @@ io.sockets.on('connection', socket => {
       games.push(game);
       socket.leave('Lobby'); // Leave 'Lobby' Room
       socket.join(game.info.title); // Join 'Game' Room
-      print_dev('                                               Game Created: ' + games[games.length - 1].info.title + ' (' + games[games.length - 1].info.host + ')');
+      if (config.project_state === 'development') console.log('                                               Game Created: ' + games[games.length - 1].info.title + ' (' + games[games.length - 1].info.host + ')');
       intervals.push(setInterval(() => { // Send updated game to all players
          for (let i = 0; i < games.length; i++) { // Game interval
             if (games[i].info.host === socket.id) { // Find game of specific host
@@ -333,7 +332,7 @@ io.sockets.on('connection', socket => {
             games[i].abilities.push(data.ability); // Create server instance of ability
             games[i].info.count = games[i].orgs.length;
             socket.emit('Enter');
-            print_dev('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
+            if (config.project_state === 'development') console.log('                                               Player Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
             break;
          }
       }
@@ -346,7 +345,7 @@ io.sockets.on('connection', socket => {
             socket.leave('Lobby'); // Leave 'Lobby' Room
             socket.join(game.info.title); // Join 'Game' Room
             games[i].spectators.push(socket.id);
-            print_dev('                                               Spectator Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
+            if (config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games[i].info.title + ' (' + socket.id + ')');
             break;
          }
       }
