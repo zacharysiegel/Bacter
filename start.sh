@@ -1,22 +1,27 @@
 #!/bin/bash
 
+# Starts the server
+# @option --help Prints help message and exits with code 0
+# @option -b / --build Runs ./build.sh before starting the server
+
 # Check if arguments include appropriate options
 echo " $@ " | grep -qE -- "\ --help\ "
-help_code=$?
+help_exit=$?
 echo " $@ " | grep -qE -- "\ -b\ "
-b_code=$?
+b_exit=$?
 echo " $@ " | grep -qE -- "\ --build\ "
-build_code=$?
-echo $@ | grep -qE -- ".*"
-args_code=$?
-if [[ $help_code -ne 0 && $b_code -ne 0 && $build_code -ne 0 && $args_code -ne 0 ]] # If no valid options/arguments are supplied, but there are still options/arguments, exit 1 and print illegal argument
+build_exit=$?
+echo $@ | grep -qE -- ".+"
+args_exit=$?
+
+if [[ $help_exit -ne 0 && $b_exit -ne 0 && $build_exit -ne 0 && $args_exit -eq 0 ]] # If no valid options/arguments are supplied, but there are still options/arguments, exit 1 and print illegal argument
 then
    echo "Illegal Argument(s) Provided"
    exit 1
 fi
 
 # Respond to inclusion of options
-if test $help_code -eq 0
+if test $help_exit -eq 0
 then
    echo "Usage: ./start.sh [OPTION]..."
    echo "Start the local application"
@@ -26,7 +31,7 @@ then
    echo "  -h, --help     Display this help text"
    exit 0
 fi
-if test $b_code -eq 0 -o $build_code -eq 0
+if test $b_exit -eq 0 -o $build_exit -eq 0
 then
    ./build.sh # User can specify -b or --build in order to build JavaScript before starting the application
    echo

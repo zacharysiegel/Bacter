@@ -133,9 +133,18 @@
    a3.2.0 - Capture the Flag  
       ✓ Populate README.md  
       ✓ Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'  
+      ✓ Improve build and start scripts (rename run.sh to start.sh)
+      ✓ Convert z.js format to class Z + Update occurances of z.js functions to Z.[function()]
+      FIX game is closed when try to enter game - This error is not in a3.1.2
+      FIX ability timers are black circle in tutorial - This error is not in a3.1.2
+      Fix bot does not appear in compress section of tutorial
+      Fix white background when server closes from host leaving game
       Fix 'there is an issue with the skin detection' in respawn menu  
       Fix game doesn't appear in browser if all players are dead  
       Fix browser button inconsistent row background  
+      Fix crash when player kills himself with shoot  
+      Fix press enter in color picker joins game  
+      Fix name labels do not show while spectating  
       CTF  
          ✓ Round system  
             Round end at 3 captures  

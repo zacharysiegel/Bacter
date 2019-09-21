@@ -213,9 +213,9 @@
    Changed neutralize/toxin center from center of mass to crosshair  
    Changed text in respawn menu from 'Respawn' to 'Spawn'  
    Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'  
+   Improved latency issues  
    Fixed second game in single session break-on-spawn bug  
    Fixed return to title screen no-render bug  
-   Fixed latency issues  
    Fixed current color detection in spawn and pause menus  
    Fixed in-game window resizing issue  
    Fixed breaking bug in survival after multiple last players die on same tick  
@@ -226,3 +226,4 @@
    Fixed spectate menu double issue indicators  
 
 ## a3.2.0
+   Imporoved scripts to build files and start server
