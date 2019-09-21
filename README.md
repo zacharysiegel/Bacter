@@ -1,13 +1,21 @@
-# Bacter
-Two-Dimensional Arena Multiplayer Game  
-Website: [bacter.ga](http://bacter.ga)
+# Bacter -- 2D Arena Multiplayer Game
 
-### Usage
-1. Node.js and npm must be installed
-2. Execute `npm i` to install dependencies
-3. Execute `bash run.sh` to build files and start server\*
-   + Alternatively, execute `bash src/build.sh` to build files\*  
-   and `node ./src/app.js` to start the server separately
-4. To display server messages, set `print_dev: true` in ./src/config.json
+#### Players
+> Play the game at [http://bacter.ga](http://bacter.ga)<br/>
+> Review the [Gameplay Guide](./docs/gameplay.md) in order to learn the mechanics of the game in greater detail<br/>
+> View the [Change Log](./docs/changelog.md) to see what has changed after an update is published<br/>
 
-\* On a linux machine, it may be necessary to run executables with root privilages
+#### Contributiors
+> Learn how to run a Bacter server on your local machine with the [Usage Guide](./docs/usage.md).<br/>
+
+#### Documentation
+> [Change Log](./docs/changelog.md)<br/>
+> [Gameplay Guide](./docs/gameplay.md)<br/>
+> [Usage Guide](./docs/usage.md)<br/>
+
+#### Contact
+> Send an email to bactergame@gmail.com to contact a developer in an official capacity.<br/>
+> Suggestions and criticisms are welcomed!<br/>
+
+#### License
+> View the [license](./docs/LICENSE) in the ./docs directory
