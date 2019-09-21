@@ -1,7 +1,6 @@
 {
    "project_state": "development",
-   "_print_dev": true,
-   "_delaytime": 10000,
-   "_shrinkrate": 0.2,
-   "_renderfrequency": 40
+   "delay_time": 10000,
+   "shrink_rate": 0.2,
+   "render_frequency": 40
 }
