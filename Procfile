@@ -1,1 +1,1 @@
-web: node ./src/app.js
+web: ./start.sh --build

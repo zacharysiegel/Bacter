@@ -15,5 +15,5 @@ package-lock.json
 archives/Previous Versions.zip
 
 # Bacter
-public/bundle/*
-
+public/build/*
+src/build/*
