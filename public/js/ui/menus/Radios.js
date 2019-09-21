@@ -8,7 +8,7 @@ class Radios extends React.Component {
       this.count = props.count;
       this.menuType = props.menuType;
       this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
 
       this.applyInstance = this.applyInstance.bind(this);
    }

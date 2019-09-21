@@ -10,7 +10,7 @@ class Num extends React.Component {
       this.style = {};
       this.menuType = props.menuType; // Type of menu rendered inside
       this.instance = props.instance; // Name of input
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
       this.placeholder = null;
 
       this.applyInstance = this.applyInstance.bind(this);

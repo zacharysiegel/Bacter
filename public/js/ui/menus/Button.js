@@ -8,7 +8,7 @@ class Button extends React.Component {
       this.style = {};
       this.menuType = props.menuType;
       this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
 
       this.handleClick = this.handleClick.bind(this); // Bind this. reference value to class functions
       this.handleMouseOver = this.handleMouseOver.bind(this);

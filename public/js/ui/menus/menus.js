@@ -45,8 +45,8 @@ var menus = {
 
 function renderMenu(type, data) {
    if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) { // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
-      ReactDOM.unmountComponentAtNode(eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+      ReactDOM.unmountComponentAtNode(Z.eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
    }
-   ReactDOM.render(<Menu type={type} data={data} />, eid('cont')); // Render instance of Menu component class in container with id 'cont'
+   ReactDOM.render(<Menu type={type} data={data} />, Z.eid('cont')); // Render instance of Menu component class in container with id 'cont'
    state = type + 'Menu'; // Game state - not component state
 }

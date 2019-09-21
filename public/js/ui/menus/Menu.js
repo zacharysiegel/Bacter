@@ -103,13 +103,13 @@ class Menu extends React.Component {
       let value = valuE;
       let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set local instances to lowercase options
       let vals = this.state.values;
-      let index = menus[this.type].options.indexOf(capitalize(instance));
-      let elt = eid(instance + ' input'); // DOM node of instance input
-      let wInput = eid('world width input'); // Width input DOM node
-      let hInput = eid('world height input'); // Height input DOM node
-      let pmInput = eid('player minimum input'); // Player minimum input DOM node
-      let tcInput = eid('team count input'); // Team count input DOM node
-      let teamInput = eid('team input'); // Team selections input DOM node
+      let index = menus[this.type].options.indexOf(Z.capitalize(instance));
+      let elt = Z.eid(instance + ' input'); // DOM node of instance input
+      let wInput = Z.eid('world width input'); // Width input DOM node
+      let hInput = Z.eid('world height input'); // Height input DOM node
+      let pmInput = Z.eid('player minimum input'); // Player minimum input DOM node
+      let tcInput = Z.eid('team count input'); // Team count input DOM node
+      let teamInput = Z.eid('team input'); // Team selections input DOM node
       let wI = menus[this.type].options.indexOf('World Width'); // Width input index (options and state values)
       let hI = menus[this.type].options.indexOf('World Height'); // Height input index (options and state values)
       let pmI = menus[this.type].options.indexOf('Player Minimum'); // Player minimum input index (options and state values)
@@ -184,7 +184,7 @@ class Menu extends React.Component {
          let instance = menus[this.type].options[i].toLowerCase(); // Save instance value from options into instance variable
          stateIssues.push([]); // There exists an issues array for each possible option
          for (let j = 0; j < count; j++) {
-            if (getKeys(issues[j])[0] === instance) { // If instance of issue is instance from options array
+            if (Z.getKeys(issues[j])[0] === instance) { // If instance of issue is instance from options array
                stateIssues[i].push(issues[j][instance]); // Add issue to messages array within instance index of state issues array
                issues.splice(j, 1); // Remove issue from inputted issues array so it is not unnecessarily looped through
                count--; // count must be reduced since length of issues is reduced
@@ -195,7 +195,7 @@ class Menu extends React.Component {
       stateIssues.push([]); // Add an option non-specific array to the end of state issues to be rendered at the end of the menu; Buffer of empty array is necessary
       if (issues.length) { // If there are any remaining issues (issues with instance '' which do not apply to any single input)
          for (let i = 0; i < count; i++) { // count is the number of remaining issues
-            let key = getKeys(issues[i])[0];
+            let key = Z.getKeys(issues[i])[0];
             stateIssues[stateIssues.length - 1].push(issues[i][key]); // Add reamining issues to last index of state issues array because they are displayed after all other issues at the bottom of the menu
          }
       }

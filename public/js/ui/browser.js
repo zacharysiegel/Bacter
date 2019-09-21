@@ -130,5 +130,5 @@ class TableButton extends React.Component {
 
 function renderBrowser() {
    state = 'browser';
-   ReactDOM.render(<Browser games={games} />, eid('cont'));
+   ReactDOM.render(<Browser games={games} />, Z.eid('cont'));
 }

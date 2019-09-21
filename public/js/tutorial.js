@@ -2,7 +2,7 @@ var tutorial;
 
 function renderTutorial() {
    clearInterval(title.interval);
-   ReactDOM.render(<CanvasCont />, eid('cont'));
+   ReactDOM.render(<CanvasCont />, Z.eid('cont'));
    state = 'tutorial';
 }
 
@@ -50,7 +50,7 @@ var Tutorial = function() {
                textStyle(NORMAL);
                let message = currentMessage();
                if (message != undefined) {
-                  let breaks = freq(message, '\n');
+                  let breaks = Z.freq(message, '\n');
                   let width = messageWidth(message);
                   rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
                }

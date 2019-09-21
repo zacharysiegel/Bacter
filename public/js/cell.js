@@ -1,10 +1,10 @@
 let Cell = function(_x, _y, _org) {
-    this.player = org.player;
+    this.player = _org.player;
     this.width = _cellwidth;
     this.height = _cellwidth; // this.width should equal this.height
     this.x = _x; // Cell Center's x coordinate
     this.y = _y; // Cell Center's y coordinate
-    this.color = org.color;
+    this.color = _org.color;
     this.org = _org; // The org to which this cell belongs
     /**
      *

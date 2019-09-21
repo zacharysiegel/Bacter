@@ -39,7 +39,7 @@ var Title = function() {
             yoff = 1;
          }
          quadrants[i] = quadrant;
-      } while (freq(quadrants, quadrant) > floor(_dummies / 4) + 1);
+      } while (Z.freq(quadrants, quadrant) > floor(_dummies / 4) + 1);
       let pos = {
          x: random(this.world.x + _cellwidth + this.world.width / 2 * xoff, this.world.x - _cellwidth + this.world.width / 2 * (xoff + 1)), // 80 is edge buffer
          y: random(this.world.y + _cellwidth + this.world.height / 2 * yoff, this.world.y - _cellwidth + this.world.height / 2 * (yoff + 1))
@@ -173,7 +173,7 @@ function renderTitle() {
          <CanvasCont />
          <TitleMenu />
       </div>
-   , eid('cont')); // TitleMenu will not retain its this. namespace
+   , Z.eid('cont')); // TitleMenu will not retain its this. namespace
 }
 
 var Shade = function() { // White layer behind menus allows user to see background but unfocuses it

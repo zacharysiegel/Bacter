@@ -99,7 +99,7 @@ function renderMessages() {
          } else if (src.world.color == 'white') {
             textStyle(BOLD);
          }
-         let breaks = freq(message, '\n');
+         let breaks = Z.freq(message, '\n');
          let width = messageWidth(message);
          rect(25 + width / 2, 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
          fill(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b); // Same color as border to maintain contrast with background

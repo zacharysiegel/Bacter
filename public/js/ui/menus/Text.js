@@ -9,7 +9,7 @@ class Text extends React.Component { // Each input-type component renders a tabl
       this.style = {};
       this.menuType = props.menuType;
       this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
 
       this.applyInstance = this.applyInstance.bind(this);
       this.handleFocus = this.handleFocus.bind(this);

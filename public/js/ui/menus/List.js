@@ -10,7 +10,7 @@ class List extends React.Component {
       this.style = {};
       this.menuType = props.menuType;
       this.instance = props.instance;
-      // this.index = menus[this.menuType].options.indexOf(capitalize(this.instance)); // Gets index of input within menu - Not currently in use
+      // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Gets index of input within menu - Not currently in use
 
       this.applyInstance = this.applyInstance.bind(this);
       this.handleChange = this.handleChange.bind(this);

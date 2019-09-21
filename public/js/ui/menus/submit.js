@@ -1,19 +1,19 @@
 function submit(menuType) {
    let issues = []; // Array of objects [ { [instance]: 'error message' } ] (instance of input to render error message next to)
    let ok = true; // Check for inputs' validities
-   let tInput = eid('game title input');
-   let pInput = eid('password input');
-   let typeInput = eid('world type input');
-   let widthInput = eid('world width input');
-   let heightInput = eid('world height input');
-   let pcInput = eid('player cap input');
-   let pmInput = eid('player minimum input');
-   let boardLengthInput = eid('leaderboard length input');
-   let tcInput = eid('team count input');
-   let modeInput = eid('game mode input');
-   let snInput = eid('screen name input');
-   let cInput = eid('color input');
-   let teamInput = eid('team input');
+   let tInput = Z.eid('game title input');
+   let pInput = Z.eid('password input');
+   let typeInput = Z.eid('world type input');
+   let widthInput = Z.eid('world width input');
+   let heightInput = Z.eid('world height input');
+   let pcInput = Z.eid('player cap input');
+   let pmInput = Z.eid('player minimum input');
+   let boardLengthInput = Z.eid('leaderboard length input');
+   let tcInput = Z.eid('team count input');
+   let modeInput = Z.eid('game mode input');
+   let snInput = Z.eid('screen name input');
+   let cInput = Z.eid('color input');
+   let teamInput = Z.eid('team input');
    let gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
    let password = pInput ? pInput.value : null;
    let type = typeInput ? typeInput.value.toLowerCase() : null;
@@ -166,7 +166,7 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            let color = 'black'; // eid('World color input').value.toLowerCase(); // Only black world is enabled
+            let color = 'black'; // Z.eid('World color input').value.toLowerCase(); // Only black world is enabled
             createGame({
                title: gametitle,
                password: password,
@@ -422,8 +422,8 @@ function submit(menuType) {
                   var color;
                   if (game.info.mode === 'inf') { // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && eid('color input')) { // If is not a team game and there is a color input field
-                     color = eid('color input').value.toLowerCase();
+                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
+                     color = Z.eid('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
                   }
@@ -685,7 +685,7 @@ function submit(menuType) {
             if (game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
             } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team mode 
-               color = eid('color input').value.toLowerCase();
+               color = Z.eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
@@ -736,7 +736,7 @@ function submit(menuType) {
                   }
                }
             }
-            ReactDOM.render(<CanvasCont />, eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -761,7 +761,7 @@ function submit(menuType) {
             Labels = label; // Set name labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             state = 'spectate';
-            ReactDOM.render(<CanvasCont />, eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
             this.issue(issues);
          }
@@ -769,7 +769,7 @@ function submit(menuType) {
       case 'pauseTutorial':
          if (ok) {
             state = 'tutorial';
-            ReactDOM.render(<CanvasCont />, eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
             this.issue(issues);
          }
