@@ -27,7 +27,12 @@ let socketio = require('socket.io');
 let io = socketio(server);
 
 // Configurations
-let config = require('./config.json');
+let config;
+try { // Production code in try
+   config = require('../config/config.json');
+} catch {
+   config = require('../../config/config.json');
+}
 
 // Send Static Data
 app.use(express.static('./public'));

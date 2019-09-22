@@ -3,10 +3,6 @@
 # Prepares files for program execution
 #    Builds public JavaScript files using Babel into a backwards-compatible bundle in public/build
 #    Builds server-side JavaScript files into src/build (not a bundle)
-#    Copies current configuration files into build directory
-
-echo "Copying Configurations..."
-cp ./src/config.json ./src/build/config.json
 
 # If the folders containing built files do not exist, create them
 [[ ! -d ./src/build ]] && mkdir ./src/build
