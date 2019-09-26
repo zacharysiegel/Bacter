@@ -3,11 +3,11 @@ class Z {
    
    /**
     * Maps to document.getElementById()
-    * @param  {String} str Element id
+    * @param  {String} string Element id
     * @return {HTML DOM Element} Element corresponding to id
     */
-   static eid(str) {
-      return document.getElementById(str);
+   static eid(string) {
+      return document.getElementById(string);
    }
 
    /**
@@ -33,32 +33,34 @@ class Z {
    
    /**
     * Set the character at the specified index in a string to c
-    * @param   {String}  str   String to be modified
+    * @param   {String}  string   String to be modified
     * @param   {Integer} index Index in string to be modified
     * @param   {String}  c     Character to be set in index
     * @returns {String}        The modified string
     */
-   static setCharAt(_str, index, c) {
-      str = _str;
-      if(index > str.length-1) {
+   static setCharAt(_string, index, c) {
+      let string = _string;
+      if(index > string.length-1) {
          console.error('Invalid Argument: setCharAt(): index out of bounds')
-         return str;
+         return string;
       }
-      return str.substr(0, index) + c + str.substr(index + 1);
+      return string.substr(0, index) + c + string.substr(index + 1);
    }
    
    /**
     * Capitalize the first character of every word in the given string
-    * @param  {String} str String to be capitalized
-    * @return {String}     Capitalized version of str
+    * @param  {String} string String to be capitalized
+    * @return {String}     Capitalized version of string
     */
-   static capitalize(str, delimeter = ' ') {
-      let arr = str.split(delimeter);
+   static capitalize(_string, delimeter = ' ') {
+      let string = _string;
+      let arr = string.split(delimeter);
       for (let i = 0; i < arr.length; i++) {
-         char1 = arr[i].charAt(0);
+         let char1 = arr[i].charAt(0).toUpperCase();
+         arr[i] = this.setCharAt(arr[i], 0, char1);
       }
-      str = arr.join(delimeter);
-      return str;
+      string = arr.join(delimeter);
+      return string;
    };
 
    /**
