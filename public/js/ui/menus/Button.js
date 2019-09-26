@@ -17,6 +17,7 @@ class Button extends React.Component {
       this.handleMouseDown = this.handleMouseDown.bind(this);
    }
 
+   // Event Handlers
    handleClick() {
       switch (this.instance) {
          case 'leave game':
@@ -43,6 +44,7 @@ class Button extends React.Component {
             break;
       }
    }
+   
    handleMouseOver() {
       let page = document.body.parentNode;
       if (!mouseDown || !this.state.down) { // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
@@ -57,22 +59,27 @@ class Button extends React.Component {
          }
       }
    }
+   
    handleMouseOut() {
       this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
    }
+   
    handleMouseUp() {
-      this.style.backgroundColor = 'rgb(220, 220, 220)';
+      this.setState({ backgroundColor: 'rgb(220, 220, 220)' });
       this.setState({ down: false });
    }
+   
    handleMouseDown() {
       this.setState({ backgroundColor: 'rgb(200, 200, 200)' });
       this.setState({ down: true });
    }
-
-   componentWillMount() {
+   
+   // React Lifecycle Hooks
+   componentDidMount() {
       let page = document.body.parentNode;
       if (!mouseDown) this.setState({ down: false });
    }
+   
    render() {
       let style = {};
       for (let i in this.style) {

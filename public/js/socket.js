@@ -19,7 +19,7 @@ function connectSocket() {
    socket.on('Games', (data) => { // data: { games: , connections: }
       games = data.games;
       connections = data.connections;
-      if (state === 'browser') renderBrowser();
+      if (state === 'browser') Browser.renderBrowser();
    });
 
    socket.on('Enter', () => enter()); // Begin growth
@@ -32,9 +32,9 @@ function connectSocket() {
          }
       }
       if (state === 'pauseSpectateMenu') {
-         renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
+         Menu.renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
       } else if (state === 'respawnMenu') {
-         renderMenu('pauseGame', game);
+         Menu.renderMenu('pauseGame', game);
          menus.pauseGame.submit();
       }
       spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start

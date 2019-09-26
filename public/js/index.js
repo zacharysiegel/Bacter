@@ -126,7 +126,7 @@ function keyPressed() {
          if (state == 'spectate' && org.alive == false && org.spawn == true) {
             if (game.players.length < game.info.cap) {
                socket.emit('Spectator Left', game.info);
-               renderMenu('respawn', game); // Load respawn menu
+               Menu.renderMenu('respawn', game); // Load respawn menu
             } else {
                alert('Game is at maximum player capacity');
                // Return to spectate mode
@@ -144,20 +144,20 @@ function keyPressed() {
                   socket.emit('Game Ended', game);
                   renderTitle();
                } else {
-                  renderBrowser();
+                  Browser.renderBrowser();
                }
                break;
             case 'spectateMenu':
-               renderBrowser();
+               Browser.renderBrowser();
                break;
             case 'game':
-               renderMenu('pauseGame', game);
+               Menu.renderMenu('pauseGame', game);
                break;
             case 'spectate':
-               renderMenu('pauseSpectate', game);
+               Menu.renderMenu('pauseSpectate', game);
                break;
             case 'tutorial':
-               renderMenu('pauseTutorial', tutorial);
+               Menu.renderMenu('pauseTutorial', tutorial);
                break;
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
@@ -204,11 +204,11 @@ function keyPressed() {
                   socket.emit('Game Ended', game);
                   renderTitle();
                } else {
-                  renderBrowser();
+                  Browser.renderBrowser();
                }
                break;
             case 'spectate':
-               renderBrowser();
+               Browser.renderBrowser();
                break;
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
@@ -294,7 +294,7 @@ function windowResized() {
    } else if (state.indexOf('Menu') !== -1) {
       let type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
       let data = (type === 'join' || type === 'spectate' || type === 'respawn') ? game : null; // Only join, spectate, and respawn menus use game variable as data
-      renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
+      Menu.renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
       if (src.src === 'title') { // ^^ Cut out Menu at end of state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
          src.resize(0, 0, window.innerWidth, window.innerHeight);
       } else if (src.src === 'game') { // If menu during game (player or spectator)

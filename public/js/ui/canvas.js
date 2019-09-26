@@ -22,22 +22,38 @@ class CanvasCont extends React.Component {
       body.style.outline = 'none';
    }
 
+   // React Lifecycle Hooks
+   static getDerivedStateFromProps(nextProps, prevState) {
+      let nextWidth = nextProps.width ? nextProps.width : window.innerWidth;
+      let nextHeight = nextProps.height ? nextProps.height : window.innerHeight;
+      if (nextWidth !== prevState.width || nextHeight !== prevState.height) { // If new dimensions are inequal, create new canvas element
+         cnv = createCanvas(nextWidth, nextHeight); // Create p5 canvas
+         cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
+      }
+      return { // Resize when re-rendered
+         width: nextWidth, // Width defaults to window width but can be set by props.width
+         height: nextHeight // Height defaults to window height but can be set by props.height
+      }
+   }
+   
    componentDidMount() { // Runs only after initial mount
       cnv = createCanvas(this.state.width, this.state.height); // Create p5 canvas
       cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
    }
-   componentWillReceiveProps(next) {
-      let nextWidth = next.width ? next.width : window.innerWidth;
-      let nextHeight = next.height ? next.height : window.innerHeight
-      if (nextWidth !== this.state.width || nextHeight !== this.state.height) { // If new dimensions are inequal, create new canvas element
-         cnv = createCanvas(nextWidth, nextHeight); // Create p5 canvas
-         cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
-      }
-      this.setState({ // Resize when re-rendered
-         width: nextWidth, // Width defaults to window width but can be set by props.width
-         height: nextHeight // Height defaults to window height but can be set by props.height
-      });
-   }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    let nextWidth = next.width ? next.width : window.innerWidth;
+   //    let nextHeight = next.height ? next.height : window.innerHeight
+   //    if (nextWidth !== this.state.width || nextHeight !== this.state.height) { // If new dimensions are inequal, create new canvas element
+   //       cnv = createCanvas(nextWidth, nextHeight); // Create p5 canvas
+   //       cnv.parent('#canvascont'); // Set CanvasCont as p5 canvas parent
+   //    }
+   //    this.setState({ // Resize when re-rendered
+   //       width: nextWidth, // Width defaults to window width but can be set by props.width
+   //       height: nextHeight // Height defaults to window height but can be set by props.height
+   //    });
+   // }
+   
    render() {
       let style = {};
       for (let i in this.props.style) {

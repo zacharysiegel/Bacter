@@ -8,68 +8,75 @@ class Radios extends React.Component {
       this.count = props.count;
       this.menuType = props.menuType;
       this.instance = props.instance;
+      this.set = []; // set must be initialized to an array
       // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
 
       this.applyInstance = this.applyInstance.bind(this);
    }
 
-   applyInstance() { // this.props.update should not be run within applyInstance since component is not yet mounted
+   applyInstance() { // This funtion is run inside the componentDidMount React lifecycle hook
       switch (this.instance) {
          case 'skin':
-            this.set = skins; // Set is an array of text to be displayed next to the radio inputs
-            if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Placed outside and after above for loop so the above will occur by defualt and this will overwrite if applicable
+            this.set = skins.slice(); // Set is an array of text to be displayed next to the radio inputs
+            if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Placed outside for loop so the above will occur by defualt and this will overwrite if applicable
                for (let i = 0; i < skins.length; i++) {
                   if (org && org.skin === skins[i]) {
-                     let sels = this.state.selections; // Create copy of state selections array
-                     sels.fill(false); // Set entire array to false
-                     sels[i] = true; // Set current skin to value true
-                     this.setState({ value: org.skin, selections: sels });
+                     let selections = this.state.selections.slice(); // Create copy of state selections array
+                     selections.fill(false); // Set entire array to false
+                     selections[i] = true; // Set current skin to value true
+                     this.setState({ value: org.skin, selections: selections });
                      break;
                   }
                }
             }
             break;
          case '1st ability':
-            this.set = firsts; // Defined in config.js
+            this.set = firsts.slice(); // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
-               let sels = this.state.selections; // Create copy of state selections array
-               sels.fill(false);
+               let selections = this.state.selections.slice(); // Create copy of state selections array
+               selections.fill(false);
                if (ability.extend.activated)
                   index = 0; // Set index value of selected radio in radios
                else if (ability.compress.activated)
                   index = 1; // Set index value of selected radio in radios
-               sels[index] = true;
-               this.setState({ value: this.set[index], selections: sels });
+               selections[index] = true;
+               this.setState({ value: this.set[index], selections: selections });
             }
             break;
          case '2nd ability':
             this.set = seconds; // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
-               let sels = this.state.selections; // Create copy of state selections array
-               sels.fill(false);
+               let selections = this.state.selections.slice(); // Create copy of state selections array
+               selections.fill(false);
                if (ability.immortality.activated)
                   index = 0; // Set index value of selected radio in radios
                else if (ability.freeze.activated)
                   index = 1; // Set index value of selected radio in radios
-               sels[index] = true;
-               this.setState({ value: this.set[index], selections: sels });
+               selections[index] = true;
+               this.setState({ value: this.set[index], selections: selections });
             }
             break;
          case '3rd ability':
             this.set = thirds; // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
-               let sels = this.state.selections; // Create copy of state selections array
-               sels.fill(false);
+               let selections = this.state.selections.slice(); // Create copy of state selections array
+               selections.fill(false);
                if (ability.neutralize.activated)
                   index = 0; // Set index value of selected radio in radios
                else if (ability.toxin.activated)
                   index = 1; // Set index value of selected radio in radios
-               sels[index] = true;
-               this.setState({ value: this.set[index], selections: sels });
+               selections[index] = true;
+               this.setState({ value: this.set[index], selections: selections });
             }
+            break;
+         case '4th ability':
+            this.set = fourths; // Defined in config.js
+            let selections = this.state.selections.slice(); // Create copy of state's selections array
+            selections[0] = true; // There is only one fourth ability, and it is always activated
+            this.setState({ value: 0, selections: selections });
             break;
          case 'auto assign':
             this.set = ['']; // Do not display any text adjacent to name label radio
@@ -96,8 +103,10 @@ class Radios extends React.Component {
             break;
       }
    }
-
+   
+   // Event Handlers
    handleClick(index) {
+      if (this.instance === '4th ability') return; // The user is not allowed to de-select the Spore ability
       let selections = this.state.selections.slice(); // Copy state selections array into selections
       let newValue = !selections[index]; // Flip selected radio value
       selections.fill(false); // Set all selections to false
@@ -110,16 +119,24 @@ class Radios extends React.Component {
       this.props.update(this.instance, val); // Update state value
       this.setState({ selections: selections }); // Update selections
    }
-
-   componentWillMount() {
-      this.applyInstance();
-   }
+   
+   // React Lifecycle Hooks
    componentDidMount() { // Does not run when component is merely changed
+      this.applyInstance();
       this.props.update(this.instance, this.state.value);
    }
-   componentWillReceiveProps(next) {
-      this.setState({ value: next.value });
+   
+   static getDerivedStateFromProps(nextProps, prevState) {
+      if (nextProps.value !== prevState.value) {
+         return { value: nextProps.value };
+      }
+      return null;
    }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    this.setState({ value: next.value });
+   // }
+   
    render() {
       let radios = [];
       for (let i = 0; i < this.count; i++) {

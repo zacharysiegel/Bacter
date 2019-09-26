@@ -80,7 +80,7 @@
       World border slowly creeps in
       What's done is done: Cannot respawn until game is completed
       Leaderboard tracks wins, kills
-#### Capture the Flag (CTF) (Unreleased)
+#### Capture the Flag (CTF) (Unreleased - This is a rough outline)
       Players are sorted into teams
          Players cannot harm teammates
       Spawn in random positions
@@ -96,7 +96,7 @@
          X Safe zone around flag protects carrier
          X If holding the flag, throws the flag
       Leaderboard tracks captures (score) and round wins
-#### Infection (INF) (Unreleased)
+#### Infection (INF) (Unreleased - This is a rough outline)
       Players sorted into infected and healthy
          One infected per eight healthy, round up
       Infected players are red, Healthy players are green
@@ -109,7 +109,7 @@
       Infected players are zoomed in, so have less visibility to equalize power of tag
       Last man standing wins
       Leaderboard tracks wins
-#### King of the Hill (KTH) (Unreleased)
+#### King of the Hill (KTH) (Unreleased - This is a rough outline)
       Players spawn on outsides of map
       Region in center of the map
          Region is same shape as map

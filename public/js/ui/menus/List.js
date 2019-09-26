@@ -116,16 +116,24 @@ class List extends React.Component {
       if (e.keyCode === 13) // If ENTER key is down
          this.props.submit(this.menuType);
    }
-
-   componentWillMount() { // Does not run when component is merely changed, only on initial mount
+   
+   // React Lifecycle Hooks
+   componentDidMount() { // Does not run when component is merely changed, only on initial mount
       this.applyInstance();
-   }
-   componentDidMount() {
       this.props.update(this.instance, this.state.value); // Update internal values of this and other inputs
    }
-   componentWillReceiveProps(next) {
-      this.setState({ value: next.value });
+   
+   static getDerivedStateFromProps(nextProps, prevState) {
+      if (nextProps.value !== prevState.value) {
+         return { value: nextProps.value };
+      }
+      return null;
    }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    this.setState({ value: next.value });
+   // }
+   
    render() {
       let style = {};
       for (let i in this.style) {

@@ -78,25 +78,25 @@ io.sockets.on('connection', socket => {
 
       // End Hosted Game
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == socket.id) { // If player is host
+         if (games[i].info.host === socket.id) { // If player is host
             io.to(games[i].info.title).emit('Game Ended', games[i]); // Remove Players From Hosted Game
             for (let j = 0; j < games[i].players.length; j++) {
                for (let k = 0; k < io.sockets.sockets.length; k++) {
-                  if (games[i].players[j] == io.sockets.sockets[k].id) {
+                  if (games[i].players[j] === io.sockets.sockets[k].id) {
                      io.sockets.sockets[k].leave(games[i].info.title);
                   }
                }
             }
             for (let j = 0; j < games[i].spectators.length; j++) {
                for (let k = 0; k < io.sockets.sockets.length; k++) {
-                  if (games[i].spectators[j] == io.sockets.sockets[k].id) {
+                  if (games[i].spectators[j] === io.sockets.sockets[k].id) {
                      io.sockets.sockets[k].leave(games[i].info.title);
                   }
                }
             }
             if (config.project_state === 'development') console.log('                                               Game Deleted: ' + games[i].info.title + ' (' + games[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
             for (let j = 0; j < passwords.length; j++) {
-               if (passwords[j].title == games[i].info.title) {
+               if (passwords[j].title === games[i].info.title) {
                   passwords.splice(j, 1);
                   j--; // Unnecessary when break proceeds
                   break;
@@ -109,14 +109,14 @@ io.sockets.on('connection', socket => {
             break; // Break can be removed to remove multiple games if player is host of multiple games by some bug
          } else { // If player is not host
             for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-               if (games[i].board.list[j].player == socket.id) { // Find player in leaderboard
+               if (games[i].board.list[j].player === socket.id) { // Find player in leaderboard
                   games[i].board.list.splice(j, 1); // Remove player from leaderboard
                   j--;
                   break;
                }
             }
             for (let j = 0; j < games[i].players.length; j++) { // Search Players
-               if (games[i].players[j] == socket.id) { // Find Player
+               if (games[i].players[j] === socket.id) { // Find Player
                   socket.leave(games[i].info.title); // Leave 'Game' Room
                   if (games[i].teams.length != 0) { // If is a team game
                      let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
@@ -132,7 +132,7 @@ io.sockets.on('connection', socket => {
                }
             }
             for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
-               if (games[i].spectators[j] == socket.id) { // Find Spectator
+               if (games[i].spectators[j] === socket.id) { // Find Spectator
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
@@ -151,24 +151,24 @@ io.sockets.on('connection', socket => {
 
    // Leave Game
    socket.on('Leave Game', (game) => {
-      if (game.info.host == socket.id) { // If player is host
+      if (game.info.host === socket.id) { // If player is host
          io.to(game.info.title).emit('Game Ended', game); // Copied from 'Game Ended'
          for (let i = 0; i < game.players.length; i++) { // If player
             for (let j = 0; j < io.sockets.sockets.length; j++) {
-               if (game.players[i] == io.sockets.sockets[j].id) {
+               if (game.players[i] === io.sockets.sockets[j].id) {
                   io.sockets.sockets[j].leave(game.info.title); // Leave server room
                }
             }
          }
          for (let i = 0; i < game.spectators.length; i++) { // If spectator
             for (let j = 0; j < io.sockets.sockets.length; j++) {
-               if (game.spectators[i] == io.sockets.sockets[j].id) {
+               if (game.spectators[i] === io.sockets.sockets[j].id) {
                   io.sockets.sockets[j].leave(game.info.title); // Leave server room
                }
             }
          }
          for (let i = 0; i < passwords.length; i++) {
-            if (passwords[i].title == game.info.title) {
+            if (passwords[i].title === game.info.title) {
                passwords.splice(i, 1); // Remove game from passwords array
                i--;
                break;
@@ -176,7 +176,7 @@ io.sockets.on('connection', socket => {
          }
          if (config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
-            if (games[i].info.host == game.info.host) {
+            if (games[i].info.host === game.info.host) {
                games.splice(i, 1); // Delete Game
                clearInterval(intervals[i]); // Clear Game Interval
                intervals.splice(i, 1); // Remove game interval from intervals array
@@ -187,14 +187,14 @@ io.sockets.on('connection', socket => {
       } else {
          for (let i = 0; i < games.length; i++) { // Copied from 'disconnect'
             for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-               if (games[i].board.list[j].player == socket.id) { // Find player in leaderboard
+               if (games[i].board.list[j].player === socket.id) { // Find player in leaderboard
                   games[i].board.list.splice(j, 1); // Remove player from leaderboard
                   j--;
                   break;
                }
             }
             for (let j = 0; j < games[i].players.length; j++) { // Search Players
-               if (games[i].players[j] == socket.id) { // Find Player
+               if (games[i].players[j] === socket.id) { // Find Player
                   socket.leave(games[i].info.title); // Leave 'Game' Room
                   if (games[i].teams.length != 0) { // If is a team game
                      let team = games[i].teams[teamColors.indexOf(games[i].orgs[j].team)]; // Identify player's team
@@ -210,7 +210,7 @@ io.sockets.on('connection', socket => {
                }
             }
             for (let j = 0; j < games[i].spectators.length; j++) { // Search Spectators
-               if (games[i].spectators[j] == socket.id) { // Find Spectator
+               if (games[i].spectators[j] === socket.id) { // Find Spectator
                   socket.leave(games[i].info.title);
                   games[i].spectators.splice(j, 1);
                   j--;
@@ -224,24 +224,24 @@ io.sockets.on('connection', socket => {
 
    // Game Ended
    socket.on('Game Ended', (game) => {
-      if (game.info.host == socket.id) {
+      if (game.info.host === socket.id) {
          io.to(game.info.title).emit('Game Ended', game);
          for (let i = 0; i < game.players.length; i++) {
             for (let j = 0; j < io.sockets.sockets.length; j++) {
-               if (game.players[i] == io.sockets.sockets[j].id) {
+               if (game.players[i] === io.sockets.sockets[j].id) {
                   io.sockets.sockets[j].leave(game.info.title); // Make all players in 'game' leave the server group
                }
             }
          }
          for (let i = 0; i < games[i].spectators.length; i++) {
             for (let j = 0; j < io.sockets.sockets.length; j++) {
-               if (game.spectators[i] == io.sockets.sockets[j].id) {
+               if (game.spectators[i] === io.sockets.sockets[j].id) {
                   io.sockets.sockets[j].leave(game.info.title); // Make all spectators in 'game' leave the server group
                }
             }
          }
          for (let i = 0; i < passwords.length; i++) {
-            if (passwords[i].title == game.info.title) {
+            if (passwords[i].title === game.info.title) {
                passwords.splice(i, 1);
                i--;
                break;
@@ -249,7 +249,7 @@ io.sockets.on('connection', socket => {
          }
          if (config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
          for (let i = 0; i < games.length; i++) {
-            if (games[i].info.host == game.info.host) {
+            if (games[i].info.host === game.info.host) {
                games.splice(i, 1); // Delete Game
                clearInterval(intervals[i]); // Clear Game Interval
                intervals.splice(i, 1);
@@ -329,7 +329,7 @@ io.sockets.on('connection', socket => {
     */
    socket.on('Player Joined', (data) => {
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == data.info.host) {
+         if (games[i].info.host === data.info.host) {
             socket.leave('Lobby'); // Leave 'Lobby' Room
             socket.join(data.info.title); // Join 'Game' Room
             games[i].players.push(socket.id); // Add player to server's list of players in game
@@ -346,7 +346,7 @@ io.sockets.on('connection', socket => {
    // Spectator Joined
    socket.on('Spectator Joined', (game) => {
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == game.info.host) {
+         if (games[i].info.host === game.info.host) {
             socket.leave('Lobby'); // Leave 'Lobby' Room
             socket.join(game.info.title); // Join 'Game' Room
             games[i].spectators.push(socket.id);
@@ -359,9 +359,9 @@ io.sockets.on('connection', socket => {
    // Spectator Left
    socket.on('Spectator Left', (data) => { // data is game.info
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == data.host) {
+         if (games[i].info.host === data.host) {
             for (let j = 0; j < games[i].spectators.length; j++) {
-               if (games[i].spectators[j] == socket.id) {
+               if (games[i].spectators[j] === socket.id) {
                   games[i].spectators.splice(j, 1);
                   break;
                }
@@ -379,7 +379,7 @@ io.sockets.on('connection', socket => {
     */
    socket.on('Round End', (data) => { // data is game.info
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == data.host) { // Identify game
+         if (games[i].info.host === data.host) { // Identify game
             games[i].rounds.waiting = false;
             games[i].rounds.delayed = true;
             games[i].rounds.delaystart = (new Date()).valueOf();
@@ -388,7 +388,7 @@ io.sockets.on('connection', socket => {
       }
       let delay = setTimeout(() => { // End of round delay
          for (let i = 0; i < games.length; i++) {
-            if (games[i].info.host == data.host) {
+            if (games[i].info.host === data.host) {
                games[i].rounds.waiting = true;
                games[i].rounds.delayed = false;
                break;
@@ -417,7 +417,7 @@ io.sockets.on('connection', socket => {
    // Round Delay
    socket.on('Round Delay', (game) => {
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == game.info.host) { // Identify game
+         if (games[i].info.host === game.info.host) { // Identify game
             games[i].rounds.waiting = true;
             games[i].rounds.delayed = true;
             games[i].rounds.delaystart = (new Date()).valueOf();
@@ -460,7 +460,7 @@ io.sockets.on('connection', socket => {
    // Update Server Leaderboard
    socket.on('Board', (data) => { // data: { list: board.list, host: game.board.host }
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == data.host) { // Find board's game
+         if (games[i].info.host === data.host) { // Find board's game
             games[i].board.list = data.list; // Update server leaderboard list
             break;
          }
@@ -485,7 +485,7 @@ io.sockets.on('connection', socket => {
       let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].orgs.length; j++) {
-            if (games[i].orgs[j].player == socket.id) {
+            if (games[i].orgs[j].player === socket.id) {
                // games[i].orgs[j] = org;
                games[i].orgs[j].alive = data[0]; // Only the following attributes of org need to be updated
                games[i].orgs[j].cells = data[1]; // Latency is decreased by only sending necessary data
@@ -510,7 +510,7 @@ io.sockets.on('connection', socket => {
       let done = false;
       for (let i = 0; i < games.length; i++) {
          for (let j = 0; j < games[i].info.count; j++) {
-            if (games[i].abilities[j].player == socket.id) { // Find ability of socket
+            if (games[i].abilities[j].player === socket.id) { // Find ability of socket
                games[i].abilities[j] = ability;
                done = true;
                break;
@@ -533,7 +533,7 @@ io.sockets.on('connection', socket => {
    // Update Server Teams
    socket.on('Teams', (data) => { // data: { teams: game.teams, host: game.info.host }
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == data.host) { // Identify game
+         if (games[i].info.host === data.host) { // Identify game
             games[i].teams = data.teams; // All data in teams array must be updated
             break;
          }
@@ -549,7 +549,7 @@ io.sockets.on('connection', socket => {
     */
    socket.on('Flag', (game) => {
       for (let i = 0; i < games.length; i++) {
-         if (games[i].info.host == game.info.host) {
+         if (games[i].info.host === game.info.host) {
             games[i].flag = game.flag;
             break;
          }
@@ -561,19 +561,19 @@ io.sockets.on('connection', socket => {
       for (let i = 0; i < games.length; i++) {
          if (games[i].players.indexOf(socket.id) != -1) {
             for (let j = 0; j < games[i].players.length; j++) { // Remove Player
-               if (games[i].players[j] == socket.id) {
+               if (games[i].players[j] === socket.id) {
                   games[i].players.splice(j, 1);
                   break;
                }
             }
             for (let j = 0; j < games[i].abilities.length; j++) { // Remove Ability
-               if (games[i].abilities[j].player == socket.id) {
+               if (games[i].abilities[j].player === socket.id) {
                   games[i].abilities.splice(j, 1);
                   break;
                }
             }
             for (let j = 0; j < games[i].orgs.length; j++) { // Do not use games[i].info.count server-side (orgs.length may change before count changes)
-               if (games[i].orgs[j].player == socket.id) {
+               if (games[i].orgs[j].player === socket.id) {
                   games[i].orgs.splice(j, 1); // Remove Org
                   games[i].info.count = games[i].orgs.length;
                   if (spectating) {
@@ -587,93 +587,92 @@ io.sockets.on('connection', socket => {
       }
    });
 
-	{ // On-Abilities
-		socket.on('Tag', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Tag');
-	      } else {
-	         socket.to(player).emit('Tag');
-	      }
-	   });
+	// On-Abilities
+	socket.on('Tag', function(player) {
+      if (player === socket.id) {
+         socket.emit('Tag');
+      } else {
+         socket.to(player).emit('Tag');
+      }
+   });
 
-	   socket.on('Extend', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Extend');
-	      } else {
-	         socket.to(player).emit('Extend');
-	      }
-	   });
+   socket.on('Extend', function(player=socket.id) {
+      if (player === socket.id) {
+         socket.emit('Extend');
+      } else {
+         socket.to(player).emit('Extend');
+      }
+   });
 
-	   socket.on('Compress', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Compress');
-	      } else {
-	         socket.to(player).emit('Compress');
-	      }
-	   });
+   socket.on('Compress', function(player) {
+      if (player === socket.id) {
+         socket.emit('Compress');
+      } else {
+         socket.to(player).emit('Compress');
+      }
+   });
 
-	   // socket.on('Speed', function(player) {
-	   //    if (player == socket.id) {
-	   //       socket.emit('Speed');
-	   //    } else {
-	   //       socket.to(player).emit('Speed');
-	   //    }
-	   // });
+   socket.on('Immortality', function(player=socket.id) {
+      if (player === socket.id) {
+         socket.emit('Immortality');
+      } else {
+         socket.to(player).emit('Immortality');
+      }
+   });
 
-	   // socket.on('Slow', function(player) {
-	   //    if (player == socket.id) {
-	   //       socket.emit('Slow');
-	   //    } else {
-	   //       socket.to(player).emit('Slow');
-	   //    }
-	   // });
+   socket.on('Freeze', function(player) {
+      if (player === socket.id) {
+         socket.emit('Freeze');
+      } else {
+         socket.to(player).emit('Freeze');
+      }
+   });
 
-	   socket.on('Immortality', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Immortality');
-	      } else {
-	         socket.to(player).emit('Immortality');
-	      }
-	   });
+   socket.on('Neutralize', function(player=socket.id) {
+      if (player === socket.id) {
+         socket.emit('Neutralize');
+      } else {
+         socket.to(player).emit('Neutralize');
+      }
+   });
 
-	   socket.on('Freeze', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Freeze');
-	      } else {
-	         socket.to(player).emit('Freeze');
-	      }
-	   });
+   socket.on('Toxin', function(player) {
+      if (player === socket.id) {
+         socket.emit('Toxin');
+      } else {
+         socket.to(player).emit('Toxin');
+      }
+   });
+   
+   // socket.on('Speed', function(player) {
+   //    if (player === socket.id) {
+   //       socket.emit('Speed');
+   //    } else {
+   //       socket.to(player).emit('Speed');
+   //    }
+   // });
 
-	   // socket.on('Stimulate', function(player) {
-	   //    if (player == socket.id) {
-	   //       socket.emit('Stimulate');
-	   //    } else {
-	   //       socket.to(player).emit('Stimulate');
-	   //    }
-	   // });
+   // socket.on('Slow', function(player) {
+   //    if (player === socket.id) {
+   //       socket.emit('Slow');
+   //    } else {
+   //       socket.to(player).emit('Slow');
+   //    }
+   // });
+   
+   // socket.on('Stimulate', function(player) {
+   //    if (player === socket.id) {
+   //       socket.emit('Stimulate');
+   //    } else {
+   //       socket.to(player).emit('Stimulate');
+   //    }
+   // });
 
-	   // socket.on('Poison', function(player) {
-	   //    if (player == socket.id) {
-	   //       socket.emit('Poison');
-	   //    } else {
-	   //       socket.to(player).emit('Poison');
-	   //    }
-	   // });
-
-	   socket.on('Neutralize', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Neutralize');
-	      } else {
-	         socket.to(player).emit('Neutralize');
-	      }
-	   });
-
-	   socket.on('Toxin', function(player) {
-	      if (player == socket.id) {
-	         socket.emit('Toxin');
-	      } else {
-	         socket.to(player).emit('Toxin');
-	      }
-	   });
-	}
+   // socket.on('Poison', function(player) {
+   //    if (player === socket.id) {
+   //       socket.emit('Poison');
+   //    } else {
+   //       socket.to(player).emit('Poison');
+   //    }
+   // });
 });

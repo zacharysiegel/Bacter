@@ -9,9 +9,18 @@ class Radio extends React.Component {
       this.order = props.order; // Index of radio within radio group (for identification purposes)
    }
 
-   componentWillReceiveProps(next) {
-      this.setState({ value: next.value });
+   // React Lifecycle Hooks
+   static getDerivedStateFromProps(nextProps, prevState) {
+      if (nextProps.value !== prevState.value) {
+         return { value: nextProps.value };
+      }
+      return null;
    }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    this.setState({ value: next.value });
+   // }
+   
    render() {
       let style = {};
       if (this.state.value)
@@ -24,7 +33,7 @@ class Radio extends React.Component {
             className='menuradio' 
             type='radio' 
             style={style} 
-            onClick={this.props.onClick}
+            onClick={this.props.onClick} // Defined in Radios.js
          ></div>
       );
    }

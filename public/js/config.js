@@ -25,7 +25,7 @@ const orgColors = {
       clay:          { r: 232,   g: 145,  b: 95  }, 
       burnt:         { r: 196,   g: 99,   b: 19  }, 
       lime:          { r: 57,    g: 249,  b: 86  }, 
-      forest:        { r: 0,       g: 114,  b: 38  }, 
+      forest:        { r: 0,     g: 114,  b: 38  }, 
       peacock:       { r: 16,    g: 143,  b: 147 }, 
       sky:           { r: 48,    g: 210,  b: 255 }, 
       lake:          { r: 104,   g: 157,  b: 255 }, 
@@ -54,6 +54,53 @@ const teamColorDef = { // Conversion between team name to color name
 const firsts =  [ 'Extend',      'Compress' ];
 const seconds = [ 'Immortality', 'Freeze'   ];
 const thirds =  [ 'Neutralize' , 'Toxin'    ];
+const fourths = [ 'Spore' ]; // There is only one 4th ability, but we use an array to remain consistant with other abilities
+
+// Menus
+const menus = {
+   create: {
+      header: 'Game Creation Options',
+      button: 'Create',
+      options: [ 'Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode' ],
+      values:  [ 'text',       'text',     'list',       'number',      'number',       'number',         'number',     'number',     'number',             'list'      ]
+   },
+   join: {
+      header: 'Join Game Options',
+      button: 'Join',
+      options: [ 'Screen Name', 'Password', 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', '4th Ability', 'Team', 'Auto Assign' ],
+      values:  [ 'text',        'text',     'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     '1 radio',     'list', '1 radio'     ]
+   },
+   spectate: {
+      header: 'Spectate Game Options',
+      button: 'Spectate',
+      options: [ 'Screen Name', 'Password' ],
+      values:  [ 'text',        'text'     ]
+   },
+   respawn: {
+      header: 'Spawn Options',
+      button: 'Spawn',
+      options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game' ],
+      values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'    , 'button'     ]
+   },
+   pauseGame: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: [ 'Color', 'Skin',    'Name Labels', 'Messages', 'Leave Game' ],
+      values:  [ 'list',  '3 radio', '1 radio',     '1 radio',  'button'     ]
+   },
+   pauseSpectate: {
+      header: 'Pause Options',
+      button: 'Apply',
+      options: [ 'Name Labels', 'Messages', 'Leave Game' ],
+      values:  [ '1 radio',     '1 radio',  'button'     ]
+   },
+   pauseTutorial: {
+      header: 'Pause Options',
+      button: 'Back',
+      options: [ 'Leave Tutorial' ],
+      values:  [ 'button'     ]
+   }
+};
 
 // Math
 const cos45 = 0.70710678118;

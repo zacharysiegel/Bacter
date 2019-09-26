@@ -14,10 +14,12 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
       this.handleMouseDown = this.handleMouseDown.bind(this);
       this.handleMouseUp = this.handleMouseUp.bind(this);
    }
-
+   
+   // Event Handlers
    handleClick(e) { // Submit functions based upon menu type
       this.props.submit(this.menuType);
    }
+   
    handleMouseOver(e) {
       let page = document.body.parentNode;
       if (!mouseDown || !this.state.down) { // If the mouse was lifted not over the button, state should not be down, but won't be detected as such by the button, hence mouseDown defined elsewhere
@@ -29,15 +31,18 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
          }
       }
    }
+   
    handleMouseOut(e) {
       this.setState({ backgroundColor: 'rgb(240, 240, 240)' });
    }
+   
    handleMouseDown(e) {
       this.setState({
          down: true,
          backgroundColor: 'rgb(200, 200, 200)'
       });
    }
+   
    handleMouseUp(e) {
       this.setState({
          down: false,
@@ -45,13 +50,20 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
       });
    }
 
-   componentWillMount() {
+   // React Lifecycle Hooks
+   componentDidMount() {
       let page = document.body.parentNode;
       if (!mouseDown) this.setState({ down: false });
    }
-   componentWillReceiveProps(next) {
-      this.setState({ left: (window.innerWidth - 95) / 2 + 'px' }); // Center submit button on the screen
+   
+   static getDerivedStateFromProps(nextProps, prevState) {
+      return { left: (window.innerWidth - 95) / 2 + 'px' }; // Center submit button on the screen
    }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    this.setState({ left: (window.innerWidth - 95) / 2 + 'px' }); // Center submit button on the screen
+   // }
+   
    render() {
       let style = {};
       style.backgroundColor = this.state.backgroundColor;

@@ -180,7 +180,7 @@ function submit(menuType) {
                teamCount: teamCount,
                min: minimum
             });
-            renderMenu('join', game); // Pass in game data for certain menu information
+            Menu.renderMenu('join', game); // Pass in game data for certain menu information
          } else {
             this.issue(issues);
          }
@@ -192,7 +192,7 @@ function submit(menuType) {
                issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in renderMenu(datA))
+            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
                if (name == game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
                   issues.push({ ['screen name']: 'Name matches that of another player' });
@@ -465,7 +465,7 @@ function submit(menuType) {
                issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in renderMenu(datA))
+            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
                if (name === game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
                   issues.push({ ['screen name']: 'Name matches that of another player' });

@@ -18,6 +18,7 @@ class Num extends React.Component {
       this.handleChange = this.handleChange.bind(this);
       this.handleKeyDown = this.handleKeyDown.bind(this);
    }
+
    applyInstance() {
       switch (this.instance) {
          case 'world width':
@@ -51,6 +52,7 @@ class Num extends React.Component {
       }
    }
 
+   // Event Handlers
    handleFocus(e) {
       if (e.type === 'focus') { // If focus in
          this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' }); // Darken
@@ -58,26 +60,36 @@ class Num extends React.Component {
          this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' }); // Lighten
       }
    }
+   
    handleChange(e) {
       let val = e.target.value; // Create local, editable value
       if (e.target.value % 1 !== 0) // If value is not an integer
          val = floor(val); // Set value to greatest integer
       this.props.update(this.instance, val); // Update local value and rest of menu if applicable
    }
+   
    handleKeyDown(e) {
       if (e.keyCode === 13) // If ENTER key is down
          this.props.submit(this.menuType);
    }
-
-   componentWillMount() { // Runs on initial mount, not every update
-      this.applyInstance();
-   }
+   
+   // React Lifecycle Hooks
    componentDidMount() {
+      this.applyInstance();
       this.props.update(this.instance, this.state.value);
    }
-   componentWillReceiveProps(next) {
-      this.setState({ value: next.value });
+   
+   static getDerivedStateFromProps(nextProps, prevState) {
+      if (nextProps.value !== prevState.value) {
+         return { value: nextProps.value };
+      }
+      return null;
    }
+   
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    this.setState({ value: next.value });
+   // }
+   
    render() {
       let style = {};
       for (let i in this.style) {

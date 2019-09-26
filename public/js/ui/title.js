@@ -104,7 +104,7 @@ var Title = function() {
       if (state === 'title') {
          renderTitle();
       } else if (state === 'browser') {
-         renderBrowser();
+         Browser.renderBrowser();
       }
    };
 };
@@ -117,10 +117,10 @@ class TitleMenu extends React.Component {
    handleClick(btn) {
       switch (btn) {
          case 'host':
-            renderMenu('create');
+            Menu.renderMenu('create');
             break;
          case 'join':
-            renderBrowser();
+            Browser.renderBrowser();
             break;
          case 'tutorial':
             renderTutorial();

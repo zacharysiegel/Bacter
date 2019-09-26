@@ -22,11 +22,11 @@ class MenuFooter extends React.Component {
                socket.emit('Game Ended', game);
                renderTitle();
             } else {
-               renderBrowser();
+               Browser.renderBrowser();
             }
             break;
          case 'spectate':
-            renderBrowser();
+            Browser.renderBrowser();
             break;
          case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
          case 'respawn':

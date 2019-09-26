@@ -227,4 +227,8 @@
       Fixed spectate menu double issue indicators
 
 ## a3.2.0
-      Imporoved scripts to build files and start server
+      Added gameplay guide
+      Added usage guide
+      Added '4th Ability' line to 'Join Game Options' menu
+      Improved other documentation
+      Improved build and start scripts

@@ -17,6 +17,14 @@ class Menu extends React.Component {
       } // join, spectate, and respawn are the only menu types which use the data property
       this.instantiate(); // Set initial instances
    }
+   
+   static renderMenu(type, data) {
+      if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) { // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+         ReactDOM.unmountComponentAtNode(Z.eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
+      }
+      ReactDOM.render(<Menu type={type} data={data} />, Z.eid('cont')); // Render instance of Menu component class in container with id 'cont'
+      state = type + 'Menu'; // Game state - not component state
+   }
 
    instantiate() { // Set initial instances of menus; called only inside constructor (do not use setState(), change state literally)
       let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set instances to all possible options to start

@@ -7,10 +7,23 @@ class Browser extends React.Component {
          games: props.games
       };
    }
-
-   componentWillReceiveProps(next) {
-      if (next.games) this.setState({ games: next.games });
+   
+   static renderBrowser() {
+      state = 'browser';
+      ReactDOM.render(<Browser games={games} />, Z.eid('cont'));
    }
+
+   // React Lifecycle Hooks
+   static getDerivedStateFromProps(nextProps, prevState) {
+      if (nextProps.games !== prevState.games) {
+         return { games: nextProps.games };
+      }
+      return null;
+   }
+   // componentWillReceiveProps(next) { // Deprecated by React
+   //    if (next.games) this.setState({ games: next.games });
+   // }
+   
    render() {
       let gamerows = [];
       for (let i = 0; i < this.state.games.length; i++) {
@@ -105,10 +118,10 @@ class TableButton extends React.Component {
    handleClick(e) {
       switch (this.props.inner) {
          case 'Join':
-            renderMenu('join', games[this.row]);
+            Menu.renderMenu('join', games[this.row]);
             break;
          case 'Spectate':
-            renderMenu('spectate', games[this.row]);
+            Menu.renderMenu('spectate', games[this.row]);
             break;
       }
    }
@@ -126,9 +139,4 @@ class TableButton extends React.Component {
          >{this.props.inner}</td>
       );
    }
-}
-
-function renderBrowser() {
-   state = 'browser';
-   ReactDOM.render(<Browser games={games} />, Z.eid('cont'));
 }
