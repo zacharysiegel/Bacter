@@ -18,8 +18,8 @@ class MenuFooter extends React.Component {
             renderTitle();
             break;
          case 'join':
-            if (game.info.host == socket.id) { // If player is host (If player is joining directly after creating the game)
-               socket.emit('Game Ended', game);
+            if (game.info.host == Socket.socket.id) { // If player is host (If player is joining directly after creating the game)
+               Socket.socket.emit('Game Ended', game);
                renderTitle();
             } else {
                Browser.renderBrowser();
@@ -36,7 +36,7 @@ class MenuFooter extends React.Component {
          case 'pauseGame': {
             let skip = false;
             for (let i = 0; i < game.players.length; i++) {
-               if (game.players[i] === socket.id) { // If still is a player
+               if (game.players[i] === Socket.socket.id) { // If still is a player
                   state = 'game';
                   skip = true;
                   break;
@@ -44,7 +44,7 @@ class MenuFooter extends React.Component {
             }
             if (!skip) {
                for (let i = 0; i < game.spectators.length; i++) {
-                  if (game.spectators[i] === socket.id) {
+                  if (game.spectators[i] === Socket.socket.id) {
                      state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }

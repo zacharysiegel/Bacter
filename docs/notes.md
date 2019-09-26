@@ -37,7 +37,11 @@
 
 ## To-Do:
 #### a3.2.0 - Presentability
-      ✓ Populate README.md
+      ✓ Improve documentation
+         ✓ README.md
+         ✓ New license
+         ✓ Gameplay Guide
+         ✓ Usage Guide
       ✓ Add timeout for 'Permission Denied' and 'Permission Granted' to be closed regardless of server response to 'Check Permission'
       ✓ Improve build and start scripts (rename run.sh to start.sh)
       ✓ Encapsulate z.js into class Z
@@ -45,6 +49,12 @@
       ✓ Update React lifecycle functions
       ✓ Add '4th Ability' row to Join Game Options menu with Spore checkbox always checked
       FIX game is closed when try to enter game - This error is not in a3.1.2
+         games is empty array
+         game is not created and not put into games array by the time user click join, so the menu sees an empty games array and thinks the game is closed
+         grantedJoin is not called
+            
+         ✓ callback is only received by client about 3/4 of the time
+         ✓ socket.emit (client) doesnt work inside setInterval
       FIX ability timers are black circle in tutorial - This error is not in a3.1.2
          Abilities are ineffectual
          Shoot works, kills cells, timer works, but ability not work

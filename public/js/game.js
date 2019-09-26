@@ -4,7 +4,7 @@ var Game = function(datA) {
    this.src = 'game';
    this.players = []; { // Info
       this.info = {
-         host: socket.id,
+         host: Socket.socket.id,
          title: data.title,
          protected: undefined,
          count: 0,
@@ -58,7 +58,7 @@ var Game = function(datA) {
 
 function createGame(datA) {
    game = new Game(datA);
-   socket.emit('Game Created', game);
+   Socket.socket.emit('Game Created', game);
    if (game.info.protected) // If game is password protected
-      socket.emit('Password Created', { pass: datA.password, info: game.info });
+      Socket.socket.emit('Password Created', { pass: datA.password, info: game.info });
 }

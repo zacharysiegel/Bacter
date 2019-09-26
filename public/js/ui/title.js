@@ -167,7 +167,7 @@ class TitleMenu extends React.Component {
 function renderTitle() {
    state = 'title';
    if (org) org.clearIntervals(); // If global org variable exists (such as after exiting a game) clear its interval(s) so as to not interfere with title animations
-   ability = new Ability({ player: socket.id });
+   ability = new Ability({ player: Socket.socket.id });
    let a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
       <div id='title'>
          <CanvasCont />

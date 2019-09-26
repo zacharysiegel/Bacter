@@ -63,7 +63,7 @@ class List extends React.Component {
             break;
          case 'team':
             if (getSrc().src === 'title') { // If in title, set game value to game in games array
-               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in socket.js @ socket.on('Game')); Used for team option updates
+               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in Socket.socket.js @ Socket.socket.on('Game')); Used for team option updates
                   if (games[i].info.host === game.info.host) { // Identify game
                      game = games[i]; // Set game to updated game from server array
                      break;

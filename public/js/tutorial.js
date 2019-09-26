@@ -19,7 +19,7 @@ var Tutorial = function() {
          }
       }
       let color = random(colors);
-      org = new Org({ player: socket.id, color: color, skin: 'none', spectating: false, pos: { x: center.x, y: center.y }, title: false });
+      org = new Org({ player: Socket.socket.id, color: color, skin: 'none', spectating: false, pos: { x: center.x, y: center.y }, title: false });
       org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
       org.count++;
    }
@@ -147,7 +147,7 @@ var Tutorial = function() {
                      this.task = 'extend';
                      ability.extend.activated = true;
                      ability.extend.can = true;
-                     socket.emit('Ability', ability);
+                     Socket.socket.emit('Ability', ability);
                   }, 4500);
                }
                break;
@@ -163,7 +163,7 @@ var Tutorial = function() {
                         this.task = 'immortality';
                         ability.immortality.activated = true;
                         ability.immortality.can = true;
-                        socket.emit('Ability', ability);
+                        Socket.socket.emit('Ability', ability);
                      }, ability.extend.time);
                   }
                }
@@ -180,7 +180,7 @@ var Tutorial = function() {
                         this.task = 'neutralize';
                         ability.neutralize.activated = true;
                         ability.neutralize.can = true;
-                        socket.emit('Ability', ability);
+                        Socket.socket.emit('Ability', ability);
                      }, ability.immortality.time);
                   }
                }
@@ -199,7 +199,7 @@ var Tutorial = function() {
                         ability.compress.can = true;
                         ability.freeze.activated = true;
                         ability.freeze.can = true;
-                        socket.emit('Ability', ability);
+                        Socket.socket.emit('Ability', ability);
                      }, ability.neutralize.time);
                   }
                }
@@ -279,7 +279,7 @@ var Tutorial = function() {
                         ability.spore.activated = true;
                         ability.spore.can = true;
                         ability.secrete.activated = true; // .can = false
-                        socket.emit('Ability', ability);
+                        Socket.socket.emit('Ability', ability);
                      }, ability.toxin.time);
                   }
                }

@@ -322,10 +322,10 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
 
       this.checkAlive();
 
-      socket.emit('Org Update', [
+      Socket.socket.emit('Org Update', [
          this.alive, // Only the following attributes of org need to be updated
          this.cells, // Latency is decreased by only sending necessary data
-         this.off, // Order of this array matters and is encoded in /src/app.js @ socket.on('Org Update')
+         this.off, // Order of this array matters and is encoded in /src/app.js @ Socket.socket.on('Org Update')
          this.pos,
          this.color,
          this.skin,
@@ -335,10 +335,10 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
       ]);
       if (this.count === 0) {
          for (let i = 0; i < game.board.list.length; i++) {
-            if (game.board.list[i].player === socket.id) { // Add death to leaderboard
+            if (game.board.list[i].player === Socket.socket.id) { // Add death to leaderboard
                game.board.list[i].deaths++; // Add 1 to deaths counter
                orderBoard(game.board.list); // Sort the list by kills then deaths
-               socket.emit('Board', {list: game.board.list, host: game.board.host}); // Send updated board to server
+               Socket.socket.emit('Board', {list: game.board.list, host: game.board.host}); // Send updated board to server
             }
          }
          if (this.hit !== this.player) { // Cannot gain kill for suicide
@@ -346,7 +346,7 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
                if (game.board.list[i].player === this.hit) { // Find killer in leaderboard list
                   game.board.list[i].kills++;
                   orderBoard(game.board.list);
-                  socket.emit('Board', {list: game.board.list, host: game.board.host});
+                  Socket.socket.emit('Board', {list: game.board.list, host: game.board.host});
                   break;
                }
             }
@@ -522,7 +522,7 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
    this.checkAbilities = () => {
       let src = getSrc();
       for (let i = 0; i < src.orgs.length; i++) {
-         if ((src.orgs[i].team === this.team && typeof team === 'string') && src.orgs[i].player !== socket.id) { // If is friendly org but not own org
+         if ((src.orgs[i].team === this.team && typeof team === 'string') && src.orgs[i].player !== Socket.socket.id) { // If is friendly org but not own org
             continue; // No friendly fire but can hurt self
          }
          if (src.abilities[i].secrete.value === true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)

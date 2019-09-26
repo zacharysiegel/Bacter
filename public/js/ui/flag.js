@@ -15,13 +15,13 @@ var Flag = function(X, Y, coloR) {
           && org.pos.x + org.col < this.x + this.width / 2
           && org.pos.y - org.col > this.y - this.height / 2
           && org.pos.y + org.col < this.y + this.height / 2) { // If org collides with flag
-            this.pickup(socket.id); // Org picks up flag
+            this.pickup(Socket.socket.id); // Org picks up flag
          }
       }
    };
    this.pickup = carrier => {
       this.carried = true; // Org picks up flag
       this.carrier = carrier;
-      socket.emit('Flag', { flag: this, host: game.info.host });
+      Socket.socket.emit('Flag', { flag: this, host: game.info.host });
    };
 };

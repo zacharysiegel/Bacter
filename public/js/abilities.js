@@ -266,7 +266,7 @@ function shoot(I, J) { // Both parameters are required
       ability.shoot.interval[I] = () => {
          ability.shoot.spore[I].x += ability.shoot.spore[I].speed * cos(ability.shoot.spore[I].theta);
          ability.shoot.spore[I].y += ability.shoot.spore[I].speed * sin(ability.shoot.spore[I].theta);
-         socket.emit('Ability', ability);
+         Socket.socket.emit('Ability', ability);
       };
 
       // Timeout
@@ -277,7 +277,7 @@ function shoot(I, J) { // Both parameters are required
             ability.shoot.cooling[I] = true;
             ability.shoot.end[I] = new Date();
             ability.shoot.secrete[I].end = new Date();
-            socket.emit('Ability', ability);
+            Socket.socket.emit('Ability', ability);
          }
       }, ability.shoot.time);
 
@@ -294,7 +294,7 @@ function shoot(I, J) { // Both parameters are required
       // Hit (Apply Ability) (Hit detection on local machine)
       let src = getSrc();
       for (let i = 0; i < src.orgs.length; i++) {
-         if (src.orgs[i].player == socket.id || org.team && src.orgs[i].team === org.team) { // Do not apply ability to self or teammate
+         if (src.orgs[i].player == Socket.socket.id || org.team && src.orgs[i].team === org.team) { // Do not apply ability to self or teammate
             continue;
          }
          for (let j = 0; j < src.orgs[i].count; j++) {
@@ -310,7 +310,7 @@ function shoot(I, J) { // Both parameters are required
       }
 
       ability.shoot.secrete[I].value = true; // Value after hit detection so 'grow' hit detection does not run before initial
-      socket.emit('Ability', ability);
+      Socket.socket.emit('Ability', ability);
       ability.shoot.secrete[I].timeout = setTimeout(() => {
          ability.shoot.secrete[I].value = false;
          ability.shoot.secrete[I].end = new Date(); { // Copy of 'shoot' timeout
@@ -321,7 +321,7 @@ function shoot(I, J) { // Both parameters are required
          }
          clearTimeout(ability.shoot.timeout[I]);
          ability.shoot.timeout[I] = undefined;
-         socket.emit('Ability', ability);
+         Socket.socket.emit('Ability', ability);
       }, ability.shoot.secrete[I].time);
    }
 }
@@ -373,10 +373,10 @@ function use(I, J, playeR) {
 }
 
 function tag(playeR) {
-   socket.emit('Tag', playeR);
+   Socket.socket.emit('Tag', playeR);
    ability.tag.can = false;
    ability.tag.start = new Date();
-   socket.emit('Ability', ability);
+   Socket.socket.emit('Ability', ability);
    setTimeout(() => {
       ability.tag.end = new Date();
       ability.tag.cooling = true;
@@ -385,7 +385,7 @@ function tag(playeR) {
 
 function extend(playeR) {
    ability.extend.can = false;
-   socket.emit('Extend', playeR);
+   Socket.socket.emit('Extend', playeR);
 }
 
 function compress(playeR) {
@@ -401,12 +401,12 @@ function compress(playeR) {
          }
       }
    } else {
-      socket.emit('Compress', playeR);
+      Socket.socket.emit('Compress', playeR);
    }
    ability.compress.applied = true;
    ability.compress.can = false; // Redundancy
    ability.compress.start = new Date();
-   socket.emit('Ability', ability);
+   Socket.socket.emit('Ability', ability);
    setTimeout(() => {
       ability.compress.end = new Date();
       ability.compress.applied = false;
@@ -415,16 +415,16 @@ function compress(playeR) {
 }
 
 // function speed(playeR) {
-//    socket.emit('Speed', playeR);
+//    Socket.socket.emit('Speed', playeR);
 // }
 
 // function slow(playeR) {
-//    socket.emit('Slow', playeR);
+//    Socket.socket.emit('Slow', playeR);
 // }
 
 function immortality(playeR) {
    ability.immortality.can = false;
-   socket.emit('Immortality', playeR);
+   Socket.socket.emit('Immortality', playeR);
 }
 
 function freeze(playeR) {
@@ -440,12 +440,12 @@ function freeze(playeR) {
          }
       }
    } else {
-      socket.emit('Freeze', playeR);
+      Socket.socket.emit('Freeze', playeR);
    }
    ability.freeze.applied = true;
    ability.freeze.can = false; // Redundancy
    ability.freeze.start = new Date();
-   socket.emit('Ability', ability);
+   Socket.socket.emit('Ability', ability);
    setTimeout(() => {
       ability.freeze.end = new Date();
       ability.freeze.applied = false;
@@ -455,14 +455,14 @@ function freeze(playeR) {
 
 // function stimulate(playeR) {
 //    ability.stimulate.can = false;
-//    socket.emit('Stimulate', playeR);
+//    Socket.socket.emit('Stimulate', playeR);
 // }
 
 // function poison(playeR) {
-//    socket.emit('Poison', playeR);
+//    Socket.socket.emit('Poison', playeR);
 //    ability.poison.can = false; // Redundancy
 //    ability.poison.start = new Date();
-//    socket.emit('Ability', ability);
+//    Socket.socket.emit('Ability', ability);
 //    setTimeout(() => {
 //       ability.poison.end = new Date();
 //       ability.poison.cooling = true;
@@ -470,12 +470,12 @@ function freeze(playeR) {
 // }
 
 function neutralize(playeR) {
-   socket.emit('Neutralize', playeR);
+   Socket.socket.emit('Neutralize', playeR);
    ability.neutralize.can = false;
 }
 
 function toxin(playeR) {
-   socket.emit('Toxin', playeR);
+   Socket.socket.emit('Toxin', playeR);
    ability.toxin.can = false;
 }
 
@@ -509,7 +509,7 @@ function spore() {
             ability.spore.spores[i].x += ability.spore.spores[i].speed * cos(ability.spore.spores[i].theta);
             ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
          }
-         socket.emit('Ability', ability);
+         Socket.socket.emit('Ability', ability);
       };
       ability.spore.timeout = setTimeout(() => { // End Spore
          if (ability.spore.value == true && ability.secrete.value == false) { // If secrete() has not been called
@@ -517,7 +517,7 @@ function spore() {
             ability.spore.value = false;
             ability.spore.end = new Date();
             ability.spore.cooling = true;
-            socket.emit('Ability', ability);
+            Socket.socket.emit('Ability', ability);
          }
       }, ability.spore.time);
    }
@@ -532,7 +532,7 @@ function secrete() {
       clearTimeout(ability.secrete.timeout);
       ability.secrete.start = new Date();
       ability.secrete.color = org.color;
-      socket.emit('Ability', ability);
+      Socket.socket.emit('Ability', ability);
       ability.secrete.timeout = setTimeout(() => { // End Secrete
          ability.secrete.value = false;
          ability.secrete.can = true; { // Copy of spore timeout so spore ends when secrete ends
@@ -541,7 +541,7 @@ function secrete() {
             ability.spore.cooling = true;
          }
          ability.secrete.end = new Date();
-         socket.emit('Ability', ability);
+         Socket.socket.emit('Ability', ability);
       }, ability.secrete.time);
    }
 }
@@ -660,7 +660,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (games[i].)ability
          if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
             abilitY.can = true; // Re-enable abilitY
             abilitY.cooling = false;
-            socket.emit('Ability', ability); // Update server
+            Socket.socket.emit('Ability', ability); // Update server
          }
       }
    } else { // If is shoot
@@ -670,7 +670,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (games[i].)ability
             if (current - abilitY.end[i] >= abilitY.cooldown[i]) { // If cooldown has passed
                abilitY.can[i] = true; // Re-enable abilitY
                abilitY.cooling[i] = false;
-               socket.emit('Ability', ability); // Update server
+               Socket.socket.emit('Ability', ability); // Update server
             }
          }
       }

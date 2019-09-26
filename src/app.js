@@ -16,6 +16,21 @@
  * io.engine.clients returns an array of the socket.id strings of all connected clients
  */
 
+class Broadcast {
+   static setGamesInterval(delay=1000) {
+      Broadcast.gamesInterval = setInterval(() => {
+         io.sockets.emit('Games', {
+            games: games,
+            connections: connections
+         });
+      }, delay); // Every second, send a copy of the games array to all clients
+   }
+   
+   static clearGamesInterval() {
+      clearInterval(Broadcast.gamesInterval);
+   }
+}
+
 // Express
 let port = process.env.PORT || 80; // process.env.PORT is fed by Heroku; 80 is default http port
 let express = require('express');
@@ -51,7 +66,9 @@ let intervals = [];
 let shrinkIntervals = [];
 
 console.log('Running...'); // 'Running...' always prints to console
-if (config.project_state === 'development') console.log('');
+console.log('');
+
+Broadcast.setGamesInterval();
 
 /////////////////////////////////////////////////////////////////////
 //////////////////////////    Listeners    //////////////////////////
@@ -144,11 +161,6 @@ io.sockets.on('connection', socket => {
       }
    });
 
-   // Games Update Request
-   socket.on('Games Request', () => {
-      socket.emit('Games', { games: games, connections: connections });
-   });
-
    // Leave Game
    socket.on('Leave Game', (game) => {
       if (game.info.host === socket.id) { // If player is host
@@ -184,7 +196,7 @@ io.sockets.on('connection', socket => {
                break;
             }
          }
-      } else {
+      } else { // If player is not host
          for (let i = 0; i < games.length; i++) { // Copied from 'disconnect'
             for (let j = 0; j < games[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
                if (games[i].board.list[j].player === socket.id) { // Find player in leaderboard

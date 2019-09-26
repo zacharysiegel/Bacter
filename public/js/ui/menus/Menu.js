@@ -34,7 +34,7 @@ class Menu extends React.Component {
             insts.splice(insts.indexOf('team count'), 1); // Remove team count (ffa is selected by default)
             break;
          case 'join':
-            if (!this.data.info.protected || this.data.info.host === socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+            if (!this.data.info.protected || this.data.info.host === Socket.socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
                insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
             switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
                case 'ffa':
@@ -63,7 +63,7 @@ class Menu extends React.Component {
             }
             break;
          case 'spectate':
-            if (!this.data.info.protected || this.data.info.host === socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+            if (!this.data.info.protected || this.data.info.host === Socket.socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
                insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
             break;
          case 'respawn':

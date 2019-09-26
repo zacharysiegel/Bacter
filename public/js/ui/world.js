@@ -1,6 +1,6 @@
 var World = function(datA) { // datA: { width: , height: , type: , color: , x: , y: }
    let data = datA;
-   this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
+   this.host = Socket.socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so Socket.socket.id is ok
    this.width = data.width;
    this.height = data.height;
    if (data.x != undefined) { // Coordinates are for top left corner

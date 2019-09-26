@@ -2,7 +2,7 @@ var games = [];
 var state;
 var mouseDown = false;
 
-function setup() {
+function setup() { // p5 function runs on window.onload (I think)
    state = 'setup';
    noCanvas(); // Canvas settings
    rectMode(CENTER); // "
@@ -10,7 +10,7 @@ function setup() {
    angleMode(DEGREES); // "
    textAlign(LEFT); // "
 
-   connectSocket();
+   Socket.connect();
    let page = document.body.parentNode; // Edit global variable mouseDown to determine if mouse is down or up anywhere on the page
    let md = () => mouseDown = true; // "
    page.removeEventListener('mousedown', md); // "
@@ -19,8 +19,8 @@ function setup() {
    page.removeEventListener('mouseup', mu); // "
    page.addEventListener('mouseup', mu); // "
    var socketInterval = setInterval(() => { // Create instance of Ability, but socket object must exist first, so loop until socket exists
-      ability = new Ability({ player: socket.id }); // Create new instance of Ability
-      if (socket.id) { // If socket.id has loaded
+      ability = new Ability({ player: Socket.socket.id }); // Create new instance of Ability
+      if (Socket.socket.id) { // If Socket.socket.id has loaded
          clearInterval(socketInterval); // End the loop
       }
    }, 50);
@@ -125,7 +125,7 @@ function keyPressed() {
       case Controls.respawn.code: // R by default
          if (state == 'spectate' && org.alive == false && org.spawn == true) {
             if (game.players.length < game.info.cap) {
-               socket.emit('Spectator Left', game.info);
+               Socket.socket.emit('Spectator Left', game.info);
                Menu.renderMenu('respawn', game); // Load respawn menu
             } else {
                alert('Game is at maximum player capacity');
@@ -140,8 +140,8 @@ function keyPressed() {
                renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
                break;
             case 'joinMenu':
-               if (game.info.host === socket.id) { // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
+               if (game.info.host === Socket.socket.id) { // If player is host (If player is joining directly after creating the game)
+                  Socket.socket.emit('Game Ended', game);
                   renderTitle();
                } else {
                   Browser.renderBrowser();
@@ -167,7 +167,7 @@ function keyPressed() {
             case 'pauseGameMenu':
                let skip = false;
                for (let i = 0; i < game.players.length; i++) {
-                  if (game.players[i] === socket.id) { // If still is a player
+                  if (game.players[i] === Socket.socket.id) { // If still is a player
                      state = 'game';
                      skip = true;
                      break;
@@ -175,7 +175,7 @@ function keyPressed() {
                }
                if (!skip) {
                   for (let i = 0; i < game.spectators.length; i++) {
-                     if (game.spectators[i] === socket.id) {
+                     if (game.spectators[i] === Socket.socket.id) {
                         state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                         break;
                      }
@@ -200,8 +200,8 @@ function keyPressed() {
                renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
                break;
             case 'joinMenu':
-               if (game.info.host === socket.id) { // If player is host (If player is joining directly after creating the game)
-                  socket.emit('Game Ended', game);
+               if (game.info.host === Socket.socket.id) { // If player is host (If player is joining directly after creating the game)
+                  Socket.socket.emit('Game Ended', game);
                   renderTitle();
                } else {
                   Browser.renderBrowser();
@@ -218,7 +218,7 @@ function keyPressed() {
             case 'pauseGameMenu':
                let skip = false;
                for (let i = 0; i < game.players.length; i++) {
-                  if (game.players[i] === socket.id) { // If still is a player
+                  if (game.players[i] === Socket.socket.id) { // If still is a player
                      state = 'game';
                      skip = true;
                      break;
@@ -226,7 +226,7 @@ function keyPressed() {
                }
                if (!skip) {
                   for (let i = 0; i < game.spectators.length; i++) {
-                     if (game.spectators[i] === socket.id) {
+                     if (game.spectators[i] === Socket.socket.id) {
                         state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                         break;
                      }

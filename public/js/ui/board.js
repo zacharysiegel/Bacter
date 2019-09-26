@@ -1,6 +1,6 @@
 var Board = function(datA) {
    let data = datA;
-   this.host = socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so socket.id is ok
+   this.host = Socket.socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so Socket.socket.id is ok
    this.list = [
          // {
          //    player: undefined, // ID of player
@@ -195,7 +195,7 @@ function renderLeaderboard() {
          rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
          fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
          noStroke();
-         if (game.board.list[i].player == socket.id) {
+         if (game.board.list[i].player == Socket.socket.id) {
             textFont(game.board.text.boldFont);
             textStyle(BOLD);
          } else {
@@ -280,7 +280,7 @@ function renderLeaderboard() {
          rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
          fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
          noStroke();
-         if (game.board.list[i].player == socket.id) {
+         if (game.board.list[i].player == Socket.socket.id) {
             textFont(game.board.text.boldFont);
             textStyle(BOLD);
          } else {
@@ -359,7 +359,7 @@ function renderLeaderboard() {
          rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
          fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
          noStroke();
-         if (game.board.list[i].player == socket.id) {
+         if (game.board.list[i].player == Socket.socket.id) {
             textFont(game.board.text.boldFont);
             textStyle(BOLD);
          } else {
@@ -385,7 +385,7 @@ function renderLeaderboard() {
          rect(game.board.x, game.board.y + (a + 1) * game.board.rowHeight, game.board.nameWidth, game.board.rowHeight); // Names Body
          fill(game.board.text.color.r, game.board.text.color.g, game.board.text.color.b);
          noStroke();
-         if (game.board.list[i].player == socket.id) {
+         if (game.board.list[i].player == Socket.socket.id) {
             textFont(game.board.text.boldFont);
             textStyle(BOLD);
          } else {

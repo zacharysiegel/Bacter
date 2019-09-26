@@ -262,11 +262,8 @@ function submit(menuType) {
             }
          } { // Game Closed
             let closed = true;
-            for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == game.info.host) {
-                  closed = false;
-                  break;
-               }
+            if (game.info.host === Socket.socket.id) {
+               closed = false;
             }
             if (closed) {
                ok = false;
@@ -275,17 +272,17 @@ function submit(menuType) {
                renderTitle();
             }
          } { // Password
-            socket.emit('Check Permission', { title: game.info.title });
-            socket.on('Permission Denied', deniedJoin.bind(this)); // Use __.bind(this) so this.issues() can be called from within
-            socket.on('Permission Granted', grantedJoin.bind(this));
+            Socket.socket.emit('Check Permission', { title: game.info.title });
+            Socket.socket.on('Permission Denied', deniedJoin.bind(this)); // Use __.bind(this) so this.issues() can be called from within
+            Socket.socket.on('Permission Granted', grantedJoin.bind(this));
             setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
             }, 10000);
 
             function deniedJoin() {
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
                ok = false;
                if (password === '' || typeof password !== 'string') {
                   issues.push({ ['password']: 'A password is required for this game' });
@@ -298,20 +295,20 @@ function submit(menuType) {
             }
 
             function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
                if (ok) { // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
                   for (let i = 0; i < game.board.list.length; i++) {
-                     if (game.board.list[i].player == socket.id) {
+                     if (game.board.list[i].player == Socket.socket.id) {
                         already = true;
                         break;
                      }
                   }
                   if (!already) {
                      game.board.list.push({
-                        player: socket.id,
+                        player: Socket.socket.id,
                         name: name,
                         kills: 0,
                         deaths: 0,
@@ -320,7 +317,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Abilities
                   if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                      ability.tag.activated = false;
@@ -412,8 +409,8 @@ function submit(menuType) {
                      }
                      for (let i = 0; i < teamColors.length; i++) {
                         if (team === teamColors[i]) {
-                           game.teams[i].push(socket.id); // Add player to selected team
-                           socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
+                           game.teams[i].push(Socket.socket.id); // Add player to selected team
+                           Socket.socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
                            break;
                         }
                      }
@@ -474,17 +471,17 @@ function submit(menuType) {
                }
             }
          } { // Password
-            socket.emit('Check Permission', { title: game.info.title });
-            socket.on('Permission Denied', deniedSpectate.bind(this)); // Use __.bind(this) so this.issues() can be called from within
-            socket.on('Permission Granted', grantedSpectate.bind(this));
+            Socket.socket.emit('Check Permission', { title: game.info.title });
+            Socket.socket.on('Permission Denied', deniedSpectate.bind(this)); // Use __.bind(this) so this.issues() can be called from within
+            Socket.socket.on('Permission Granted', grantedSpectate.bind(this));
             setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
             }, 10000);
 
             function deniedSpectate() {
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
                ok = false;
                if (!password) {
                   issues.push({ ['password']: 'A password is required for this game' });
@@ -497,20 +494,20 @@ function submit(menuType) {
             }
 
             function grantedSpectate() {
-               socket.off('Permission Denied');
-               socket.off('Permission Granted');
+               Socket.socket.off('Permission Denied');
+               Socket.socket.off('Permission Granted');
                if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
                   for (let i = 0; i < game.board.list.length; i++) {
-                     if (game.board.list[i].player === socket.id) {
+                     if (game.board.list[i].player === Socket.socket.id) {
                         already = true;
                         break;
                      }
                   }
                   if (!already) {
                      game.board.list.push({ // Add player to leaderboard
-                        player: socket.id,
+                        player: Socket.socket.id,
                         name: name,
                         kills: 0,
                         deaths: 0,
@@ -519,7 +516,7 @@ function submit(menuType) {
                      });
                   }
                   orderBoard(game.board.list);
-                  socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Initialize
                   clearInterval(title.interval);
                   initialize(game, { spectate: true, color: undefined, skin: undefined });
@@ -586,7 +583,7 @@ function submit(menuType) {
                   let minimum = Infinity;
                   for (let i = 0; i < game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within game.teams array into indices array
                      let l = game.teams[i].length;
-                     if (game.teams[i].indexOf(socket.id) != -1) { // If player is on given team
+                     if (game.teams[i].indexOf(Socket.socket.id) != -1) { // If player is on given team
                         l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
                      }
                      if (l < minimum) { // If length is less than minimum
@@ -615,7 +612,7 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            socket.emit('Spectator Spawned', game);
+            Socket.socket.emit('Spectator Spawned', game);
             // Abilities
             if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (first === 'extend') {
@@ -676,9 +673,9 @@ function submit(menuType) {
             // Team
             if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
                if (org.team !== team) { // Only add player to team if not already on team
-                  game.teams[teamColors.indexOf(team)].push(socket.id); // Add player to selected team
-                  game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(socket.id), 1);
-                  socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
+                  game.teams[teamColors.indexOf(team)].push(Socket.socket.id); // Add player to selected team
+                  game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(Socket.socket.id), 1);
+                  Socket.socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
                }
             }
             // Color
@@ -722,7 +719,7 @@ function submit(menuType) {
             Messages = message; // Set messages setting (Boolean)
             let skip = false;
             for (let i = 0; i < game.players.length; i++) {
-               if (game.players[i] === socket.id) { // If still is a player
+               if (game.players[i] === Socket.socket.id) { // If still is a player
                   state = 'game';
                   skip = true;
                   break;
@@ -730,7 +727,7 @@ function submit(menuType) {
             }
             if (!skip) {
                for (let i = 0; i < game.spectators.length; i++) {
-                  if (game.spectators[i] === socket.id) {
+                  if (game.spectators[i] === Socket.socket.id) {
                      state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }

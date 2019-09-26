@@ -1,5 +1,3 @@
-var connections;
-
 class Browser extends React.Component {
    constructor(props) {
       super(props);
@@ -57,7 +55,7 @@ class Browser extends React.Component {
             <div className='backfooter'>
                <footer onClick={ renderTitle }>
                   <p id='back'>&larr; Back</p>
-                  <p id='displayconnections'>{ 'Online Clients: ' + (connections ? connections : 0) }</p>
+                  <p id='displayconnections'>{ 'Online Clients: ' + (Socket.connections ? Socket.connections : 0) }</p>
                </footer>
             </div>
          </div>

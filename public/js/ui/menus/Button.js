@@ -23,14 +23,14 @@ class Button extends React.Component {
          case 'leave game':
          case 'leave tutorial':
             org.clearIntervals();
-            // ability = new Ability({ player: socket.id }); // Ability reset occurs already in renderTitle()
+            // ability = new Ability({ player: Socket.socket.id }); // Ability reset occurs already in renderTitle()
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
-               socket.emit('Leave Game', game);
+               Socket.socket.emit('Leave Game', game);
                for (let i = 0; i < game.board.list.length; i++) {
-                  if (game.board.list[i].player == socket.id) { // Find player in leaderboard
+                  if (game.board.list[i].player == Socket.socket.id) { // Find player in leaderboard
                      game.board.list.splice(i, 1); // Remove player from leaderboard
                      orderBoard(game.board.list); // Sort the list
-                     socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
+                     Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
                      break;
                   }
                }

@@ -1,16 +1,16 @@
 function spawn(data) { // data: { color: {}, skin: '', team: '' }
    state = 'game';
-   org = new Org({ player: socket.id, color: data.color, skin: data.skin, team: data.team, spectating: false });
+   org = new Org({ player: Socket.socket.id, color: data.color, skin: data.skin, team: data.team, spectating: false });
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
    let compressedOrg = org.getCompressed();
-   socket.emit('Player Joined', { info: game.info, org: compressedOrg, ability: ability });
+   Socket.socket.emit('Player Joined', { info: game.info, org: compressedOrg, ability: ability });
 }
 
 function spectate(data) { // data: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
-   socket.emit('Spectator Joined', game);
-   org = new Org( { player: socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectating: true } );
+   Socket.socket.emit('Spectator Joined', game);
+   org = new Org( { player: Socket.socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectating: true } );
 }
 
 function renderUI() {
@@ -385,21 +385,21 @@ function runLoop() {
 function roundBehaviors() {
    var currentTime = new Date();
    if (game.rounds.util) {
-      if (game.info.host === socket.id) { // Only if player is host
+      if (game.info.host === Socket.socket.id) { // Only if player is host
          if (game.rounds.waiting && !game.rounds.delayed && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
-            socket.emit('Round Delay', game);
+            Socket.socket.emit('Round Delay', game);
             game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
          } else if (game.rounds.waiting && game.rounds.delayed && currentTime - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
-            socket.emit('Force Spawn', game.info);
+            Socket.socket.emit('Force Spawn', game.info);
          }
       }
-      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count <= 1 && game.players[0] === socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
+      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count <= 1 && game.players[0] === Socket.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
          for (let i = 0; i < game.board.list.length; i++) {
-            if (game.board.list[i].player == socket.id) {
-               socket.emit('Round End', game.info);
+            if (game.board.list[i].player == Socket.socket.id) {
+               Socket.socket.emit('Round End', game.info);
                game.board.list[i].wins++;
                orderBoard(game.board.list);
-               socket.emit('Board', { list: game.board.list, host: game.board.host });
+               Socket.socket.emit('Board', { list: game.board.list, host: game.board.host });
             }
          }
       }
@@ -407,7 +407,7 @@ function roundBehaviors() {
 }
 
 function die(spectating) {
-   socket.emit('Dead', spectating);
+   Socket.socket.emit('Dead', spectating);
    org.clearIntervals();
    for (let i in ability) { // Reset Ability Cooldowns
       if (typeof ability[i] === 'object' && i !== 'shoot') { // Avoid reference error
@@ -430,5 +430,5 @@ function die(spectating) {
       ability.shoot.start[i] = undefined;
       ability.shoot.end[i] = undefined;
    }
-   socket.emit('Ability', ability);
+   Socket.socket.emit('Ability', ability);
 }
