@@ -4,12 +4,12 @@ function spawn(data) { // data: { color: {}, skin: '', team: '' }
    org.cells[0] = new Cell(org.pos.x, org.pos.y, org); // Create first cell in org
    org.count++;
    let compressedOrg = org.getCompressed();
-   Socket.socket.emit('Player Joined', { info: game.info, org: compressedOrg, ability: ability });
+   Socket.socket.emit('Player Joined', { info: Game.game.info, org: compressedOrg, ability: ability });
 }
 
 function spectate(data) { // data: { color: {}, pos: {}, skin: '', team: '' }
    state = 'spectate';
-   Socket.socket.emit('Spectator Joined', game);
+   Socket.socket.emit('Spectator Joined', Game.game);
    org = new Org( { player: Socket.socket.id, color: data.color, skin: data.skin, team: data.team, pos: data.pos, spectating: true } );
 }
 
@@ -38,38 +38,38 @@ function renderUI() {
 
    // Screen Name Labels
    if (Labels && src.src === 'game') {
-      fill(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b); // Same color as border to maintain contrast with background
+      fill(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b); // Same color as border to maintain contrast with background
       noStroke();
       textFont('Helvetica');
-      if (game.world.color == 'black') {
+      if (Game.game.world.color == 'black') {
          textStyle(NORMAL);
-      } else if (game.world.color == 'white') {
+      } else if (Game.game.world.color == 'white') {
          textStyle(BOLD);
       }
       textSize(10);
-      for (let i = 0; i < game.info.count; i++) {
-         for (let j = 0; j < game.board.list.length; j++) {
-            if (game.orgs[i].player == game.board.list[j].player) {
+      for (let i = 0; i < Game.game.info.count; i++) {
+         for (let j = 0; j < Game.game.board.list.length; j++) {
+            if (Game.game.orgs[i].player == Game.game.board.list[j].player) {
                let x = function() { // x() and y() cannot be accessed through orgs array, so code is copied and edited from org file
                   let sum = 0;
-                  for (let k = 0; k < game.orgs[i].count; k++) {
-                     sum += game.orgs[i].cells[k].x;
+                  for (let k = 0; k < Game.game.orgs[i].count; k++) {
+                     sum += Game.game.orgs[i].cells[k].x;
                   }
-                  let average = sum / game.orgs[i].count;
+                  let average = sum / Game.game.orgs[i].count;
                   return average;
                };
                let y = function() {
                   let sum = 0;
-                  for (let k = 0; k < game.orgs[i].count; k++) {
-                     sum += game.orgs[i].cells[k].y;
+                  for (let k = 0; k < Game.game.orgs[i].count; k++) {
+                     sum += Game.game.orgs[i].cells[k].y;
                   }
-                  let average = sum / game.orgs[i].count;
+                  let average = sum / Game.game.orgs[i].count;
                   return average;
                };
-               if (game.board.list[j].name.length <= 30) {
-                  text(game.board.list[j].name, x() - textWidth(game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+               if (Game.game.board.list[j].name.length <= 30) {
+                  text(Game.game.board.list[j].name, x() - textWidth(Game.game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * Game.game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                } else {
-                  text(game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+                  text(Game.game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(Game.game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * Game.game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                }
             }
          }
@@ -377,29 +377,29 @@ function runLoop() {
    // org.setClickbox();
 
    // CTF
-   if (game.info.mode === 'ctf') {
-      game.flag.detectPickup();
+   if (Game.game.info.mode === 'ctf') {
+      Game.game.flag.detectPickup();
    }
 }
 
 function roundBehaviors() {
    var currentTime = new Date();
-   if (game.rounds.util) {
-      if (game.info.host === Socket.socket.id) { // Only if player is host
-         if (game.rounds.waiting && !game.rounds.delayed && game.info.count >= game.rounds.min) { // If waiting, not delayed, and have minimum players
-            Socket.socket.emit('Round Delay', game);
-            game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-         } else if (game.rounds.waiting && game.rounds.delayed && currentTime - game.rounds.delaystart >= game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
-            Socket.socket.emit('Force Spawn', game.info);
+   if (Game.game.rounds.util) {
+      if (Game.game.info.host === Socket.socket.id) { // Only if player is host
+         if (Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count >= Game.game.rounds.min) { // If waiting, not delayed, and have minimum players
+            Socket.socket.emit('Round Delay', Game.game);
+            Game.game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
+         } else if (Game.game.rounds.waiting && Game.game.rounds.delayed && currentTime - Game.game.rounds.delaystart >= Game.game.rounds.rounddelay - 1000 && org.ready == false) { // Only host; If 1 second left in round-begin delay
+            Socket.socket.emit('Force Spawn', Game.game.info);
          }
       }
-      if (game.info.mode === 'srv' && !game.rounds.waiting && !game.rounds.delayed && game.info.count <= 1 && game.players[0] === Socket.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
-         for (let i = 0; i < game.board.list.length; i++) {
-            if (game.board.list[i].player == Socket.socket.id) {
-               Socket.socket.emit('Round End', game.info);
-               game.board.list[i].wins++;
-               orderBoard(game.board.list);
-               Socket.socket.emit('Board', { list: game.board.list, host: game.board.host });
+      if (Game.game.info.mode === 'srv' && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count <= 1 && Game.game.players[0] === Socket.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
+         for (let i = 0; i < Game.game.board.list.length; i++) {
+            if (Game.game.board.list[i].player == Socket.socket.id) {
+               Socket.socket.emit('Round End', Game.game.info);
+               Game.game.board.list[i].wins++;
+               orderBoard(Game.game.board.list);
+               Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host });
             }
          }
       }

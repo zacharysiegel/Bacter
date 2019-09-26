@@ -167,7 +167,7 @@ function submit(menuType) {
          }
          if (ok) {
             let color = 'black'; // Z.eid('World color input').value.toLowerCase(); // Only black world is enabled
-            createGame({
+            Game.createGame({
                title: gametitle,
                password: password,
                type: type,
@@ -180,7 +180,7 @@ function submit(menuType) {
                teamCount: teamCount,
                min: minimum
             });
-            Menu.renderMenu('join', game); // Pass in game data for certain menu information
+            Menu.renderMenu('join', Game.game); // Pass in game data for certain menu information
          } else {
             this.issue(issues);
          }
@@ -192,8 +192,8 @@ function submit(menuType) {
                issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
-               if (name == game.board.list[i].name) { // Name cannot match another player's name
+            for (let i = 0; i < Game.game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
+               if (name == Game.game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
                   issues.push({ ['screen name']: 'Name matches that of another player' });
                   // alert('Name matches that of another player');
@@ -207,7 +207,7 @@ function submit(menuType) {
             issues.push({ skin: 'There is an issue with the skin selection' });
          }
          { // Abilities
-            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+            if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (!first) {
                   ok = false;
                   issues.push({ ['1st ability']: 'Select a first ability' });
@@ -231,13 +231,13 @@ function submit(menuType) {
                }
             }
          } { // Team
-            if (game.info.mode == 'skm' || game.info.mode == 'ctf') { // If is a team game
+            if (Game.game.info.mode == 'skm' || Game.game.info.mode == 'ctf') { // If is a team game
                if (!auto) {
-                  for (let i = 0; i < game.teams.length; i++) {
+                  for (let i = 0; i < Game.game.teams.length; i++) {
                      if (i === teamColors.indexOf(team)) { // If i is selected team
                         continue;
                      }
-                     if (game.teams[teamColors.indexOf(team)].length > game.teams[i].length) { // If there are more players on selected team than another
+                     if (Game.game.teams[teamColors.indexOf(team)].length > Game.game.teams[i].length) { // If there are more players on selected team than another
                         if (org && typeof team === 'string' && org.team === team) { // If player is already on selected team
                            break; // Allow spawn
                         }
@@ -247,7 +247,7 @@ function submit(menuType) {
                         break;
                      }
                   }
-                  if (org && org.team !== team && game.teams[teamColors.indexOf(org.team)].length === game.teams[teamColors.indexOf(team)].length) {
+                  if (org && org.team !== team && Game.game.teams[teamColors.indexOf(org.team)].length === Game.game.teams[teamColors.indexOf(team)].length) {
                      ok = false;
                      issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
                      // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
@@ -255,14 +255,14 @@ function submit(menuType) {
                }
             }
          } { // Player Cap
-            if (game.players.length >= game.info.cap) {
+            if (Game.game.players.length >= Game.game.info.cap) {
                ok = false;
                issues.push({ ['player cap']: 'Game is at maximum player capacity' });
                // alert('Game is at maximum player capacity');
             }
          } { // Game Closed
             let closed = true;
-            if (game.info.host === Socket.socket.id) {
+            if (Game.game.info.host === Socket.socket.id) {
                closed = false;
             }
             if (closed) {
@@ -272,7 +272,7 @@ function submit(menuType) {
                renderTitle();
             }
          } { // Password
-            Socket.socket.emit('Check Permission', { title: game.info.title });
+            Socket.socket.emit('Check Permission', { title: Game.game.info.title });
             Socket.socket.on('Permission Denied', deniedJoin.bind(this)); // Use __.bind(this) so this.issues() can be called from within
             Socket.socket.on('Permission Granted', grantedJoin.bind(this));
             setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
@@ -300,14 +300,14 @@ function submit(menuType) {
                if (ok) { // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
-                  for (let i = 0; i < game.board.list.length; i++) {
-                     if (game.board.list[i].player == Socket.socket.id) {
+                  for (let i = 0; i < Game.game.board.list.length; i++) {
+                     if (Game.game.board.list[i].player == Socket.socket.id) {
                         already = true;
                         break;
                      }
                   }
                   if (!already) {
-                     game.board.list.push({
+                     Game.game.board.list.push({
                         player: Socket.socket.id,
                         name: name,
                         kills: 0,
@@ -316,10 +316,10 @@ function submit(menuType) {
                         wins: 0
                      });
                   }
-                  orderBoard(game.board.list);
-                  Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  orderBoard(Game.game.board.list);
+                  Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Abilities
-                  if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+                  if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                      ability.tag.activated = false;
                      ability.tag.can = false;
                      if (first === 'extend') {
@@ -363,7 +363,7 @@ function submit(menuType) {
                         ability.shoot.can[i] = true;
                         ability.shoot.value[i] = false;
                      }
-                  } else if (game.info.mode === 'inf') {
+                  } else if (Game.game.info.mode === 'inf') {
                      ability.tag.activated = true;
                      ability.tag.can = true;
                      ability.extend.activated = false;
@@ -392,16 +392,16 @@ function submit(menuType) {
                      }
                   }
                   // Team
-                  if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
+                  if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                      ability.auto = auto; // auto variable is Boolean
                      if (auto) { // If auto assign is selected
                         let indices = [];
                         let minimum = Infinity;
-                        for (let i = 0; i < game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within game.teams array into indices array
-                           if (game.teams[i].length < minimum) { // If length is less than minimum
-                              minimum = game.teams[i].length; // Set length as new minimum
+                        for (let i = 0; i < Game.game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within Game.game.teams array into indices array
+                           if (Game.game.teams[i].length < minimum) { // If length is less than minimum
+                              minimum = Game.game.teams[i].length; // Set length as new minimum
                               indices = [i]; // Clear indices and push i
-                           } else if (game.teams[i].length == minimum) {
+                           } else if (Game.game.teams[i].length == minimum) {
                               indices.push(i);
                            }
                         }
@@ -409,31 +409,31 @@ function submit(menuType) {
                      }
                      for (let i = 0; i < teamColors.length; i++) {
                         if (team === teamColors[i]) {
-                           game.teams[i].push(Socket.socket.id); // Add player to selected team
-                           Socket.socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Update server teams; host is for identification
+                           Game.game.teams[i].push(Socket.socket.id); // Add player to selected team
+                           Socket.socket.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
                            break;
                         }
                      }
                   }
                   // Color
                   var color;
-                  if (game.info.mode === 'inf') { // If inf mode
+                  if (Game.game.info.mode === 'inf') { // If inf mode
                      color = teamColorDef.green; // All players healthy by default
-                  } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
+                  } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
                      color = Z.eid('color input').value.toLowerCase();
                   } else {
                      color = teamColorDef[team]; // Color must be after Team
                   }
                   // Initialize
                   clearInterval(title.interval);
-                  if (game.rounds.util) {
-                     if (game.rounds.waiting) {
-                        initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+                  if (Game.game.rounds.util) {
+                     if (Game.game.rounds.waiting) {
+                        initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
                      } else {
-                        initialize(game, { spectate: true, color: orgColors[game.world.color][color], skin: skin, team: team });
+                        initialize(Game.game, { spectate: true, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
                      }
                   } else {
-                     initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+                     initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
                   }
                } else {
                   this.issue(issues);
@@ -445,7 +445,7 @@ function submit(menuType) {
          { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === game.info.host) {
+               if (games[i].info.host === Game.game.info.host) {
                   closed = false;
                   break;
                }
@@ -462,8 +462,8 @@ function submit(menuType) {
                issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
-               if (name === game.board.list[i].name) { // Name cannot match another player's name
+            for (let i = 0; i < Game.game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
+               if (name === Game.game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
                   issues.push({ ['screen name']: 'Name matches that of another player' });
                   // alert('Name matches that of another player');
@@ -471,7 +471,7 @@ function submit(menuType) {
                }
             }
          } { // Password
-            Socket.socket.emit('Check Permission', { title: game.info.title });
+            Socket.socket.emit('Check Permission', { title: Game.game.info.title });
             Socket.socket.on('Permission Denied', deniedSpectate.bind(this)); // Use __.bind(this) so this.issues() can be called from within
             Socket.socket.on('Permission Granted', grantedSpectate.bind(this));
             setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
@@ -499,14 +499,14 @@ function submit(menuType) {
                if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
                   // Leaderboard
                   let already = false;
-                  for (let i = 0; i < game.board.list.length; i++) {
-                     if (game.board.list[i].player === Socket.socket.id) {
+                  for (let i = 0; i < Game.game.board.list.length; i++) {
+                     if (Game.game.board.list[i].player === Socket.socket.id) {
                         already = true;
                         break;
                      }
                   }
                   if (!already) {
-                     game.board.list.push({ // Add player to leaderboard
+                     Game.game.board.list.push({ // Add player to leaderboard
                         player: Socket.socket.id,
                         name: name,
                         kills: 0,
@@ -515,8 +515,8 @@ function submit(menuType) {
                         wins: 0
                      });
                   }
-                  orderBoard(game.board.list);
-                  Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+                  orderBoard(Game.game.board.list);
+                  Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                   // Initialize
                   clearInterval(title.interval);
                   initialize(game, { spectate: true, color: undefined, skin: undefined });
@@ -531,7 +531,7 @@ function submit(menuType) {
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
          { // Abilities
-            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+            if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (!first) {
                   ok = false;
                   issues.push({ ['1st ability']: 'Select a first ability' });
@@ -555,14 +555,14 @@ function submit(menuType) {
                }
             }
          } { // Team
-            if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
+            if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                ability.auto = auto; // auto variable is Boolean
                if (!auto) { // If auto assign is not selected
-                  for (let i = 0; i < game.teams.length; i++) {
+                  for (let i = 0; i < Game.game.teams.length; i++) {
                      if (i === teamColors.indexOf(team)) {
                         continue;
                      }
-                     if (game.teams[teamColors.indexOf(team)].length > game.teams[i].length) { // If chosen team has greater players than another team
+                     if (Game.game.teams[teamColors.indexOf(team)].length > Game.game.teams[i].length) { // If chosen team has greater players than another team
                         if (org && org.team === team && typeof team === 'string') { // If player is already on loaded team
                            break; // Allow respawn
                         } else {
@@ -572,7 +572,7 @@ function submit(menuType) {
                            break;
                         }
                      }
-                     if (org && org.team !== team && game.teams[teamColors.indexOf(org.team)].length === game.teams[teamColors.indexOf(team)].length) { // If chosen team has equal players as current team (and is not current team)
+                     if (org && org.team !== team && Game.game.teams[teamColors.indexOf(org.team)].length === Game.game.teams[teamColors.indexOf(team)].length) { // If chosen team has equal players as current team (and is not current team)
                         ok = false; // Disallow respawn
                         issues.push({ ['team input']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
                         // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
@@ -581,9 +581,9 @@ function submit(menuType) {
                } else { // If auto assign is selected
                   let indices = [];
                   let minimum = Infinity;
-                  for (let i = 0; i < game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within game.teams array into indices array
-                     let l = game.teams[i].length;
-                     if (game.teams[i].indexOf(Socket.socket.id) != -1) { // If player is on given team
+                  for (let i = 0; i < Game.game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within Game.game.teams array into indices array
+                     let l = Game.game.teams[i].length;
+                     if (Game.game.teams[i].indexOf(Socket.socket.id) != -1) { // If player is on given team
                         l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
                      }
                      if (l < minimum) { // If length is less than minimum
@@ -599,7 +599,7 @@ function submit(menuType) {
          } { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == game.info.host) {
+               if (games[i].info.host == Game.game.info.host) {
                   closed = false;
                   break;
                }
@@ -612,9 +612,9 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            Socket.socket.emit('Spectator Spawned', game);
+            Socket.socket.emit('Spectator Spawned', Game.game);
             // Abilities
-            if (game.info.mode === 'ffa' || game.info.mode === 'skm' || game.info.mode === 'srv' || game.info.mode === 'ctf' || game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+            if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (first === 'extend') {
                   ability.extend.activated = true;
                   ability.extend.can = true;
@@ -652,7 +652,7 @@ function submit(menuType) {
                ability.spore.can = true;
                ability.secrete.activated = true;
                ability.secrete.can = false;
-            } else if (game.info.mode === 'inf') {
+            } else if (Game.game.info.mode === 'inf') {
                ability.extend.activated = false;
                ability.extend.can = false;
                ability.compress.activated = false;
@@ -671,23 +671,23 @@ function submit(menuType) {
                ability.secrete.can = false;
             }
             // Team
-            if (game.info.mode === 'skm' || game.info.mode === 'ctf') { // If is a team game
+            if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                if (org.team !== team) { // Only add player to team if not already on team
-                  game.teams[teamColors.indexOf(team)].push(Socket.socket.id); // Add player to selected team
-                  game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(Socket.socket.id), 1);
-                  Socket.socket.emit('Teams', { teams: game.teams, host: game.info.host }); // Host is for identification
+                  Game.game.teams[teamColors.indexOf(team)].push(Socket.socket.id); // Add player to selected team
+                  Game.game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(Socket.socket.id), 1);
+                  Socket.socket.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
                }
             }
             // Color
-            if (game.info.mode === 'inf') { // If inf mode
+            if (Game.game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
-            } else if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team mode 
+            } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode 
                color = Z.eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
             // Initialize
-            initialize(game, { spectate: false, color: orgColors[game.world.color][color], skin: skin, team: team });
+            initialize(game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
          } else {
             this.issue(issues);
          }
@@ -698,7 +698,7 @@ function submit(menuType) {
          { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === game.info.host) {
+               if (games[i].info.host === Game.game.info.host) {
                   closed = false;
                   break;
                }
@@ -711,23 +711,23 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            if (game.info.mode !== 'skm' && game.info.mode !== 'ctf') { // If is not a team mode
-               org.color = orgColors[game.world.color][color]; // Set org color
+            if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode
+               org.color = orgColors[Game.game.world.color][color]; // Set org color
             } // Cannot change team in pause menu
             org.skin = skin; // Set org skin
             Labels = label; // Set labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             let skip = false;
-            for (let i = 0; i < game.players.length; i++) {
-               if (game.players[i] === Socket.socket.id) { // If still is a player
+            for (let i = 0; i < Game.game.players.length; i++) {
+               if (Game.game.players[i] === Socket.socket.id) { // If still is a player
                   state = 'game';
                   skip = true;
                   break;
                }
             }
             if (!skip) {
-               for (let i = 0; i < game.spectators.length; i++) {
-                  if (game.spectators[i] === Socket.socket.id) {
+               for (let i = 0; i < Game.game.spectators.length; i++) {
+                  if (Game.game.spectators[i] === Socket.socket.id) {
                      state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }
@@ -742,7 +742,7 @@ function submit(menuType) {
          { // Game Closed
             let closed = true;
             for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === game.info.host) {
+               if (games[i].info.host === Game.game.info.host) {
                   closed = false;
                   break;
                }

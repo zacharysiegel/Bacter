@@ -13,7 +13,7 @@ class Menu extends React.Component {
       this.update = this.update.bind(this);
       this.issue = this.issue.bind(this);
       if (this.type === 'join' || this.type === 'spectate' || this.type === 'respawn') {
-         game = props.data;
+         Game.game = props.data;
       } // join, spectate, and respawn are the only menu types which use the data property
       this.instantiate(); // Set initial instances
    }

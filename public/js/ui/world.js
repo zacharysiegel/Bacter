@@ -1,6 +1,6 @@
 var World = function(datA) { // datA: { width: , height: , type: , color: , x: , y: }
    let data = datA;
-   this.host = Socket.socket.id; // Cannot call game.info.host since game is not fully constructed yet; World() can only be called by host, so Socket.socket.id is ok
+   this.host = Socket.socket.id; // Cannot call Game.game.info.host since game is not fully constructed yet; World() can only be called by host, so Socket.socket.id is ok
    this.width = data.width;
    this.height = data.height;
    if (data.x != undefined) { // Coordinates are for top left corner
@@ -37,68 +37,68 @@ var World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
 
 function renderWorld() {
    // Background
-   background(game.world.backdrop.r, game.world.backdrop.g, game.world.backdrop.b);
+   background(Game.game.world.backdrop.r, Game.game.world.backdrop.g, Game.game.world.backdrop.b);
 
    // Shadows
-   fill(game.world.backdrop.r - 20, game.world.backdrop.g - 20, game.world.backdrop.b - 20);
+   fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
    noStroke();
    { // World
-      if (game.world.type == 'rectangle') { // World
-         rect(game.world.x + game.world.width / 2 + 7, game.world.y + game.world.height / 2 + 6, game.world.width, game.world.height);
-      } else if (game.world.type == 'ellipse') {
-         ellipse(game.world.x + game.world.width / 2 + 5, game.world.y + game.world.height / 2 + 4, game.world.width / 2, game.world.height / 2);
+      if (Game.game.world.type == 'rectangle') { // World
+         rect(Game.game.world.x + Game.game.world.width / 2 + 7, Game.game.world.y + Game.game.world.height / 2 + 6, Game.game.world.width, Game.game.world.height);
+      } else if (Game.game.world.type == 'ellipse') {
+         ellipse(game.world.x + Game.game.world.width / 2 + 5, Game.game.world.y + Game.game.world.height / 2 + 4, Game.game.world.width / 2, Game.game.world.height / 2);
       }
    }
    { // Leaderboard
       translate(org.off.x, org.off.y); // Shadows in renderWorld() so it will render behind world
       rectMode(CORNER);
-      game.board.y = game.board.marginTop; // Leaderboard Head
-      switch (game.info.mode) {
+      Game.game.board.y = Game.game.board.marginTop; // Leaderboard Head
+      switch (Game.game.info.mode) {
          case 'ffa':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-            game.board.count = min(game.board.show, game.board.list.length);
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth, Game.game.board.rowHeight);
+            Game.game.board.count = min(Game.game.board.show, Game.game.board.list.length);
             break;
          case 'skm':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
-            game.board.count = game.teams.length;
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth, Game.game.board.rowHeight);
+            Game.game.board.count = Game.game.teams.length;
             break;
          case 'srv':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-            game.board.count = min(game.board.show, game.board.list.length);
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
+            Game.game.board.count = min(Game.game.board.show, Game.game.board.list.length);
             break;
          case 'ctf':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-            game.board.count = game.teams.length;
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
+            Game.game.board.count = Game.game.teams.length;
             break;
          case 'inf':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
-            game.board.count = min(game.board.show, game.board.list.length);
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth, Game.game.board.rowHeight);
+            Game.game.board.count = min(Game.game.board.show, Game.game.board.list.length);
             break;
          case 'kth':
-            game.board.x = width - (game.board.nameWidth + game.board.oneWidth + game.board.twoWidth) - game.board.marginRight;
-            rect(game.board.x + 4, game.board.y + 3, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
-            game.board.count = min(game.board.show, game.board.list.length);
+            Game.game.board.x = width - (Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth) - Game.game.board.marginRight;
+            rect(Game.game.board.x + 4, Game.game.board.y + 3, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
+            Game.game.board.count = min(Game.game.board.show, Game.game.board.list.length);
             break;
       }
       var a = 0;
-      for (let i = 0; i < game.board.count; i++) { // Leaderboard Body
-         if (game.info.mode != 'skm' && game.info.mode != 'ctf') { // If not a team mode
+      for (let i = 0; i < Game.game.board.count; i++) { // Leaderboard Body
+         if (Game.game.info.mode != 'skm' && Game.game.info.mode != 'ctf') { // If not a team mode
             var spectator = false;
-            for (let j = 0; j < game.spectators.length; j++) {
-               if (game.board.list[i].player == game.spectators[j]) {
+            for (let j = 0; j < Game.game.spectators.length; j++) {
+               if (Game.game.board.list[i].player == Game.game.spectators[j]) {
                   spectator = true;
                   break;
                }
             }
             if (spectator == true) {
-               if (i < game.board.count) {
-                  if (game.board.count < game.info.count) {
-                     game.board.count++; // Extend leaderboard length to include the next player
+               if (i < Game.game.board.count) {
+                  if (Game.game.board.count < Game.game.info.count) {
+                     Game.game.board.count++; // Extend leaderboard length to include the next player
                      i++; // Do not render leaderboard status if player is a spectator
                   } else {
                      continue;
@@ -106,24 +106,24 @@ function renderWorld() {
                }
             }
          }
-         switch (game.info.mode) {
+         switch (Game.game.info.mode) {
             case 'ffa':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth, Game.game.board.rowHeight);
                break;
             case 'skm':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth + game.board.threeWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth + Game.game.board.threeWidth, Game.game.board.rowHeight);
                break;
             case 'srv':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
                break;
             case 'ctf':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
                break;
             case 'inf':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth, Game.game.board.rowHeight);
                break;
             case 'kth':
-               rect(game.board.x + 4, game.board.y + 3 + (a + 1) * game.board.rowHeight, game.board.nameWidth + game.board.oneWidth + game.board.twoWidth, game.board.rowHeight);
+               rect(Game.game.board.x + 4, Game.game.board.y + 3 + (a + 1) * Game.game.board.rowHeight, Game.game.board.nameWidth + Game.game.board.oneWidth + Game.game.board.twoWidth, Game.game.board.rowHeight);
                break;
          }
          a++;
@@ -146,28 +146,28 @@ function renderWorld() {
    }
 
    // World
-   fill(game.world.background.r, game.world.background.g, game.world.background.b);
-   stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
-   strokeWeight(game.world.border.weight);
-   if (game.world.type == 'rectangle') {
-      rect(game.world.x + game.world.width / 2, game.world.y + game.world.height / 2, game.world.width, game.world.height); // World border
-   } else if (game.world.type == 'ellipse') {
-      ellipse(game.world.x + game.world.width / 2, game.world.y + game.world.height / 2, game.world.width / 2, game.world.height / 2); // World border
+   fill(Game.game.world.background.r, Game.game.world.background.g, Game.game.world.background.b);
+   stroke(game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
+   strokeWeight(Game.game.world.border.weight);
+   if (Game.game.world.type == 'rectangle') {
+      rect(Game.game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width, Game.game.world.height); // World border
+   } else if (Game.game.world.type == 'ellipse') {
+      ellipse(game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width / 2, Game.game.world.height / 2); // World border
    }
 
    // CTF
-   if (game.info.mode == 'ctf') {
+   if (Game.game.info.mode == 'ctf') {
       // Bases
-      for (let i = 1; i < game.teams.length + 1; i++) {
+      for (let i = 1; i < Game.game.teams.length + 1; i++) {
          let color = teamColorDef[teamColors[i - 1]];
-         stroke(orgColors[game.world.color][color].r, orgColors[game.world.color][color].g, orgColors[game.world.color][color].b);
+         stroke(orgColors[Game.game.world.color][color].r, orgColors[Game.game.world.color][color].g, orgColors[Game.game.world.color][color].b);
          strokeWeight(3);
          let bin = i.toString(2); // Convert i to binary string
          if (bin.length < 2) {
             bin = '0' + bin; // Add zero to front to form equivalent two-length binary number
          }
-         let x = game.world.x + (game.world.width * parseInt(bin[bin.length - 1]));
-         let y = game.world.y + (game.world.height * parseInt(bin[bin.length - 2]));
+         let x = Game.game.world.x + (Game.game.world.width * parseInt(bin[bin.length - 1]));
+         let y = Game.game.world.y + (Game.game.world.height * parseInt(bin[bin.length - 2]));
          let theta;
          if (bin == '01') {
             theta = 270;
@@ -179,14 +179,14 @@ function renderWorld() {
             theta = 0;
          }
          let l = 150;
-         if (game.world.type == 'rectangle') {
+         if (Game.game.world.type == 'rectangle') {
             arc(x, y, l, l, -theta + 1, -theta + 89); // -1 to avoid world border overlap with a degree cushion either side
-         } else if (game.world.type == 'ellipse') {
-            let r = game.world.width / 2;
+         } else if (Game.game.world.type == 'ellipse') {
+            let r = Game.game.world.width / 2;
             let h = x + cos(-theta + 45) * r * (root2 - 1); // l = r(root2 - 1); length from circle to square corner
             let k = y + sin(-theta + 45) * r * (root2 - 1); // yoff = l*sin(-theta + 45); -theta + 45 gives angle to center
-            let a = game.world.x + r; // a is world center x
-            let b = game.world.y + r; // b is world center y
+            let a = Game.game.world.x + r; // a is world center x
+            let b = Game.game.world.y + r; // b is world center y
             let diffs = [];
             let points = [ /*{ p: Number, q: Number }*/ ];
             for (let j = 0; j < 720; j++) {
@@ -207,11 +207,11 @@ function renderWorld() {
       }
       // Flag
       noFill();
-      stroke(game.world.border.color.r, game.world.border.color.g, game.world.border.color.b);
+      stroke(game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
       strokeWeight(2);
-      line(game.flag.x - game.flag.width / 2, game.flag.y - game.flag.height / 2, game.flag.x - game.flag.width / 2, game.flag.y + game.flag.height / 2);
-      fill(game.flag.color.r, game.flag.color.g, game.flag.color.b);
+      line(game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y + Game.game.flag.height / 2);
+      fill(Game.game.flag.color.r, Game.game.flag.color.g, Game.game.flag.color.b);
       strokeWeight(1);
-      triangle(game.flag.x - game.flag.width / 2, game.flag.y - game.flag.height / 2, game.flag.x - game.flag.width / 2, game.flag.y, game.flag.x + game.flag.width / 2, game.flag.y - game.flag.height / 4);
+      triangle(game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y, Game.game.flag.x + Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 4);
    }
 }

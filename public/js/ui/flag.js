@@ -22,6 +22,6 @@ var Flag = function(X, Y, coloR) {
    this.pickup = carrier => {
       this.carried = true; // Org picks up flag
       this.carrier = carrier;
-      Socket.socket.emit('Flag', { flag: this, host: game.info.host });
+      Socket.socket.emit('Flag', { flag: this, host: Game.game.info.host });
    };
 };

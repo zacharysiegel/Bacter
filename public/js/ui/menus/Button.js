@@ -25,12 +25,12 @@ class Button extends React.Component {
             org.clearIntervals();
             // ability = new Ability({ player: Socket.socket.id }); // Ability reset occurs already in renderTitle()
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
-               Socket.socket.emit('Leave Game', game);
-               for (let i = 0; i < game.board.list.length; i++) {
-                  if (game.board.list[i].player == Socket.socket.id) { // Find player in leaderboard
-                     game.board.list.splice(i, 1); // Remove player from leaderboard
-                     orderBoard(game.board.list); // Sort the list
-                     Socket.socket.emit('Board', { list: game.board.list, host: game.board.host }); // Send updated board to server
+               Socket.socket.emit('Leave Game', Game.game);
+               for (let i = 0; i < Game.game.board.list.length; i++) {
+                  if (Game.game.board.list[i].player == Socket.socket.id) { // Find player in leaderboard
+                     Game.game.board.list.splice(i, 1); // Remove player from leaderboard
+                     orderBoard(Game.game.board.list); // Sort the list
+                     Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Send updated board to server
                      break;
                   }
                }

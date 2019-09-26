@@ -37,9 +37,9 @@ class List extends React.Component {
             }
             break;
          case 'color':
-            for (let i in orgColors[game.world.color]) { // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
+            for (let i in orgColors[Game.game.world.color]) { // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
                let color = i; // Key: Color name: String
-               let rgb = orgColors[game.world.color][i]; // Value: RGB: Object
+               let rgb = orgColors[Game.game.world.color][i]; // Value: RGB: Object
                info.push({ value: color, inner: color[0].toUpperCase() + color.slice(1), 
                   style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
                });
@@ -47,8 +47,8 @@ class List extends React.Component {
             if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
                for (let i = 0; i < info.length; i++) {
                   let color;
-                  for (let j in orgColors[game.world.color]) {
-                     if (orgColors[game.world.color][j] === org.color) {
+                  for (let j in orgColors[Game.game.world.color]) {
+                     if (orgColors[Game.game.world.color][j] === org.color) {
                         color = j;
                         break;
                      }
@@ -64,17 +64,17 @@ class List extends React.Component {
          case 'team':
             if (getSrc().src === 'title') { // If in title, set game value to game in games array
                for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in Socket.socket.js @ Socket.socket.on('Game')); Used for team option updates
-                  if (games[i].info.host === game.info.host) { // Identify game
-                     game = games[i]; // Set game to updated game from server array
+                  if (games[i].info.host === Game.game.info.host) { // Identify game
+                     Game.game = games[i]; // Set game to updated game from server array
                      break;
                   }
                }
             }
-            for (let i = 0; i < game.teams.length; i++) { // If is not a team mode, rendering should be blocked in Menu.render()
-               info.push({ value: teamColors[i], inner: teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + game.teams[i].length });
+            for (let i = 0; i < Game.game.teams.length; i++) { // If is not a team mode, rendering should be blocked in Menu.render()
+               info.push({ value: teamColors[i], inner: teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + Game.game.teams[i].length });
             }
             if (this.menuType === 'join') { // Team auto-selection in join menu
-               let lengths = game.teams.map((team) => team.length); // Array which records the number of players on each team
+               let lengths = Game.game.teams.map((team) => team.length); // Array which records the number of players on each team
                let min = { [0]: lengths[0] }; // min is an object whose only key is the index of the smallest team and whose value is the size of that team (start with first team by default)
                for (let i = 0; i < info.length; i++) { // Must keep track of index of minimum team within teams array, so index is key within min
                   if (min[i] > lengths[i+1]) {

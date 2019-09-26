@@ -2,33 +2,33 @@ let currentMessage = () => {
    let message;
    if (state === 'game' || state === 'spectate') {
       if (org.alive) {
-         if (game.rounds.util) {
-            if (game.rounds.waiting == true && game.rounds.delayed == false) {
-               if (game.rounds.min - game.info.count == 1) {
-                  message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+         if (Game.game.rounds.util) {
+            if (Game.game.rounds.waiting == true && Game.game.rounds.delayed == false) {
+               if (Game.game.rounds.min - Game.game.info.count == 1) {
+                  message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
                } else {
-                  message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+                  message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
                }
-            } else if (game.rounds.waiting == true && game.rounds.delayed == true) { // Delay at round start
-               message = 'Round begins in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-            } else if (game.rounds.waiting == false && game.rounds.delayed == true) { // Delay at round end
-               message = 'Round ends in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+            } else if (Game.game.rounds.waiting == true && Game.game.rounds.delayed == true) { // Delay at round start
+               message = 'Round begins in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+            } else if (Game.game.rounds.waiting == false && Game.game.rounds.delayed == true) { // Delay at round end
+               message = 'Round ends in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          }
       } else if (!org.alive) {
-         if (game.rounds.util) {
-            if (game.rounds.waiting === true && game.rounds.delayed === false) { // Waiting for more players to join, not counting down yet
-               if (game.rounds.min - game.info.count == 1) {
-                  message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more player to join';
+         if (Game.game.rounds.util) {
+            if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === false) { // Waiting for more players to join, not counting down yet
+               if (Game.game.rounds.min - Game.game.info.count == 1) {
+                  message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
                } else {
-                  message = 'Waiting for ' + (game.rounds.min - game.info.count) + ' more players to join';
+                  message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
                }
-            } else if (game.rounds.waiting === true && game.rounds.delayed === true) { // Enough players have joined, counting down
-               message = 'Round begins in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-            } else if (game.rounds.waiting === false && game.rounds.delayed === false) { // Round in progress
+            } else if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === true) { // Enough players have joined, counting down
+               message = 'Round begins in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+            } else if (Game.game.rounds.waiting === false && Game.game.rounds.delayed === false) { // Round in progress
                message = 'Wait for the round to complete';
-            } else if (game.rounds.waiting === false && game.rounds.delayed === true) {
-               message = 'Round ends in: ' + (1 + floor((game.rounds.rounddelay - (new Date() - game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
+            } else if (Game.game.rounds.waiting === false && Game.game.rounds.delayed === true) {
+               message = 'Round ends in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          } else {
             message = 'Press \'' + Controls.respawn.key + '\' to Spawn';

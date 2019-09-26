@@ -11,20 +11,20 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
    this.team = data.team;
    let src = getSrc();
    if (src !== undefined && src.src === 'game') {
-      if (game.rounds.util === true) {
+      if (Game.game.rounds.util === true) {
          this.ready = false; // org.ready ensures that org will only be forcibly respawned once
       }
-      if (game.info.mode === 'srv' && game.rounds.waiting === false) {
+      if (Game.game.info.mode === 'srv' && Game.game.rounds.waiting === false) {
          this.spawn = false;
       } else {
          this.spawn = true; // Allowance to spawn
       }
-      for (let i = 0; i < game.board.list.length; i++) {
-         if (game.board.list[i].player === this.player) { // Find player name in leaderboard list
-            this.name = game.board.list[i].name;
+      for (let i = 0; i < Game.game.board.list.length; i++) {
+         if (Game.game.board.list[i].player === this.player) { // Find player name in leaderboard list
+            this.name = Game.game.board.list[i].name;
          }
       }
-   }
+   } //  game
    if (data.spectating) {
       this.speed = _spectatespeed; // Faster movement when spectating
    } else {
@@ -37,22 +37,22 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
    } else {
       do {
          this.pos = { // Position is the target's location in the world
-            x: floor(random(game.world.x + 50 + _cellwidth / 2, game.world.x + game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
-            y: floor(random(game.world.y + 50 + _cellwidth / 2, game.world.y + game.world.height - 50 - _cellwidth / 2))
+            x: floor(random(Game.game.world.x + 50 + _cellwidth / 2, Game.game.world.x + Game.game.world.width - 50 - _cellwidth / 2)), // +- 50 acts as buffer
+            y: floor(random(Game.game.world.y + 50 + _cellwidth / 2, Game.game.world.y + Game.game.world.height - 50 - _cellwidth / 2))
          };
          let rePos = false;
-         if (game.world.type === 'rectangle') {
-            if (this.pos.x < game.world.x || this.pos.x > game.world.x + game.world.width || this.pos.y < game.world.y || this.pos.y > game.world.y + game.world.height) {
+         if (Game.game.world.type === 'rectangle') {
+            if (this.pos.x < Game.game.world.x || this.pos.x > Game.game.world.x + Game.game.world.width || this.pos.y < Game.game.world.y || this.pos.y > Game.game.world.y + Game.game.world.height) {
                rePos = false;
             }
-         } else if (game.world.type === 'ellipse') {
-            if (sq(this.pos.x - (game.world.x + game.world.width / 2)) / sq(game.world.width / 2) + sq(this.pos.y - (game.world.y + game.world.height / 2)) / sq(game.world.height / 2) >= 1) {
+         } else if (Game.game.world.type === 'ellipse') {
+            if (sq(this.pos.x - (Game.game.world.x + Game.game.world.width / 2)) / sq(Game.game.world.width / 2) + sq(this.pos.y - (Game.game.world.y + Game.game.world.height / 2)) / sq(Game.game.world.height / 2) >= 1) {
                rePos = true;
             }
          }
-         for (let i = 0; i < game.info.count; i++) { // Org Overlap
-            for (let j = 0; j < game.orgs[i].count; j++) {
-               if (game.orgs[i].cells[j].x - game.orgs[i].cells[j].width <= this.pos.x && game.orgs[i].cells[j].x + game.orgs[i].cells[j].width >= this.pos.x && game.orgs[i].cells[j].y - game.orgs[i].cells[j].height <= this.pos.y && game.orgs[i].cells[j].y + game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
+         for (let i = 0; i < Game.game.info.count; i++) { // Org Overlap
+            for (let j = 0; j < Game.game.orgs[i].count; j++) {
+               if (Game.game.orgs[i].cells[j].x - Game.game.orgs[i].cells[j].width <= this.pos.x && Game.game.orgs[i].cells[j].x + Game.game.orgs[i].cells[j].width >= this.pos.x && Game.game.orgs[i].cells[j].y - Game.game.orgs[i].cells[j].height <= this.pos.y && Game.game.orgs[i].cells[j].y + Game.game.orgs[i].cells[j].height >= this.pos.y) { // If position collides with enemy cell (Full width buffer is intended)
                   rePos = true;
                   break;
                }
@@ -60,7 +60,7 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
             if (rePos === true) {
                break;
             }
-            let abilitY = game.abilities[i];
+            let abilitY = Game.game.abilities[i];
             if (abilitY.secrete.value === true) { // Spore Secretions Overlap
                for (let j = 0; j < abilitY.spore.count; j++) {
                   let cell = abilitY.spore.spores[j];
@@ -334,19 +334,19 @@ let Org = function (data) { // data: { player: , color: , skin: , team: , specta
          this.range
       ]);
       if (this.count === 0) {
-         for (let i = 0; i < game.board.list.length; i++) {
-            if (game.board.list[i].player === Socket.socket.id) { // Add death to leaderboard
-               game.board.list[i].deaths++; // Add 1 to deaths counter
-               orderBoard(game.board.list); // Sort the list by kills then deaths
-               Socket.socket.emit('Board', {list: game.board.list, host: game.board.host}); // Send updated board to server
+         for (let i = 0; i < Game.game.board.list.length; i++) {
+            if (Game.game.board.list[i].player === Socket.socket.id) { // Add death to leaderboard
+               Game.game.board.list[i].deaths++; // Add 1 to deaths counter
+               orderBoard(Game.game.board.list); // Sort the list by kills then deaths
+               Socket.socket.emit('Board', {list: Game.game.board.list, host: Game.game.board.host}); // Send updated board to server
             }
          }
          if (this.hit !== this.player) { // Cannot gain kill for suicide
-            for (let i = 0; i < game.board.list.length; i++) {
-               if (game.board.list[i].player === this.hit) { // Find killer in leaderboard list
-                  game.board.list[i].kills++;
-                  orderBoard(game.board.list);
-                  Socket.socket.emit('Board', {list: game.board.list, host: game.board.host});
+            for (let i = 0; i < Game.game.board.list.length; i++) {
+               if (Game.game.board.list[i].player === this.hit) { // Find killer in leaderboard list
+                  Game.game.board.list[i].kills++;
+                  orderBoard(Game.game.board.list);
+                  Socket.socket.emit('Board', {list: Game.game.board.list, host: Game.game.board.host});
                   break;
                }
             }

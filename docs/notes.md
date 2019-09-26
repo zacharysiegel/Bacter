@@ -48,6 +48,8 @@
          ✓ Update occurances of z.js functions to Z.[function()]
       ✓ Update React lifecycle functions
       ✓ Add '4th Ability' row to Join Game Options menu with Spore checkbox always checked
+      ✓ Encapsulate game.js into class Game
+         ✓ static game variable (game -> Game.game)
       FIX game is closed when try to enter game - This error is not in a3.1.2
          games is empty array
          game is not created and not put into games array by the time user click join, so the menu sees an empty games array and thinks the game is closed

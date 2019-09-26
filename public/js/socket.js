@@ -24,15 +24,15 @@ class Socket {
 
       Socket.socket.on('Force Spawn', () => {
          die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
-         for (let i = 0; i < game.spectators.length; i++) {
-            if (game.spectators[i] === Socket.socket.id) { // If player is spectator
-               Socket.socket.emit('Spectator Left', game.info); // Remove spectator from spectators array
+         for (let i = 0; i < Game.game.spectators.length; i++) {
+            if (Game.game.spectators[i] === Socket.socket.id) { // If player is spectator
+               Socket.socket.emit('Spectator Left', Game.game.info); // Remove spectator from spectators array
             }
          }
          if (state === 'pauseSpectateMenu') {
-            Menu.renderMenu('pauseGame', game); // Move to correct menu if on spectate menu
+            Menu.renderMenu('pauseGame', Game.game); // Move to correct menu if on spectate menu
          } else if (state === 'respawnMenu') {
-            Menu.renderMenu('pauseGame', game);
+            Menu.renderMenu('pauseGame', Game.game);
             menus.pauseGame.submit();
          }
          spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
@@ -41,7 +41,7 @@ class Socket {
       });
 
       Socket.socket.on('Game', (_game) => {
-         game = _game;
+         Game.game = _game;
          if (ability.spore.value === true) {
             ability.spore.interval();
          }
@@ -56,18 +56,18 @@ class Socket {
                {
                   translate(-org.off.x, -org.off.y);
                   renderWorld();
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderToxin(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderToxin(Game.game.abilities[i]);
                   }
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderSecretions(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderSecretions(Game.game.abilities[i]);
                   }
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderNeutralize(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderNeutralize(Game.game.abilities[i]);
                   }
                   renderOrgs();
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderSpores(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderSpores(Game.game.abilities[i]);
                   }
                   renderUI();
                   renderLeaderboard();
@@ -84,18 +84,18 @@ class Socket {
                {
                   translate(-org.off.x, -org.off.y);
                   renderWorld();
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderToxin(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderToxin(Game.game.abilities[i]);
                   }
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderSecretions(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderSecretions(Game.game.abilities[i]);
                   }
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderNeutralize(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderNeutralize(Game.game.abilities[i]);
                   }
                   renderOrgs(); // Orgs render over neutralize and toxin but under other abilities
-                  for (let i = 0; i < game.info.count; i++) {
-                     renderSpores(game.abilities[i]);
+                  for (let i = 0; i < Game.game.info.count; i++) {
+                     renderSpores(Game.game.abilities[i]);
                   }
                   renderLeaderboard();
                   translate(org.off.x, org.off.y);
@@ -122,7 +122,7 @@ class Socket {
          ability.tag.value = true;
          clearTimeout(ability.tag.timeout);
          Socket.socket.emit('Ability', ability);
-         if (game.info.mode === '') {
+         if (Game.game.info.mode === '') {
             ability.tag.timeout = setTimeout(() => {
                ability.tag.value = false;
                Socket.socket.emit('Ability', ability);
