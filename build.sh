@@ -15,7 +15,7 @@
 # Build Client-Side JavaScript into ES2015-compatible code
 echo "Building Client-Side JavaScript..."
 ./node_modules/.bin/babel -o ./public/build/bundle.js -s true -- ./public/js # Package all files in /js directory into bundle.js file with source map in /bundle directory
-./node_modules/.bin/babel -d ./public/build/ -- ./public/lib/z.js
+./node_modules/.bin/babel -d ./public/build/ -- ./public/lib/z.js ./public/lib/break-on.js
 
 # Build Server-Side JavaScript into ES2015-compatible code
 echo "Building Server-Side JavaScript..."
