@@ -50,12 +50,18 @@
       ✓ Add '4th Ability' row to Join Game Options menu with Spore checkbox always checked
       ✓ Encapsulate game.js into class Game
          ✓ static game variable (game -> Game.game)
+      ✓ Encapsulate permission stuff into Permissions class
+      ✓ Encapsulate server-side game info into Games class
+      ✓ Fix no break out of submit menu switch
+      ✓ Fix occasional client doesn't receive 'Games' interval emission
+      ✓ Fix frequent client reconnection
       FIX game is closed when try to enter game - This error is not in a3.1.2
          games is empty array
+            refer to "FIX socket.on('Creat...')"
          game is not created and not put into games array by the time user click join, so the menu sees an empty games array and thinks the game is closed
-         grantedJoin is not called
-            
-         ✓ callback is only received by client about 3/4 of the time
+         grantedJoin is not 
+         socket.on('Create Game') not called when Game.createGame is called
+            is called in setup() if a test is placed after connection = new Connection()
          ✓ socket.emit (client) doesnt work inside setInterval
       FIX ability timers are black circle in tutorial - This error is not in a3.1.2
          Abilities are ineffectual
@@ -69,6 +75,10 @@
       Fix crash when player kills himself with shoot
       Fix press enter in color picker joins game
       Fix name labels do not show while spectating
+      Fix create game submit button runs submit twice
+      Fix 'too much recursion' socket.io error
+      Compartmentalize submit.js
+      Convert Games class (server-side) to array of Game class instances
 #### a3.3.0 - Capture the Flag
       CTF
          ✓ Round system
@@ -105,7 +115,15 @@
       Sparks skin
          On birth, release sparks particle effect
       Fix ctf base world corner rendering bug
-#### aX.X.0 - Visual Enhancement
+#### aX.X.X - Visual Enhancement
+      Compartmentalize server into modules
+      Convert 'games' array into hash table
+      Convert 'securities' array into hash table
+      Encrypt passwords when sending to server
+         Client encrypts password, sends to server
+         Server encrypts encrypted password, sends to client
+         Client decrypts doubly-encrypted password, sends to server
+         Server decrypts encrypted password, stores value as hash (bCrypt)
       Polygon skin
          Random number of vertices
          Random radians between using perlin noise

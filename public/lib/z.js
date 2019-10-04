@@ -12,21 +12,21 @@ class Z {
 
    /**
     * Get the frequency of an element in an array or string
-    * @param  {[Array]}   arr Array to be traversed
-    * @param  {[Generic]} elt Element for which to search
-    * @return {[Integer]}     The frequency of elt in arr
+    * @param  {Array}   arr Array to be traversed
+    * @param  {Generic} elt Element for which to search
+    * @return {Number}     The frequency of elt in arr
     */
    static freq(arr, elt) {
       let freq = 0;
       let index = arr.indexOf(elt);
-      if (index == -1) {
+      if (index === -1) {
          return freq;
       } else {
          do {
             freq++;
             arr = arr.slice(index + 1);
             index = arr.indexOf(elt);
-         } while (index != -1);
+         } while (index !== -1);
          return freq;
       }
    };
@@ -34,12 +34,11 @@ class Z {
    /**
     * Set the character at the specified index in a string to c
     * @param   {String}  string   String to be modified
-    * @param   {Integer} index Index in string to be modified
+    * @param   {Number} index Index in string to be modified
     * @param   {String}  c     Character to be set in index
     * @returns {String}        The modified string
     */
-   static setCharAt(_string, index, c) {
-      let string = _string;
+   static setCharAt(string, index, c) {
       if(index > string.length-1) {
          console.error('Invalid Argument: setCharAt(): index out of bounds')
          return string;
@@ -49,19 +48,19 @@ class Z {
    
    /**
     * Capitalize the first character of every word in the given string
-    * @param  {String} string String to be capitalized
-    * @return {String}     Capitalized version of string
+    * @param  {String} string    String to be capitalized
+    * @param  {String} delimeter String used to deliminate between words within string
+                                    Defaults to ' '
+    * @return {String} A
     */
-   static capitalize(_string, delimeter = ' ') {
-      let string = _string;
+   static capitalize(string, delimeter = ' ') {
       let arr = string.split(delimeter);
       for (let i = 0; i < arr.length; i++) {
          let char1 = arr[i].charAt(0).toUpperCase();
          arr[i] = this.setCharAt(arr[i], 0, char1);
       }
-      string = arr.join(delimeter);
-      return string;
-   };
+      return arr.join(delimeter);
+   }
 
    /**
     * Returns an array of strings representing keys of an object

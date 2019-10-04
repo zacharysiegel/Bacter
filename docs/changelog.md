@@ -232,3 +232,5 @@
       Added '4th Ability' line to 'Join Game Options' menu
       Improved other documentation
       Improved build and start scripts
+      Fixed frequent reconnection of client
+      Fixed occasional client non-connection to socket

@@ -40,9 +40,11 @@ if cat ./config/config.json | grep -- project_state | grep -q -- production # If
 then
    echo "Project state is set to production"
    echo "JavaScript is ES2015-compatible"
+   echo
    authbind node ./src/build/app.js # Production
 else
    echo "Project state is set to development"
+   echo
    authbind node ./src/app.js # Development (ES2015-Compliant code is not needed in development)
 fi
 

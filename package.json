@@ -4,7 +4,9 @@
    "description": "2D Arena Multiplayer Game",
    "main": "server.js",
    "dependencies": {
+      "bcryptjs": "^2.4.3",
       "express": "^4.16.4",
+      "minimist": "^1.2.0",
       "npm": "^6.11.2",
       "react": "^16.6.1",
       "react-dom": "^16.6.1",
@@ -30,8 +32,8 @@
       "url": "https://github.com/siegelzc/Bacter.git"
    },
    "author": "Zachary Siegel",
-   "license": "./docs/LICENSE",
-   "documentation": "./docs/",
+   "license": "/docs/LICENSE",
+   "documentation": "/docs/",
    "bugs": {
       "url": "https://github.com/siegelzc/Bacter/issues"
    },
