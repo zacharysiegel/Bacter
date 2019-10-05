@@ -11,8 +11,12 @@ package-lock.json
 # WebStorm
 .idea/
 
+# ESLint
+.eslintrc
+.eslintignore
+
 # Static Versions
-archives/Previous Versions.zip
+# archives/'Previous Versions'
 
 # Bacter
 public/build/*
