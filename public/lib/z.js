@@ -154,11 +154,7 @@ class Z {
          console.error('Error: z.js: getFullscreenElement() does not support your browser\'s fullscreen api');
          return undefined;
       }
-      var fullElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
-      if (fullElement === null) { // If no element is in full-screen
-         return false;
-      } else {
-         return true;
-      }
-   }  
+      let fullElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+      return fullElement !== null;
+   }
 }
