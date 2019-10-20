@@ -1,22 +1,22 @@
-var World = function(datA) { // datA: { width: , height: , type: , color: , x: , y: }
+let World = function(datA) { // datA: { width: , height: , type: , color: , x: , y: }; TODO: Convert to class World
    let data = datA;
-   this.host = Socket.socket.id; // Cannot call Game.game.info.host since game is not fully constructed yet; World() can only be called by host, so Socket.socket.id is ok
+   this.host = connection.socket.id; // Cannot call Game.game.info.host since Game.game is not fully constructed yet; World() can only be called by host, so connection.socket.id is ok
    this.width = data.width;
    this.height = data.height;
-   if (data.x != undefined) { // Coordinates are for top left corner
+   if (data.x !== undefined) { // Coordinates are for top left corner
       this.x = data.x;
    } else {
       this.x = 0;
    }
-   if (data.y != undefined) {
+   if (data.y !== undefined) {
       this.y = data.y;
    } else {
       this.y = 0;
    }
-   this.type = data.type
+   this.type = data.type;
    this.color = data.color;
    for (let i in worldColors) {
-      if (i == this.color) {
+      if (i === this.color) {
          this.background = worldColors[i];
          break;
       }
@@ -26,11 +26,11 @@ var World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
       color: undefined,
       weight: 1
    };
-   this.backdrop = { r: 70, g: 70, b: 70 };
+   this.backdrop = backdrop_color;
    this.border.weight = 1;
-   if (this.color == 'black') {
+   if (this.color === 'black') {
       this.border.color = { r: 255, g: 255, b: 255 };
-   } else if (this.color == 'white') {
+   } else if (this.color === 'white') {
       this.border.color = { r: 0, g: 0, b: 0 };
    }
 };
@@ -43,10 +43,10 @@ function renderWorld() {
    fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
    noStroke();
    { // World
-      if (Game.game.world.type == 'rectangle') { // World
+      if (Game.game.world.type === 'rectangle') { // World
          rect(Game.game.world.x + Game.game.world.width / 2 + 7, Game.game.world.y + Game.game.world.height / 2 + 6, Game.game.world.width, Game.game.world.height);
-      } else if (Game.game.world.type == 'ellipse') {
-         ellipse(game.world.x + Game.game.world.width / 2 + 5, Game.game.world.y + Game.game.world.height / 2 + 4, Game.game.world.width / 2, Game.game.world.height / 2);
+      } else if (Game.game.world.type === 'ellipse') {
+         ellipse(Game.game.world.x + Game.game.world.width / 2 + 5, Game.game.world.y + Game.game.world.height / 2 + 4, Game.game.world.width / 2, Game.game.world.height / 2);
       }
    }
    { // Leaderboard
@@ -85,17 +85,17 @@ function renderWorld() {
             Game.game.board.count = min(Game.game.board.show, Game.game.board.list.length);
             break;
       }
-      var a = 0;
+      let a = 0;
       for (let i = 0; i < Game.game.board.count; i++) { // Leaderboard Body
-         if (Game.game.info.mode != 'skm' && Game.game.info.mode != 'ctf') { // If not a team mode
-            var spectator = false;
+         if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If not a team mode
+            let spectator = false;
             for (let j = 0; j < Game.game.spectators.length; j++) {
-               if (Game.game.board.list[i].player == Game.game.spectators[j]) {
+               if (Game.game.board.list[i].player === Game.game.spectators[j]) {
                   spectator = true;
                   break;
                }
             }
-            if (spectator == true) {
+            if (spectator === true) {
                if (i < Game.game.board.count) {
                   if (Game.game.board.count < Game.game.info.count) {
                      Game.game.board.count++; // Extend leaderboard length to include the next player
@@ -132,11 +132,11 @@ function renderWorld() {
       rectMode(CENTER);
    } { // Messages
       translate(org.off.x, org.off.y);
-      if (Messages == true) {
+      if (Messages === true) {
          textFont('Helvetica');
          textStyle(NORMAL);
          let message = currentMessage();
-         if (message != undefined) {
+         if (message !== undefined) {
             let breaks = Z.freq(message, '\n');
             let width = messageWidth(message);
             rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
@@ -147,16 +147,16 @@ function renderWorld() {
 
    // World
    fill(Game.game.world.background.r, Game.game.world.background.g, Game.game.world.background.b);
-   stroke(game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
+   stroke(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
    strokeWeight(Game.game.world.border.weight);
-   if (Game.game.world.type == 'rectangle') {
+   if (Game.game.world.type === 'rectangle') {
       rect(Game.game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width, Game.game.world.height); // World border
-   } else if (Game.game.world.type == 'ellipse') {
-      ellipse(game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width / 2, Game.game.world.height / 2); // World border
+   } else if (Game.game.world.type === 'ellipse') {
+      ellipse(Game.game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width / 2, Game.game.world.height / 2); // World border
    }
 
    // CTF
-   if (Game.game.info.mode == 'ctf') {
+   if (Game.game.info.mode === 'ctf') {
       // Bases
       for (let i = 1; i < Game.game.teams.length + 1; i++) {
          let color = teamColorDef[teamColors[i - 1]];
@@ -169,19 +169,19 @@ function renderWorld() {
          let x = Game.game.world.x + (Game.game.world.width * parseInt(bin[bin.length - 1]));
          let y = Game.game.world.y + (Game.game.world.height * parseInt(bin[bin.length - 2]));
          let theta;
-         if (bin == '01') {
+         if (bin === '01') {
             theta = 270;
-         } else if (bin == '10') {
+         } else if (bin === '10') {
             theta = 90;
-         } else if (bin == '11') {
+         } else if (bin === '11') {
             theta = 180;
-         } else if (bin == '100') {
+         } else if (bin === '100') {
             theta = 0;
          }
          let l = 150;
-         if (Game.game.world.type == 'rectangle') {
+         if (Game.game.world.type === 'rectangle') {
             arc(x, y, l, l, -theta + 1, -theta + 89); // -1 to avoid world border overlap with a degree cushion either side
-         } else if (Game.game.world.type == 'ellipse') {
+         } else if (Game.game.world.type === 'ellipse') {
             let r = Game.game.world.width / 2;
             let h = x + cos(-theta + 45) * r * (root2 - 1); // l = r(root2 - 1); length from circle to square corner
             let k = y + sin(-theta + 45) * r * (root2 - 1); // yoff = l*sin(-theta + 45); -theta + 45 gives angle to center
@@ -207,11 +207,11 @@ function renderWorld() {
       }
       // Flag
       noFill();
-      stroke(game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
+      stroke(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
       strokeWeight(2);
-      line(game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y + Game.game.flag.height / 2);
+      line(Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y + Game.game.flag.height / 2);
       fill(Game.game.flag.color.r, Game.game.flag.color.g, Game.game.flag.color.b);
       strokeWeight(1);
-      triangle(game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y, Game.game.flag.x + Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 4);
+      triangle(Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y, Game.game.flag.x + Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 4);
    }
 }

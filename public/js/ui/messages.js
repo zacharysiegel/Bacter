@@ -1,24 +1,25 @@
+// TODO: Encapsulate into class Messages
 let currentMessage = () => {
    let message;
-   if (state === 'game' || state === 'spectate') {
+   if (Game.state === 'game' || Game.state === 'spectate') {
       if (org.alive) {
          if (Game.game.rounds.util) {
-            if (Game.game.rounds.waiting == true && Game.game.rounds.delayed == false) {
-               if (Game.game.rounds.min - Game.game.info.count == 1) {
+            if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === false) {
+               if (Game.game.rounds.min - Game.game.info.count === 1) {
                   message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
                } else {
                   message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
                }
-            } else if (Game.game.rounds.waiting == true && Game.game.rounds.delayed == true) { // Delay at round start
+            } else if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === true) { // Delay at round start
                message = 'Round begins in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
-            } else if (Game.game.rounds.waiting == false && Game.game.rounds.delayed == true) { // Delay at round end
+            } else if (Game.game.rounds.waiting === false && Game.game.rounds.delayed === true) { // Delay at round end
                message = 'Round ends in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          }
       } else if (!org.alive) {
          if (Game.game.rounds.util) {
             if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === false) { // Waiting for more players to join, not counting down yet
-               if (Game.game.rounds.min - Game.game.info.count == 1) {
+               if (Game.game.rounds.min - Game.game.info.count === 1) {
                   message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
                } else {
                   message = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
@@ -34,7 +35,7 @@ let currentMessage = () => {
             message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
          }
       }
-   } else if (state === 'tutorial') {
+   } else if (Game.state === 'tutorial') {
       switch (tutorial.task) {
          case 'move':
             message = 'Use W-A-S-D (Recommended) or the arrow keys to move';
@@ -85,18 +86,18 @@ let currentMessage = () => {
 };
 
 function renderMessages() {
-   if (Messages == true) {
+   if (Messages === true) {
       let message = currentMessage();
-      if (message != undefined) {
+      if (message !== undefined) {
          let src = getSrc();
          fill(src.world.background.r, src.world.background.g, src.world.background.b); // Message shadows are rendered in renderWorld()
          stroke(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b);
          strokeWeight(1);
          textFont('Helvetica');
          textSize(14);
-         if (src.world.color == 'black') {
+         if (src.world.color === 'black') {
             textStyle(NORMAL);
-         } else if (src.world.color == 'white') {
+         } else if (src.world.color === 'white') {
             textStyle(BOLD);
          }
          let breaks = Z.freq(message, '\n');

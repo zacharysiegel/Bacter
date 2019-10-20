@@ -53,7 +53,7 @@ class Browser extends React.Component {
                </table>
             </div>
             <div className='backfooter'>
-               <footer onClick={ renderTitle }>
+               <footer onClick={ Title.render }>
                   <p id='back'>&larr; Back</p>
                   <p id='displayconnections'>{ 'Online Clients: ' + (Connection.connections ? Connection.connections : 0) }</p>
                </footer>

@@ -10,7 +10,7 @@ class Game {
     * Construct a Game object
     * @param  {Map} data {
     *                       title: gametitle,
-    *                       password: password,
+    *                       secured: secured,
     *                       type: type,
     *                       width: width,
     *                       height: height,
@@ -28,16 +28,12 @@ class Game {
          this.info = {
             host: connection.socket.id,
             title: data.title,
-            protected: undefined,
+            secured: data.secured,
             count: 0,
             cap: data.cap,
             mode: data.mode,
             teamCount: data.teamCount
          };
-         if (!data.password) // If there is no password
-            this.info.protected = false;
-         else // If there is a password
-            this.info.protected = true;
       } { // Teams
          this.teams = [];
          if (this.info.mode === 'skm' || this.info.mode === 'ctf') {
@@ -70,12 +66,27 @@ class Game {
       }
       this.board = new Board(data);
       this.world = new World(data);
-      if (this.info.mode === 'ctf')
+      if (this.info.mode === 'ctf') {
          this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
+      }
       this.players = [];
       this.spectators = [];
       this.orgs = [];
       this.abilities = [];
+   }
+
+   /**
+    * Determine if the game corresponding to the specified host exists in the games array
+    * @param {String} host The host of the game in question (the identifier of a game)
+    * @return {Boolean} True if game was found in games array, else false
+    */
+   static exists(host) {
+      Game.games.forEach(game => {
+         if (game.info.host === host) {
+            return true;
+         }
+      });
+      return false;
    }
 }
 

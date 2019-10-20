@@ -1,38 +1,39 @@
 // Repertoires
 const worldColors = {
-   black:            { r: 0,     g: 0,    b: 0   }, // Only black is currently in use
-   white:            { r: 230,   g: 230,  b: 230 }, 
-   blue:             { r: 247,   g: 250,  b: 255 }
+   black:                { r: 0,     g: 0,    b: 0   }, // Only black is currently in use
+   white:                { r: 230,   g: 230,  b: 230 },
+   blue:                 { r: 247,   g: 250,  b: 255 }
 };
+const backdrop_color =   { r: 70,    g: 70,   b: 70  }; // Background to world
 const orgColors = {
    black: {
-      fire:          { r: 255,   g: 90,   b: 81  }, 
-      camel:         { r: 232,   g: 183,  b: 155 }, 
-      clay:          { r: 232,   g: 145,  b: 95  }, 
-      sun:           { r: 255,   g: 246,  b: 86  }, 
-      leaf:          { r: 125,   g: 255,  b: 200 }, 
-      lime:          { r: 57,    g: 249,  b: 86  }, 
-      sky:           { r: 48,    g: 210,  b: 255 }, 
-      lake:          { r: 142,   g: 182,  b: 255 }, 
-      ocean:         { r: 102,   g: 136,  b: 244 }, 
-      royal:         { r: 175,   g: 132,  b: 255 }, 
-      petal:         { r: 250,   g: 122,  b: 255 }, 
-      hot:           { r: 232,   g: 2,    b: 216 }
+      fire:              { r: 255,   g: 90,   b: 81  },
+      camel:             { r: 232,   g: 183,  b: 155 },
+      clay:              { r: 232,   g: 145,  b: 95  },
+      sun:               { r: 255,   g: 246,  b: 86  },
+      leaf:              { r: 125,   g: 255,  b: 200 },
+      lime:              { r: 57,    g: 249,  b: 86  },
+      sky:               { r: 48,    g: 210,  b: 255 },
+      lake:              { r: 142,   g: 182,  b: 255 },
+      ocean:             { r: 102,   g: 136,  b: 244 },
+      royal:             { r: 175,   g: 132,  b: 255 },
+      petal:             { r: 250,   g: 122,  b: 255 },
+      hot:               { r: 232,   g: 2,    b: 216 }
    }, 
    white: {
-      fire:          { r: 240,   g: 75,   b: 66  }, 
-      camel:         { r: 232,   g: 183,  b: 155 }, 
-      clay:          { r: 232,   g: 145,  b: 95  }, 
-      burnt:         { r: 196,   g: 99,   b: 19  }, 
-      lime:          { r: 57,    g: 249,  b: 86  }, 
-      forest:        { r: 0,     g: 114,  b: 38  }, 
-      peacock:       { r: 16,    g: 143,  b: 147 }, 
-      sky:           { r: 48,    g: 210,  b: 255 }, 
-      lake:          { r: 104,   g: 157,  b: 255 }, 
-      ocean:         { r: 102,   g: 136,  b: 244 }, 
-      royal:         { r: 175,   g: 132,  b: 255 }, 
-      petal:         { r: 250,   g: 122,  b: 255 }, 
-      hot:           { r: 232,   g: 2,    b: 216 }
+      fire:              { r: 240,   g: 75,   b: 66  },
+      camel:             { r: 232,   g: 183,  b: 155 },
+      clay:              { r: 232,   g: 145,  b: 95  },
+      burnt:             { r: 196,   g: 99,   b: 19  },
+      lime:              { r: 57,    g: 249,  b: 86  },
+      forest:            { r: 0,     g: 114,  b: 38  },
+      peacock:           { r: 16,    g: 143,  b: 147 },
+      sky:               { r: 48,    g: 210,  b: 255 },
+      lake:              { r: 104,   g: 157,  b: 255 },
+      ocean:             { r: 102,   g: 136,  b: 244 },
+      royal:             { r: 175,   g: 132,  b: 255 },
+      petal:             { r: 250,   g: 122,  b: 255 },
+      hot:               { r: 232,   g: 2,    b: 216 }
    }
 };
 const skins = [ 'grid', 'circles', 'ghost' ];
@@ -98,7 +99,7 @@ const menus = {
       header: 'Pause Options',
       button: 'Back',
       options: [ 'Leave Tutorial' ],
-      values:  [ 'button'     ]
+      values:  [ 'button'         ]
    }
 };
 
@@ -107,15 +108,15 @@ const cos45 = 0.70710678118;
 const root2 = 1.41421356;
 
 // Configurations
-const _orgfrequency      = 70;    // Org update frequency
-const _renderfrequency = 40;    // Rendering update frequency
-const _range           = 50;    // Org default maximum size
-const _cellwidth       = 6;     // Width of single cell (pixels)
-const _movespeed       = 1.7;   // Crosshair movement speed
-const _spectatespeed   = 2.5;   // Crosshair movement speed in spectate mode
-const _rounddelay       = 10000; // Delay time (in milliseconds) before survival round starts
-const _dummies         = 10;    // Number of dummy orgs in title screen
-const _margin          = 25;    // Title screen margin
+const _orgfrequency     = 70;     // Org update frequency
+const _renderfrequency  = 40;     // Rendering update frequency
+const _range            = 50;     // Org default maximum size
+const _cellwidth        = 6;      // Width of single cell (pixels)
+const _movespeed        = 1.7;    // Crosshair movement speed
+const _spectatespeed    = 2.5;    // Crosshair movement speed in spectate mode
+const _rounddelay       = 10000;  // Delay time (in milliseconds) before survival round starts
+const _dummies          = 10;     // Number of dummy orgs in title screen
+const _margin           = 25;     // Title screen margin
 
 // Settings
 let Labels = true;

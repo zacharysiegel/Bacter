@@ -76,7 +76,6 @@ class Num extends React.Component {
    // React Lifecycle Hooks
    componentDidMount() {
       this.applyInstance();
-      this.props.update(this.instance, this.state.value);
    }
    
    static getDerivedStateFromProps(nextProps, prevState) {

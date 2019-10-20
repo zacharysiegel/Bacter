@@ -226,11 +226,14 @@
       Fixed spectator password denial
       Fixed spectate menu double issue indicators
 
-## a3.2.0
+## a3.1.3
       Added gameplay guide
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
+      Improved organism generation
       Improved other documentation
-      Improved build and start scripts
-      Fixed frequent reconnection of client
+      Improved user interface
+      Fixed frequent disconnect and reconnection of client
       Fixed occasional client non-connection to socket
+      Fixed unnecessary client-to-server data emissions on title screen
+      Fixed unnecessary client-to-server permission checks in join menu

@@ -54,7 +54,9 @@ class List extends React.Component {
                      }
                   }
                   if (color === info[i].value) {
-                     this.setState({ value: info[i].value });
+                     let new_value = info[i].value;
+                     this.setState({ value: new_value });
+                     this.props.update(this.instance, new_value); // update(instance, value)
                      unset = false;
                      break;
                   }
@@ -62,10 +64,10 @@ class List extends React.Component {
             }
             break;
          case 'team':
-            if (getSrc().src === 'title') { // If in title, set game value to game in games array
-               for (let i = 0; i < games.length; i++) { // Update game on-load (Normally occurs in Socket.socket.js @ Socket.socket.on('Game')); Used for team option updates
-                  if (games[i].info.host === Game.game.info.host) { // Identify game
-                     Game.game = games[i]; // Set game to updated game from server array
+            if (getSrc().src === 'title') { // If in title, set game value to game in Game.games array
+               for (let i = 0; i < Game.games.length; i++) { // Update game on-load (Normally occurs in connection.socket.js @ connection.socket.on('Game')); Used for team option updates
+                  if (Game.games[i].info.host === Game.game.info.host) { // Identify game
+                     Game.game = Game.games[i]; // Set game to updated game from server array
                      break;
                   }
                }
@@ -83,13 +85,17 @@ class List extends React.Component {
                   }
                }
                for (let i in min) { // For-in loop only used so key in min object can be accessed
-                  this.setState({ value: info[parseInt(i)].value }); // i is of type string, so parseInt must be used to make type number
+                  let new_value = info[parseInt(i)].value;
+                  this.setState({ value: new_value }); // i is of type string, so parseInt must be used to make type number
+                  this.props.update(this.instance, new_value); // update(instance, value)
                   unset = false;
                }
             } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Team auto-selection in respawn menu
                for (let i = 0; i < info.length; i++) {
                   if (org.team === teamColors[i]) {
-                     this.setState({ value: info[i].value });
+                     let new_value = info[i].value;
+                     this.setState({ value: new_value });
+                     this.props.update(this.instance, new_value); // update(instance, value)
                      unset = false;
                      break;
                   }
@@ -120,7 +126,6 @@ class List extends React.Component {
    // React Lifecycle Hooks
    componentDidMount() { // Does not run when component is merely changed, only on initial mount
       this.applyInstance();
-      this.props.update(this.instance, this.state.value); // Update internal values of this and other inputs
    }
    
    static getDerivedStateFromProps(nextProps, prevState) {
@@ -143,8 +148,8 @@ class List extends React.Component {
 
       return (
          <select
-            id={this.instance + ' input'} 
-            className='menuinput' 
+            id={this.instance + ' input'}
+            className='menuinput menulist'
             value={this.state.value} 
             style={style} 
             onChange={this.handleChange} 

@@ -8,7 +8,7 @@ div#menu {
 }
 div.header {
    width: 100%;
-   height: 32px;
+   height: 40px;
    padding: 9px 0px;
    background-color: rgb(0, 0, 0);
    color: rgb(255, 255, 255);
@@ -20,7 +20,7 @@ div.header {
 .headertext {
    margin: 0px;
    position: relative;
-   top: 5.5px;
+   top: 9px;
    color: rgb(255, 255, 255);
    text-align: center;
    font-family: 'Verdana', sans-serif;
@@ -60,8 +60,12 @@ td.menucell {
 }
 .menuinput {
    width: 100px;
-   height: 26px;
+   height: 29px;
    color: rgb(0, 0, 0);
+   font-family: serif;
+   font-size: 14px;
+   text-align: center;
+
    outline: none;
    background-color: rgb(255, 255, 255);
    border-style: solid;
@@ -69,17 +73,16 @@ td.menucell {
    border-width: 0px 0px 2px 0px;
    border-radius: 3px;
    box-sizing: border-box;
-   font-family: serif;
-   font-size: 14px;
-   text-align: center;
 }
 .menuradio {
    width: 16px;
    height: 18px;
    position: relative;
    top: 4px;
-   margin: 0px 5px;
+   margin: 0px 8px 0px 5px;
    background-color: rgb(255, 255, 255);
+   cursor: pointer;
+
    display: inline-block;
    box-sizing: border-box;
    outline: none;
@@ -101,6 +104,7 @@ td.menucell {
    position: relative;
    top: 2px;
    cursor: pointer;
+
    background-color: rgb(240, 240, 240);
    border-width: 0px 0px 2px 0px;
    border-radius: 3px;
@@ -115,6 +119,14 @@ td.menucell {
    margin: 20px 0px 0px 0px;
    padding: 0px;
    position: relative;
+   cursor: pointer;
+   color: rgb(0, 0, 0);
+   font-family: Georgia, serif;
+   font-size: 14px;
+   font-weight: bold;
+   text-align: center;
+
+   outline: none;
    display: block;
    box-sizing: border-box;
    background-color: rgb(240, 240, 240);
@@ -122,13 +134,9 @@ td.menucell {
    border-radius: 3px;
    border-color: rgb(0, 0, 0);
    border-style: solid;
-   outline: none;
+}
+.menulist {
    cursor: pointer;
-   color: rgb(0, 0, 0);
-   font-family: Georgia, serif;
-   font-size: 14px;
-   font-weight: bold;
-   text-align: center;
 }
 .menufooter {
    width: 100%;
@@ -149,4 +157,20 @@ td.menucell {
    color: rgb(255, 255, 255);
    font-family: Verdana, sans-serif;
    font-size: 15px;
+}
+
+/* Hide HTML up and down arrows in number input fields */
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Chrome & Safari */
+}
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
+/* Hide HTML down arrow in select (dropdown list) input fields */
+select {
+    -webkit-appearance: none; /* Chrome & Safari */
+    -moz-appearance: none; /* Firefox */
+}
+select::-ms-expand { /* IE10+ */
+    display: none;
 }

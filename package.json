@@ -1,6 +1,6 @@
 {
-   "name": "Bacter",
-   "version": "3.2.0",
+   "name": "bacter",
+   "version": "a3.1.3",
    "description": "2D Arena Multiplayer Game",
    "main": "server.js",
    "dependencies": {
@@ -21,7 +21,8 @@
       "@babel/preset-env": "^7.6.0",
       "@babel/preset-react": "^7.0.0",
       "eslint": "^4.19.1",
-      "eslint-plugin-react": "^7.11.1"
+      "eslint-plugin-react": "^7.11.1",
+      "mocha": "^6.2.1"
    },
    "scripts": {
       "build": "./build.sh",
@@ -32,8 +33,8 @@
       "url": "https://github.com/siegelzc/Bacter.git"
    },
    "author": "Zachary Siegel",
-   "license": "/docs/LICENSE",
-   "documentation": "/docs/",
+   "license": "https://github.com/siegelzc/Bacter/docs/LICENSE",
+   "documentation": "https://github.com/siegelzc/Bacter/docs",
    "bugs": {
       "url": "https://github.com/siegelzc/Bacter/issues"
    },

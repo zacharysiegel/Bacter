@@ -24,7 +24,8 @@ class Radios extends React.Component {
                      let selections = this.state.selections.slice(); // Create copy of state selections array
                      selections.fill(false); // Set entire array to false
                      selections[i] = true; // Set current skin to value true
-                     this.setState({ value: org.skin, selections: selections });
+                     this.setState({ value: org.skin, selections: selections }); // Should trigger a second render (second render occurs before page is loaded)
+                     this.props.update(this.instance, org.skin); // update(instance, value); org.skin corresponds to new value
                      break;
                   }
                }
@@ -42,6 +43,7 @@ class Radios extends React.Component {
                   index = 1; // Set index value of selected radio in radios
                selections[index] = true;
                this.setState({ value: this.set[index], selections: selections });
+               this.props.update(this.instance, this.set[index]); // update(instance, value); this.set[index] corresponds to new value
             }
             break;
          case '2nd ability':
@@ -56,6 +58,7 @@ class Radios extends React.Component {
                   index = 1; // Set index value of selected radio in radios
                selections[index] = true;
                this.setState({ value: this.set[index], selections: selections });
+               this.props.update(this.instance, this.set[index]); // update(instance, value); this.set[index] corresponds to new value
             }
             break;
          case '3rd ability':
@@ -70,36 +73,49 @@ class Radios extends React.Component {
                   index = 1; // Set index value of selected radio in radios
                selections[index] = true;
                this.setState({ value: this.set[index], selections: selections });
+               this.props.update(this.instance, this.set[index]); // update(instance, value); this.set[index] corresponds to new value
             }
             break;
-         case '4th ability':
+         case '4th ability': {
             this.set = fourths; // Defined in config.js
             let selections = this.state.selections.slice(); // Create copy of state's selections array
             selections[0] = true; // There is only one fourth ability, and it is always activated
             this.setState({ value: 0, selections: selections });
+            this.props.update(this.instance, 0); // update(instance, value); 0 corresponds to new value
             break;
+         }
          case 'auto assign':
             this.set = ['']; // Do not display any text adjacent to name label radio
             if (this.menuType === 'respawn') {
-               if (ability.auto)
-                  this.setState({ value: 'auto assign', selections: [true] });
-               else
-                  this.setState({ value: '', selections: [false] });
+               if (ability.auto) {
+                  this.setState({ value: 'auto assign', selections: [ true ] });
+                  this.props.update(this.instance, 'auto assign'); // update(instance, value); 'auto assign' corresponds to new value
+               } else {
+                  this.setState({ value: '', selections: [ false ] });
+                  this.props.update(this.instance, ''); // update(instance, value); '' corresponds to new value
+               }
             }
+
             break;
          case 'name labels':
             this.set = ['']; // Do not display any text adjacent to name label radio
-            if (Labels) // If name labels setting is on
-               this.setState({ value: this.instance, selections: [true] }); // Set value of Radios to instance value ('name labels') and select the radio
-            else
-               this.setState({ value: '', selections: [false] }); // Set value of Radios to '' (no value) and deselect the radio
+            if (Labels) {// If name labels setting is on
+               this.setState({ value: this.instance, selections: [ true ] }); // Set value of Radios to instance value ('name labels') and select the radio
+               this.props.update(this.instance, this.instance); // update(instance, value); this.instance corresponds to new value
+            } else {
+               this.setState({ value: '', selections: [ false ] }); // Set value of Radios to '' (no value) and deselect the radio
+               this.props.update(this.instance, ''); // update(instance, value); '' corresponds to new value
+            }
             break;
          case 'messages':
             this.set = ['']; // Do not display any text adjacent to name label radio
-            if (Messages) // If messages setting is on
-               this.setState({ value: this.instance, selections: [true] }); // Set value of Radios to instance value ('messages') and select the radio
-            else
-               this.setState({ value: '', selections: [false] }); // Set value of Radios to '' (no value) and deselect the radio
+            if (Messages) {// If messages setting is on
+               this.setState({ value: this.instance, selections: [ true ] }); // Set value of Radios to instance value ('messages') and select the radio
+               this.props.update(this.instance, this.instance); // update(instance, value); this.instance corresponds to new value
+            } else {
+               this.setState({ value: '', selections: [ false ] }); // Set value of Radios to '' (no value) and deselect the radio
+               this.props.update(this.instance, ''); // update(instance, value); '' corresponds to new value
+            }
             break;
       }
    }
@@ -107,6 +123,7 @@ class Radios extends React.Component {
    // Event Handlers
    handleClick(index) {
       if (this.instance === '4th ability') return; // The user is not allowed to de-select the Spore ability
+
       let selections = this.state.selections.slice(); // Copy state selections array into selections
       let newValue = !selections[index]; // Flip selected radio value
       selections.fill(false); // Set all selections to false
@@ -123,7 +140,6 @@ class Radios extends React.Component {
    // React Lifecycle Hooks
    componentDidMount() { // Does not run when component is merely changed
       this.applyInstance();
-      this.props.update(this.instance, this.state.value);
    }
    
    static getDerivedStateFromProps(nextProps, prevState) {
@@ -132,10 +148,6 @@ class Radios extends React.Component {
       }
       return null;
    }
-   
-   // componentWillReceiveProps(next) { // Deprecated by React
-   //    this.setState({ value: next.value });
-   // }
    
    render() {
       let radios = [];

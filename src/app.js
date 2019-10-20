@@ -16,7 +16,7 @@
  * io.engine.clients returns an array of the socket.id strings of all connected clients
  */
 
-// Minimist -- Parse command line arguments into array
+// Minimist -- Parse command line arguments into array 'argv'
 const argv = require('minimist')(process.argv.slice(2)); // 0th argv is path/to/node, 1st argv is .js file
 
 // Express
@@ -28,10 +28,14 @@ let server = app.listen(port, error => {
       console.error(error);
    } else {
       console.log('Listening on port ' + port + '\n');
-      run_app();
+      start();
    }
 });
 app.use(express.static('./public')); // Set path to static data
+
+// Socket.io Setup
+const socketio = require('socket.io');
+let io = socketio(server);
 
 // Import Configurations
 let config;
@@ -49,13 +53,16 @@ const Games = require('./Games.js');
 const SocketListener = require('./SocketListener.js');
 
 /**
- * Run the processes of the server
- *    run_app() is called after Express succeeds in listening to the specified port
+ * Start the server processes
+ *    start() is called after Express succeeds in listening to the specified port
+ * @return {void}
  */
-function run_app() {
-   let games = new Games();
-   let listener = new SocketListener(server, config);
+function start() {
+   let games = new Games(config);
 
-   games.setGamesInterval(1000, listener.io); // io is a reference to the io object, so the parameter in setGamesInterval will refer to the same object
-   listener.listen(games);
+   io.on('connection', socket => { // Listen for clients connecting to socket.io '/' namespace
+      let listener = new SocketListener(socket, io, config);
+      listener.listen(games); // Initialize all socket.io emit listeners
+      games.setGamesInterval(1000, io); // io is a reference to the io object, so the parameter in setGamesInterval will refer to the same object
+   });
 }

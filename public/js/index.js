@@ -1,16 +1,15 @@
-var games = [];
-var state;
-var mouseDown = false;
+let mouseDown = false;
 
 function setup() { // p5 function runs on window.onload (I think)
-   state = 'setup';
+   Game.state = 'setup';
    noCanvas(); // Canvas settings
    rectMode(CENTER); // "
    ellipseMode(RADIUS); // "
    angleMode(DEGREES); // "
    textAlign(LEFT); // "
 
-   Socket.connect();
+   connection = new Connection();
+
    let page = document.body.parentNode; // Edit global variable mouseDown to determine if mouse is down or up anywhere on the page
    let md = () => mouseDown = true; // "
    page.removeEventListener('mousedown', md); // "
@@ -18,9 +17,10 @@ function setup() { // p5 function runs on window.onload (I think)
    let mu = () => mouseDown = false; // "
    page.removeEventListener('mouseup', mu); // "
    page.addEventListener('mouseup', mu); // "
-   var socketInterval = setInterval(() => { // Create instance of Ability, but socket object must exist first, so loop until socket exists
-      ability = new Ability({ player: Socket.socket.id }); // Create new instance of Ability
-      if (Socket.socket.id) { // If Socket.socket.id has loaded
+   
+   let socketInterval = setInterval(() => { // Create instance of Ability, but socket object must exist first, so loop until socket exists
+      ability = new Ability({ player: connection.socket.id }); // Create new instance of Ability
+      if (connection.socket.id) { // If connection.socket.id has loaded
          clearInterval(socketInterval); // End the loop
       }
    }, 50);
@@ -28,21 +28,21 @@ function setup() { // p5 function runs on window.onload (I think)
       x: window.innerWidth / 2,
       y: window.innerHeight / 2
    };
-   renderTitle();
+   Title.render();
    title = new Title();
 }
 
 /**
  * Initialize game
- * @param  object game_ game object holding all game-wide info
- * @param  object data: {
- *                         spectate: boolean true: initialize as spectator, false: initialize as player
- *                      }
+ * @param  {Object} game game object holding all game-wide info
+ * @param  {Object} data: {
+ *                           spectate: boolean true: initialize as spectator, false: initialize as player
+ *                        }
  * @return void
  */
-function initialize(game_, data) {
+function initialize(game, data) {
    ReactDOM.render(<CanvasCont />, Z.eid('cont'));
-   Game.game = game_;
+   Game.game = game;
    if (data.spectate !== true) { // Field can be left undefined
       spawn({ color: data.color, skin: data.skin, team: data.team });
    } else if (data.spectate === true) {
@@ -57,10 +57,10 @@ function initialize(game_, data) {
 function keyPressed() {
    switch (keyCode) {
       case Controls.ability1.code: // X by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.extend.activated == true && ability.extend.can == true) {
+         if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
+            if (ability.extend.activated === true && ability.extend.can) {
                extend(org.player); // Extend self
-            } else if (ability.compress.activated == true && ability.compress.can == true) {
+            } else if (ability.compress.activated && ability.compress.can) {
                shoot(0, 1);
                // for (let i = 0; i < Game.game.info.count; i++) {
                //    if (org.target == Game.game.players[i]) { // Find targeted org
@@ -68,7 +68,7 @@ function keyPressed() {
                //       break;
                //    }
                // }
-            } else if (ability.tag.activated == true && ability.tag.can == true) {
+            } else if (ability.tag.activated === true && ability.tag.can === true) {
                shoot(0, 1);
             }
             // if (ability.speed.activated == true) { // Speed/Slow; OLD
@@ -79,10 +79,10 @@ function keyPressed() {
          }
          break;
       case Controls.ability2.code: // C by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
-            if (ability.immortality.activated == true && ability.immortality.can == true) {
+         if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
+            if (ability.immortality.activated && ability.immortality.can) {
                immortality(org.player); // Immortalize self
-            } else if (ability.freeze.activated == true && ability.freeze.can == true) {
+            } else if (ability.freeze.activated && ability.freeze.can) {
                shoot(1, 1);
                // for (let i = 0; i < Game.game.info.count; i++) {
                //    if (org.target == Game.game.players[i]) { // Find targeted org
@@ -94,7 +94,7 @@ function keyPressed() {
          }
          break;
       case Controls.ability3.code: // V by default
-         if ((state == 'game' || state == 'tutorial') && org.alive == true) {
+         if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
             // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
             //    stimulate(org.player); // Stimulate self
             // } else if (ability.poison.activated == true && ability.poison.can == true) {
@@ -106,26 +106,26 @@ function keyPressed() {
             //    //    }
             //    // }
             // }
-            if (ability.neutralize.activated == true && ability.neutralize.can == true) {
+            if (ability.neutralize.activated && ability.neutralize.can) {
                neutralize(org.player);
-            } else if (ability.toxin.activated == true && ability.toxin.can == true) {
+            } else if (ability.toxin.activated && ability.toxin.can) {
                toxin(org.player);
             }
          }
          break;
       case Controls.ability4.code: // SPACE by default
-         if ((state === 'game' || state === 'tutorial') && org.alive) {
-            if (ability.spore.value == false && ability.secrete.value == false) {
+         if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
+            if (! ability.spore.value && ! ability.secrete.value) {
                spore();
-            } else if (ability.spore.value == true && ability.secrete.value == false) {
+            } else if (ability.spore.value && ! ability.secrete.value) {
                secrete();
             }
          }
          break;
       case Controls.respawn.code: // R by default
-         if (state == 'spectate' && org.alive == false && org.spawn == true) {
+         if (Game.state === 'spectate' && ! org.alive && org.spawn) {
             if (Game.game.players.length < Game.game.info.cap) {
-               Socket.socket.emit('Spectator Left', Game.game.info);
+               // connection.socket.binary(false).emit('Spectator Left', Game.game.info);
                Menu.renderMenu('respawn', Game.game); // Load respawn menu
             } else {
                alert('Game is at maximum player capacity');
@@ -134,15 +134,15 @@ function keyPressed() {
          }
          break;
       case Controls.pause.code: { // ESC by default
-         switch (state) { // Used as the back key for menus (variable pause key may be used as well)
+         switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
             case 'createMenu':
             case 'browser':
-               renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
+               Title.render(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
                break;
             case 'joinMenu':
-               if (Game.game.info.host === Socket.socket.id) { // If player is host (If player is joining directly after creating the game)
-                  Socket.socket.emit('Game Ended', Game.game);
-                  renderTitle();
+               if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
+                  // connection.socket.binary(false).emit('game ended', Game.game);
+                  Title.render();
                } else {
                   Browser.renderBrowser();
                }
@@ -161,30 +161,31 @@ function keyPressed() {
                break;
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
-               state = 'spectate';
+               Game.state = 'spectate';
                ReactDOM.render(<CanvasCont />, Z.eid('cont'));
                break;
-            case 'pauseGameMenu':
+            case 'pauseGameMenu': {
                let skip = false;
                for (let i = 0; i < Game.game.players.length; i++) {
-                  if (Game.game.players[i] === Socket.socket.id) { // If still is a player
-                     state = 'game';
+                  if (Game.game.players[i] === connection.socket.id) { // If still is a player
+                     Game.state = 'game';
                      skip = true;
                      break;
                   }
                }
                if (!skip) {
                   for (let i = 0; i < Game.game.spectators.length; i++) {
-                     if (Game.game.spectators[i] === Socket.socket.id) {
-                        state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                     if (Game.game.spectators[i] === connection.socket.id) {
+                        Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                         break;
                      }
                   }
                }
-               ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+               ReactDOM.render(<CanvasCont/>, Z.eid('cont'));
                break;
+            }
             case 'pauseTutorialMenu':
-               state = 'tutorial';
+               Game.state = 'tutorial';
                ReactDOM.render(<CanvasCont />, Z.eid('cont'));
                break;
          }
@@ -193,16 +194,16 @@ function keyPressed() {
    }
    // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
    switch (keyCode) {
-      case 27 !== Controls.pause.code ? 27 : '': // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
-         switch (state) { // Used as the back key for menus (variable pause key may be used as well)
+      case 27 !== Controls.pause.code ? 27 : '': { // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
+         switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
             case 'createMenu':
             case 'browser':
-               renderTitle(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
+               Title.render(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
                break;
             case 'joinMenu':
-               if (Game.game.info.host === Socket.socket.id) { // If player is host (If player is joining directly after creating the game)
-                  Socket.socket.emit('Game Ended', Game.game);
-                  renderTitle();
+               if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
+                  // connection.socket.binary(false).emit('game ended', Game.game);
+                  Title.render();
                } else {
                   Browser.renderBrowser();
                }
@@ -212,32 +213,34 @@ function keyPressed() {
                break;
             case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
             case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
-               state = 'spectate';
-               ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+               Game.state = 'spectate';
+               ReactDOM.render(<CanvasCont/>, Z.eid('cont'));
                break;
-            case 'pauseGameMenu':
+            case 'pauseGameMenu': {
                let skip = false;
                for (let i = 0; i < Game.game.players.length; i++) {
-                  if (Game.game.players[i] === Socket.socket.id) { // If still is a player
-                     state = 'game';
+                  if (Game.game.players[i] === connection.socket.id) { // If still is a player
+                     Game.state = 'game';
                      skip = true;
                      break;
                   }
                }
                if (!skip) {
                   for (let i = 0; i < Game.game.spectators.length; i++) {
-                     if (Game.game.spectators[i] === Socket.socket.id) {
-                        state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                     if (Game.game.spectators[i] === connection.socket.id) {
+                        Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                         break;
                      }
                   }
                }
-               ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+               ReactDOM.render(<CanvasCont/>, Z.eid('cont'));
                break;
+            }
             case 'pauseTutorialMenu':
-               state = 'tutorial';
-               ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+               Game.state = 'tutorial';
+               ReactDOM.render(<CanvasCont/>, Z.eid('cont'));
                break;
+            }
          }
          break;
    }
@@ -250,7 +253,7 @@ function keyPressed() {
  */
 // function mouseClicked() {
 //    if (mouseButton === LEFT) {
-//       if (state == 'game') { // DO NOT DELETE (Click detection is very long)
+//       if (Game.state == 'game') { // DO NOT DELETE
 //          { // Targeting
 //             org.target = undefined; // Clear target if click not on opponent org
 //             for (let i = 0; i < Game.game.info.count; i++) {
@@ -285,21 +288,21 @@ function windowResized() {
       y: window.innerHeight / 2
    };
    let src = getSrc();
-   if (state === 'title' || state === 'browser' || state === 'tutorial') {
+   if (Game.state === 'title' || Game.state === 'browser' || Game.state === 'tutorial') {
       src.resize(0, 0, window.innerWidth, window.innerHeight);
-   } else if (state === 'game' || state === 'spectate') {
-      org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
-      org.off.y = org.pos.y - center.y;
+   } else if (Game.state === 'game' || Game.state === 'spectate') {
+      org.off.x = org.cursor.x - center.x; // Reposition org (camera) correctly
+      org.off.y = org.cursor.y - center.y;
       ReactDOM.render(<CanvasCont />, Z.eid('cont'));
-   } else if (state.indexOf('Menu') !== -1) {
-      let type = state.slice(0, -4); // To make state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from state to get menu type
+   } else if (Game.state.indexOf('Menu') !== -1) {
+      let type = Game.state.slice(0, -4); // To make Game.state string, 'Menu' is concatenated to the end of menu type, remove 'Menu' from Game.state to get menu type
       let data = (type === 'join' || type === 'spectate' || type === 'respawn') ? Game.game : null; // Only join, spectate, and respawn menus use game variable as data
       Menu.renderMenu(type, data); // <div id='cont'><Menu type={} data={} /></div>
-      if (src.src === 'title') { // ^^ Cut out Menu at end of state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
+      if (src.src === 'title') { // ^^ Cut out Menu at end of Game.state string for menu type; Send game as data if src is 'game'; Send tutorial as data is src is 'tutorial'
          src.resize(0, 0, window.innerWidth, window.innerHeight);
       } else if (src.src === 'game') { // If menu during game (player or spectator)
-         org.off.x = org.pos.x - center.x; // Reposition org (camera) correctly
-         org.off.y = org.pos.y - center.y;
+         org.off.x = org.cursor.x - center.x; // Reposition org (camera) correctly
+         org.off.y = org.cursor.y - center.y;
       } else if (src.src === 'tutorial') {
          src.resize(0, 0, window.innerWidth, window.innerHeight);
       } // Resize the content of the canvas in the background of menus

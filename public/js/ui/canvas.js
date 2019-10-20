@@ -33,7 +33,7 @@ class CanvasCont extends React.Component {
       return { // Resize when re-rendered
          width: nextWidth, // Width defaults to window width but can be set by props.width
          height: nextHeight // Height defaults to window height but can be set by props.height
-      }
+      };
    }
    
    componentDidMount() { // Runs only after initial mount
@@ -64,4 +64,4 @@ class CanvasCont extends React.Component {
          <div id='canvascont' className='canvas' style={style}></div> // Container for p5's (createCanvas(), parent())
       );
    }
-};
+}

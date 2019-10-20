@@ -17,7 +17,7 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
    
    // Event Handlers
    handleClick(e) { // Submit functions based upon menu type
-      this.props.submit(this.menuType);
+      this.props.submit(this.menuType); // Defined in Menu
    }
    
    handleMouseOver(e) {
@@ -75,7 +75,7 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
             className='menusubmit' 
             type='button' 
             style={style} 
-            onClick={this.handleClick} 
+            onClick={this.handleClick}
             onMouseOver={this.handleMouseOver} 
             onMouseOut={this.handleMouseOut} 
             onMouseDown={this.handleMouseDown} 

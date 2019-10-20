@@ -40,7 +40,7 @@ class Z {
     */
    static setCharAt(string, index, c) {
       if(index > string.length-1) {
-         console.error('Invalid Argument: setCharAt(): index out of bounds')
+         console.error('Invalid Argument: setCharAt(): index out of bounds');
          return string;
       }
       return string.substr(0, index) + c + string.substr(index + 1);

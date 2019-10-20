@@ -19,14 +19,18 @@ class Menu extends React.Component {
    }
    
    static renderMenu(type, data) {
-      if (state.indexOf('Menu') !== -1 && type !== state.slice(0, -4)) { // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
+      if (Game.state.indexOf('Menu') !== -1 && type !== Game.state.slice(0, -4)) { // If current state is a menu and menu to be rendered is a different menu, unmount menu and re-render
          ReactDOM.unmountComponentAtNode(Z.eid('cont')); // Must first unmount component so Menu() will construct new instance rather than re-rendering (easier than re-constructing in componentWillReceiveProps() when rendering a menu from another menu)
       }
       ReactDOM.render(<Menu type={type} data={data} />, Z.eid('cont')); // Render instance of Menu component class in container with id 'cont'
-      state = type + 'Menu'; // Game state - not component state
+      Game.state = type + 'Menu'; // Game state - not component state
    }
 
-   instantiate() { // Set initial instances of menus; called only inside constructor (do not use setState(), change state literally)
+   /**
+    * Set initial instances of menus; called only inside constructor -> (do not use setState(), change state literally)
+    * @return {void}
+    */
+   instantiate() {
       let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set instances to all possible options to start
       switch (this.type) {
          case 'create':
@@ -34,7 +38,7 @@ class Menu extends React.Component {
             insts.splice(insts.indexOf('team count'), 1); // Remove team count (ffa is selected by default)
             break;
          case 'join':
-            if (!this.data.info.protected || this.data.info.host === Socket.socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+            if (!this.data.info.secured || this.data.info.host === connection.socket.id) // If the game is not password-secured; If player is host (If player just created the game and is now joining his own game)
                insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
             switch (this.data.info.mode) { // Data is game object; instances of join menu are determined by game mode
                case 'ffa':
@@ -63,7 +67,7 @@ class Menu extends React.Component {
             }
             break;
          case 'spectate':
-            if (!this.data.info.protected || this.data.info.host === Socket.socket.id) // If the game is not password-protected; If player is host (If player just created the game and is now joining his own game)
+            if (!this.data.info.secured || this.data.info.host === connection.socket.id) // If the game is not password-secured; If player is host (If player just created the game and is now joining his own game)
                insts.splice(insts.indexOf('password'), 1); // Remove the password input (there is no password necessary) (may be confusing if not removed)
             break;
          case 'respawn':
@@ -107,8 +111,15 @@ class Menu extends React.Component {
       }
       this.state.instances = insts; // Only set state value literally in constructor, else use setState()
    }
-   update(instance, valuE) { // The purpose of update is to update the state of the menu depending on input values
-      let value = valuE;
+
+   /**
+    * Update the state of the menu depending on input values
+    *    Changes the state of Menu when sub-components' states change
+    * @param {String} instance The instance of the sub-component being modified
+    * @param {String} value The new value to be set to the sub-component
+    * @return {void}
+    */
+   update(instance, value) {
       let insts = menus[this.type].options.map(op => op.toLowerCase()); // Set local instances to lowercase options
       let vals = this.state.values;
       let index = menus[this.type].options.indexOf(Z.capitalize(instance));
@@ -175,8 +186,7 @@ class Menu extends React.Component {
             this.setState({ instances: insts });
             break;
          case 'auto assign':
-            if (value) teamInput.disabled = true; // If auto assign is selected, disable team selection input
-            else teamInput.disabled = false;
+            teamInput.disabled = !!value;
             break;
       }
       for (let i = 0; i < vals.length; i++) {
@@ -185,6 +195,12 @@ class Menu extends React.Component {
       }
       this.setState({ values: vals }); // Update values in state
    }
+
+   /**
+    * Display issues upon submission
+    * @param {Array} issues An array containing error messages for each instance's issues
+    * @return {void}
+    */
    issue(issues) { // issues: Array[ { instance: 'message' } ]
       let count = issues.length;
       let stateIssues = []; // Issues array to be stored in state: Array1[ Array2[ 'message0', ..., 'messageN' ] ] (index of Array1 refers to instance as in options array) (different format than incoming issues)
@@ -194,6 +210,7 @@ class Menu extends React.Component {
          for (let j = 0; j < count; j++) {
             if (Z.getKeys(issues[j])[0] === instance) { // If instance of issue is instance from options array
                stateIssues[i].push(issues[j][instance]); // Add issue to messages array within instance index of state issues array
+
                issues.splice(j, 1); // Remove issue from inputted issues array so it is not unnecessarily looped through
                count--; // count must be reduced since length of issues is reduced
                j--; // j must be reduced since the entire array is shifted back after splicing, so j need not be incremented (always do this after splicing iterated array)

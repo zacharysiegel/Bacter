@@ -16,6 +16,7 @@ function submit(menuType) {
    let teamInput = Z.eid('team input');
    let gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
    let password = pInput ? pInput.value : null;
+   let secured = !!password; // If password is non-null, secured is true
    let type = typeInput ? typeInput.value.toLowerCase() : null;
    let width = widthInput ? parseFloat(widthInput.value) : null;
    let height = heightInput ? parseFloat(heightInput.value) : null;
@@ -36,11 +37,12 @@ function submit(menuType) {
    skin = skin || 'none'; // If no skin is selected, set value of skin to 'none'
    let team = teamInput ? teamInput.value.toLowerCase() : null;
    let auto = this.state.values[menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   auto = auto ? true : false; // Set auto assign to Boolean value
+   auto = !!auto; // Set auto assign to Boolean value
    let label = this.state.values[menus[this.type].options.indexOf('Name Labels')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   label = label === 'name labels' ? true : false; // Set label to Boolean value
+   label = label === 'name labels'; // Set label to Boolean value
    let message = this.state.values[menus[this.type].options.indexOf('Messages')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   message = message === 'messages' ? true : false; // Set messages to Boolean value
+   message = message === 'messages'; // Set messages to Boolean value
+
    switch (menuType) {
       case 'create':
          { // Game Title
@@ -50,8 +52,8 @@ function submit(menuType) {
                   issues.push({ ['game title']: 'Title cannot be left blank' });
                   // alert('Title cannot be left blank');
                } else {
-                  for (let i = 0; i < games.length; i++) {
-                     if (gametitle === games[i].info.title) { // Find matching title to another game
+                  for (let i = 0; i < Game.games.length; i++) {
+                     if (gametitle === Game.games[i].info.title) { // Find matching title to another game
                         ok = false;
                         issues.push({ ['game title']: 'Title matches that of another game' });
                         // alert('Title matches that of another game');
@@ -85,7 +87,7 @@ function submit(menuType) {
                   issues.push({ ['world height']: 'Width and height must be whole numbers' });
                   // alert('Width and height must be whole numbers');
                }
-               if (width != height) {
+               if (width !== height) {
                   ok = false;
                   issues.push({ ['world width']: 'Width and height must be equivalent' });
                   issues.push({ ['world height']: 'Width and height must be equivalent' });
@@ -167,9 +169,9 @@ function submit(menuType) {
          }
          if (ok) {
             let color = 'black'; // Z.eid('World color input').value.toLowerCase(); // Only black world is enabled
-            Game.createGame({
+
+            Game.game = new Game({
                title: gametitle,
-               password: password,
                type: type,
                width: width,
                height: height,
@@ -178,11 +180,15 @@ function submit(menuType) {
                show: show,
                mode: mode,
                teamCount: teamCount,
-               min: minimum
+               min: minimum,
+               secured: !!password, // convert existance of password to Boolean
             });
+            connection.emit_create_game();
+            connection.emit_create_password(password);
+
             Menu.renderMenu('join', Game.game); // Pass in game data for certain menu information
          } else {
-            this.issue(issues);
+            this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
          }
          break;
       case 'join':
@@ -193,7 +199,7 @@ function submit(menuType) {
                // alert('Screen name cannot be left empty');
             }
             for (let i = 0; i < Game.game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
-               if (name == Game.game.board.list[i].name) { // Name cannot match another player's name
+               if (name === Game.game.board.list[i].name) { // Name cannot match another player's name
                   ok = false;
                   issues.push({ ['screen name']: 'Name matches that of another player' });
                   // alert('Name matches that of another player');
@@ -231,7 +237,7 @@ function submit(menuType) {
                }
             }
          } { // Team
-            if (Game.game.info.mode == 'skm' || Game.game.info.mode == 'ctf') { // If is a team game
+            if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                if (!auto) {
                   for (let i = 0; i < Game.game.teams.length; i++) {
                      if (i === teamColors.indexOf(team)) { // If i is selected team
@@ -261,200 +267,182 @@ function submit(menuType) {
                // alert('Game is at maximum player capacity');
             }
          } { // Game Closed
-            let closed = true;
-            if (Game.game.info.host === Socket.socket.id) {
-               closed = false;
-            }
-            if (closed) {
+            const closed = ! Game.exists(Game.game.info.host);
+            if (closed) { // If game does not exist, it has been closed; return user to the title screen
                ok = false;
                // issues.push({ ['']: 'The game has closed' }); // Empty quotes for game closed instance because it is not specific to a single input
                alert('The game has closed');
-               renderTitle();
+               Title.render();
+               break;
             }
          } { // Password
-            Socket.socket.emit('Check Permission', { title: Game.game.info.title });
-            Socket.socket.on('Permission Denied', deniedJoin.bind(this)); // Use __.bind(this) so this.issues() can be called from within
-            Socket.socket.on('Permission Granted', grantedJoin.bind(this));
-            setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-            }, 10000);
-
-            function deniedJoin() {
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-               ok = false;
-               if (password === '' || typeof password !== 'string') {
+            const deniedJoin = () => {
+               if (!password) {
                   issues.push({ ['password']: 'A password is required for this game' });
                   // alert('A password is required for this game');
                } else {
                   issues.push({ ['password']: 'Password is invalid' });
                   // alert('Password is invalid');
                }
-               this.issue(issues);
-            }
+               this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
+            };
 
-            function grantedJoin() { // Function is defined locally so it cannot be called from the global scope (slightly better security)
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-               if (ok) { // Inside grantedJoin() so can only be triggered once 'Permission Granted' has been received
-                  // Leaderboard
-                  let already = false;
-                  for (let i = 0; i < Game.game.board.list.length; i++) {
-                     if (Game.game.board.list[i].player == Socket.socket.id) {
-                        already = true;
+            const grantedJoin = () => { // Function is defined locally so it cannot be called from the global scope (slightly better security)
+               // Leaderboard
+               let already_in_game = false;
+               for (let i = 0; i < Game.game.board.list.length; i++) { // Search for player id in game
+                  if (Game.game.board.list[i].player === connection.socket.id) {
+                     already_in_game = true;
+                     break;
+                  }
+               }
+               if (!already_in_game) {
+                  Game.game.board.list.push({
+                     player: connection.socket.id,
+                     name: name,
+                     kills: 0,
+                     deaths: 0,
+                     score: 0,
+                     wins: 0
+                  });
+               }
+               Board.order(Game.game.board.list);
+               connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+               // Abilities
+               if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
+                  ability.tag.activated = false;
+                  ability.tag.can = false;
+                  if (first === 'extend') {
+                     ability.extend.activated = true;
+                     ability.extend.can = true;
+                     ability.compress.activated = false;
+                     ability.compress.can = false;
+                  } else if (first === 'compress') {
+                     ability.compress.activated = true;
+                     ability.compress.can = true;
+                     ability.extend.activated = false;
+                     ability.extend.can = false;
+                  }
+                  if (second === 'immortality') {
+                     ability.immortality.activated = true;
+                     ability.immortality.can = true;
+                     ability.freeze.activated = false;
+                     ability.freeze.can = false;
+                  } else if (second === 'freeze') {
+                     ability.freeze.activated = true;
+                     ability.freeze.can = true;
+                     ability.immortality.activated = false;
+                     ability.immortality.can = false;
+                  }
+                  if (third === 'neutralize') {
+                     ability.neutralize.activated = true;
+                     ability.neutralize.can = true;
+                     ability.toxin.activated = false;
+                     ability.toxin.can = false;
+                  } else if (third === 'toxin') {
+                     ability.toxin.activated = true;
+                     ability.toxin.can = true;
+                     ability.neutralize.activated = false;
+                     ability.neutralize.can = false;
+                  }
+                  ability.spore.activated = true;
+                  ability.spore.can = true;
+                  ability.secrete.activated = true;
+                  ability.secrete.can = false;
+                  for (let i = 0; i < ability.shoot.value.length; i++) {
+                     ability.shoot.can[i] = true;
+                     ability.shoot.value[i] = false;
+                  }
+               } else if (Game.game.info.mode === 'inf') {
+                  ability.tag.activated = true;
+                  ability.tag.can = true;
+                  ability.extend.activated = false;
+                  ability.extend.can = false;
+                  ability.compress.activated = false;
+                  ability.compress.can = false;
+                  ability.immortality.activated = false;
+                  ability.immortality.can = false;
+                  ability.freeze.activated = false;
+                  ability.freeze.can = false;
+                  ability.neutralize.activated = false;
+                  ability.neutralize.can = false;
+                  ability.toxin.activated = false;
+                  ability.toxin.can = false;
+                  ability.spore.activated = false;
+                  ability.spore.can = false;
+                  ability.secrete.activated = false;
+                  ability.secrete.can = false;
+                  for (let i = 0; i < ability.shoot.value.length; i++) {
+                     if (i === ability.tag.i) {
+                        ability.shoot.can[i] = true;
+                     } else {
+                        ability.shoot.can[i] = false;
+                     }
+                     ability.shoot.value[i] = false;
+                  }
+               }
+               // Team
+               if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
+                  ability.auto = auto; // auto variable is Boolean
+                  if (auto) { // If auto assign is selected
+                     let indices = [];
+                     let minimum = Infinity;
+                     for (let i = 0; i < Game.game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within Game.game.teams array into indices array
+                        if (Game.game.teams[i].length < minimum) { // If length is less than minimum
+                           minimum = Game.game.teams[i].length; // Set length as new minimum
+                           indices = [i]; // Clear indices and push i
+                        } else if (Game.game.teams[i].length === minimum) {
+                           indices.push(i);
+                        }
+                     }
+                     team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
+                  }
+                  for (let i = 0; i < teamColors.length; i++) {
+                     if (team === teamColors[i]) {
+                        Game.game.teams[i].push(connection.socket.id); // Add player to selected team
+                        // connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
                         break;
                      }
                   }
-                  if (!already) {
-                     Game.game.board.list.push({
-                        player: Socket.socket.id,
-                        name: name,
-                        kills: 0,
-                        deaths: 0,
-                        score: 0,
-                        wins: 0
-                     });
-                  }
-                  orderBoard(Game.game.board.list);
-                  Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
-                  // Abilities
-                  if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
-                     ability.tag.activated = false;
-                     ability.tag.can = false;
-                     if (first === 'extend') {
-                        ability.extend.activated = true;
-                        ability.extend.can = true;
-                        ability.compress.activated = false;
-                        ability.compress.can = false;
-                     } else if (first === 'compress') {
-                        ability.compress.activated = true;
-                        ability.compress.can = true;
-                        ability.extend.activated = false;
-                        ability.extend.can = false;
-                     }
-                     if (second === 'immortality') {
-                        ability.immortality.activated = true;
-                        ability.immortality.can = true;
-                        ability.freeze.activated = false;
-                        ability.freeze.can = false;
-                     } else if (second === 'freeze') {
-                        ability.freeze.activated = true;
-                        ability.freeze.can = true;
-                        ability.immortality.activated = false;
-                        ability.immortality.can = false;
-                     }
-                     if (third === 'neutralize') {
-                        ability.neutralize.activated = true;
-                        ability.neutralize.can = true;
-                        ability.toxin.activated = false;
-                        ability.toxin.can = false;
-                     } else if (third === 'toxin') {
-                        ability.toxin.activated = true;
-                        ability.toxin.can = true;
-                        ability.neutralize.activated = false;
-                        ability.neutralize.can = false;
-                     }
-                     ability.spore.activated = true;
-                     ability.spore.can = true;
-                     ability.secrete.activated = true;
-                     ability.secrete.can = false;
-                     for (let i = 0; i < ability.shoot.value.length; i++) {
-                        ability.shoot.can[i] = true;
-                        ability.shoot.value[i] = false;
-                     }
-                  } else if (Game.game.info.mode === 'inf') {
-                     ability.tag.activated = true;
-                     ability.tag.can = true;
-                     ability.extend.activated = false;
-                     ability.extend.can = false;
-                     ability.compress.activated = false;
-                     ability.compress.can = false;
-                     ability.immortality.activated = false;
-                     ability.immortality.can = false;
-                     ability.freeze.activated = false;
-                     ability.freeze.can = false;
-                     ability.neutralize.activated = false;
-                     ability.neutralize.can = false;
-                     ability.toxin.activated = false;
-                     ability.toxin.can = false;
-                     ability.spore.activated = false;
-                     ability.spore.can = false;
-                     ability.secrete.activated = false;
-                     ability.secrete.can = false;
-                     for (let i = 0; i < ability.shoot.value.length; i++) {
-                        if (i == ability.tag.i) {
-                           ability.shoot.can[i] = true;
-                        } else {
-                           ability.shoot.can[i] = false;
-                        }
-                        ability.shoot.value[i] = false;
-                     }
-                  }
-                  // Team
-                  if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
-                     ability.auto = auto; // auto variable is Boolean
-                     if (auto) { // If auto assign is selected
-                        let indices = [];
-                        let minimum = Infinity;
-                        for (let i = 0; i < Game.game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within Game.game.teams array into indices array
-                           if (Game.game.teams[i].length < minimum) { // If length is less than minimum
-                              minimum = Game.game.teams[i].length; // Set length as new minimum
-                              indices = [i]; // Clear indices and push i
-                           } else if (Game.game.teams[i].length == minimum) {
-                              indices.push(i);
-                           }
-                        }
-                        team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
-                     }
-                     for (let i = 0; i < teamColors.length; i++) {
-                        if (team === teamColors[i]) {
-                           Game.game.teams[i].push(Socket.socket.id); // Add player to selected team
-                           Socket.socket.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
-                           break;
-                        }
-                     }
-                  }
-                  // Color
-                  var color;
-                  if (Game.game.info.mode === 'inf') { // If inf mode
-                     color = teamColorDef.green; // All players healthy by default
-                  } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
-                     color = Z.eid('color input').value.toLowerCase();
-                  } else {
-                     color = teamColorDef[team]; // Color must be after Team
-                  }
-                  // Initialize
-                  clearInterval(title.interval);
-                  if (Game.game.rounds.util) {
-                     if (Game.game.rounds.waiting) {
-                        initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
-                     } else {
-                        initialize(Game.game, { spectate: true, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
-                     }
-                  } else {
+               }
+               // Color
+               let color;
+               if (Game.game.info.mode === 'inf') { // If inf mode
+                  color = teamColorDef.green; // All players healthy by default
+               } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
+                  color = Z.eid('color input').value.toLowerCase();
+               } else {
+                  color = teamColorDef[team]; // Color must be after Team
+               }
+               // Initialize
+               clearInterval(title.interval);
+               if (Game.game.rounds.util) {
+                  if (Game.game.rounds.waiting) {
                      initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+                  } else {
+                     initialize(Game.game, { spectate: true, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
                   }
                } else {
-                  this.issue(issues);
+                  initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
                }
+            };
+
+            if (ok) {
+               connection.emit_check_permission(grantedJoin, deniedJoin);
+            } else {
+               this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
             }
          }
          break;
       case 'spectate':
          { // Game Closed
-            let closed = true;
-            for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === Game.game.info.host) {
-                  closed = false;
-                  break;
-               }
-            }
-            if (closed) {
+            const closed = ! Game.exists(Game.game.info.host); // If game doesn't exist, it has been closed
+            if (closed) { // If closed, return user to the title screen
                ok = false;
                // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
-               renderTitle();
+               Title.render();
+               break;
             }
          } { // Screen Name
             if (!name) {
@@ -471,18 +459,7 @@ function submit(menuType) {
                }
             }
          } { // Password
-            Socket.socket.emit('Check Permission', { title: Game.game.info.title });
-            Socket.socket.on('Permission Denied', deniedSpectate.bind(this)); // Use __.bind(this) so this.issues() can be called from within
-            Socket.socket.on('Permission Granted', grantedSpectate.bind(this));
-            setTimeout(() => { // If ten seconds have elapsed, automatically close 'Permission Denied' and 'Permission Granted' socket listeners (in case a response was never processed)
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-            }, 10000);
-
-            function deniedSpectate() {
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-               ok = false;
+            const deniedSpectate = () => {
                if (!password) {
                   issues.push({ ['password']: 'A password is required for this game' });
                   // alert('A password is required for this game');
@@ -491,38 +468,41 @@ function submit(menuType) {
                   // alert('Password is invalid');
                }
                this.issue(issues);
-            }
+            };
 
-            function grantedSpectate() {
-               Socket.socket.off('Permission Denied');
-               Socket.socket.off('Permission Granted');
-               if (ok) { // Inside 'Permission Granted' so can only be triggered once 'Permission Granted' has been received
-                  // Leaderboard
-                  let already = false;
-                  for (let i = 0; i < Game.game.board.list.length; i++) {
-                     if (Game.game.board.list[i].player === Socket.socket.id) {
-                        already = true;
-                        break;
-                     }
+            /**
+             * Let player into the game if he is granted permission
+             */
+            const grantedSpectate = () => {
+               // Leaderboard
+               let already_in_game = false;
+               for (let i = 0; i < Game.game.board.list.length; i++) {
+                  if (Game.game.board.list[i].player === connection.socket.id) {
+                     already_in_game = true;
+                     break;
                   }
-                  if (!already) {
-                     Game.game.board.list.push({ // Add player to leaderboard
-                        player: Socket.socket.id,
-                        name: name,
-                        kills: 0,
-                        deaths: 0,
-                        score: 0,
-                        wins: 0
-                     });
-                  }
-                  orderBoard(Game.game.board.list);
-                  Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
-                  // Initialize
-                  clearInterval(title.interval);
-                  initialize(game, { spectate: true, color: undefined, skin: undefined });
-               } else {
-                  this.issue(issues);
                }
+               if (!already_in_game) {
+                  Game.game.board.list.push({ // Add player to leaderboard
+                     player: connection.socket.id,
+                     name: name,
+                     kills: 0,
+                     deaths: 0,
+                     score: 0,
+                     wins: 0
+                  });
+               }
+               Board.order(Game.game.board.list);
+               connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+               // Initialize
+               clearInterval(title.interval);
+               initialize(Game.game, { spectate: true, color: undefined, skin: undefined });
+            };
+
+            if (ok) {
+               connection.emit_check_permission(grantedSpectate, deniedSpectate);
+            } else {
+               this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
             }
          }
          break;
@@ -583,13 +563,13 @@ function submit(menuType) {
                   let minimum = Infinity;
                   for (let i = 0; i < Game.game.teams.length; i++) { // Find team(s) with the fewest players and store their indices within Game.game.teams array into indices array
                      let l = Game.game.teams[i].length;
-                     if (Game.game.teams[i].indexOf(Socket.socket.id) != -1) { // If player is on given team
+                     if (Game.game.teams[i].indexOf(connection.socket.id) !== -1) { // If player is on given team
                         l--; // Do not include player as part of the team, so if even numbers before, will replace back on the same team and not add extra to other team
                      }
                      if (l < minimum) { // If length is less than minimum
                         minimum = l; // Set length as new minimum
                         indices = [i]; // Clear indices and push i
-                     } else if (l == minimum) {
+                     } else if (l === minimum) {
                         indices.push(i);
                      }
                   }
@@ -598,21 +578,22 @@ function submit(menuType) {
             }
          } { // Game Closed
             let closed = true;
-            for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host == Game.game.info.host) {
+            for (let i = 0; i < Game.games.length; i++) {
+               if (Game.games[i].info.host === Game.game.info.host) {
                   closed = false;
                   break;
                }
             }
-            if (closed == true) {
+            if (closed === true) {
                ok = false;
                // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
-               renderTitle();
+               Title.render();
+               break;
             }
          }
          if (ok) {
-            Socket.socket.emit('Spectator Spawned', Game.game);
+            connection.socket.binary(false).emit('Spectator Spawned', Game.game);
             // Abilities
             if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (first === 'extend') {
@@ -673,41 +654,36 @@ function submit(menuType) {
             // Team
             if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                if (org.team !== team) { // Only add player to team if not already on team
-                  Game.game.teams[teamColors.indexOf(team)].push(Socket.socket.id); // Add player to selected team
-                  Game.game.teams[teamColors.indexOf(org.team)].splice(game.teams[teamColors.indexOf(org.team)].indexOf(Socket.socket.id), 1);
-                  Socket.socket.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
+                  Game.game.teams[teamColors.indexOf(team)].push(connection.socket.id); // Add player to selected team
+                  Game.game.teams[teamColors.indexOf(org.team)].splice(Game.game.teams[teamColors.indexOf(org.team)].indexOf(connection.socket.id), 1);
+                  connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
                }
             }
             // Color
             if (Game.game.info.mode === 'inf') { // If inf mode
                color = teamColorDef.green; // All players healthy by default
-            } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode 
+            } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode
                color = Z.eid('color input').value.toLowerCase();
             } else {
                color = teamColorDef[team]; // Color must be after Team
             }
             // Initialize
-            initialize(game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+            initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
          } else {
-            this.issue(issues);
+            this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
          }
          break;
       case 'pauseGame':
          if (skins.indexOf(skin) === -1 || skin === 'none') // Skins
             issues.push({ skin: 'There is an issue with the skin selection' });
          { // Game Closed
-            let closed = true;
-            for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === Game.game.info.host) {
-                  closed = false;
-                  break;
-               }
-            }
-            if (closed) {
+            const closed = ! Game.exists(Game.game.info.host); // If game doesn't exist, it has been closed
+            if (closed) { // If closed, return user to the title screen
                ok = false;
                // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
-               renderTitle();
+               Title.render();
+               break;
             }
          }
          if (ok) {
@@ -719,57 +695,55 @@ function submit(menuType) {
             Messages = message; // Set messages setting (Boolean)
             let skip = false;
             for (let i = 0; i < Game.game.players.length; i++) {
-               if (Game.game.players[i] === Socket.socket.id) { // If still is a player
-                  state = 'game';
+               if (Game.game.players[i] === connection.socket.id) { // If still is a player
+                  Game.state = 'game';
                   skip = true;
                   break;
                }
             }
             if (!skip) {
                for (let i = 0; i < Game.game.spectators.length; i++) {
-                  if (Game.game.spectators[i] === Socket.socket.id) {
-                     state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                  if (Game.game.spectators[i] === connection.socket.id) {
+                     Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
                      break;
                   }
                }
             }
             ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
-            this.issue(issues);
+            this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
          }
          break;
       case 'pauseSpectate':
          { // Game Closed
-            let closed = true;
-            for (let i = 0; i < games.length; i++) {
-               if (games[i].info.host === Game.game.info.host) {
-                  closed = false;
-                  break;
-               }
-            }
-            if (closed) {
+            const closed = ! Game.exists(Game.game.info.host); // If game does not exist, it has been closed
+            if (closed) { // If closed, return user to the title screen
                ok = false;
                // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');
-               renderTitle();
+               Title.render();
+               break;
             }
          }
          if (ok) {
             Labels = label; // Set name labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
-            state = 'spectate';
+            Game.state = 'spectate';
             ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
-            this.issue(issues);
+            this.issue(issues); // this keyword refers to Menu (after binding submit in MenuSubmit props)
          }
          break;
       case 'pauseTutorial':
          if (ok) {
-            state = 'tutorial';
+            Game.state = 'tutorial';
             ReactDOM.render(<CanvasCont />, Z.eid('cont'));
          } else {
-            this.issue(issues);
+            this.issue(issues); // this keyword refers to Menu (after binding submit in MenuSubmit props)
          }
+         break;
+      default:
+         console.error('Non-Enumerated Value :: submit :: Game.state has an invalid value');
          break;
    }
 }

@@ -1,11 +1,10 @@
 const Permissions = require('./Permissions.js');
 
 class SocketListener {
-   constructor(server, config) {
-      this.socketio = require('socket.io');
-      this.io = this.socketio(server);
+   constructor(socket, io, config) {
+      this.socket = socket;
+      this.io = io;
       this.config = config;
-      this.socket;
    }
 
    /**
@@ -13,46 +12,52 @@ class SocketListener {
    *    Initialize all other socketio listeners
    */
    listen(games) {
-      this.io.on('connection', socket => {
-         this.socket = socket;
+      games.connections++;
+      if (this.config.project_state === 'development') console.log('Client connected:     ' + this.socket.id + ' (' + games.connections + ')'); // Server Message
 
-         games.connections++;
-         if (this.config.project_state === 'development') console.log('Client connected:     ' + this.socket.id + ' (' + games.connections + ')'); // Server Message
+      this.socket.join('Lobby'); // Join 'Lobby' room in '/' namespace
+      this.socket.emit('Games', { games: games.list, connections: games.connections }); // Copied from 'Games Request'
 
-         this.socket.join('Lobby'); // Join 'Lobby' room in '/' namespace
-         this.socket.emit('Games', { games: games.list, connections: games.connections }); // Copied from 'Games Request'
+      // Socket Management
+      this.listen_disconnect(games);
 
-         // Socket Management
-         this.listen_disconnect(games);
+      // Control Flow
+      this.listen_leave_game(games);
+      this.listen_game_ended(games);
+      this.listen_create_game(games);
+      this.listen_create_password(games);
+      this.listen_ask_permission(games);
+      this.listen_check_permission(games);
+      this.listen_player_joined(games);
+      this.listen_spectator_joined(games);
+      this.listen_spectator_left(games);
+      this.listen_end_round(games);
+      this.listen_round_delay(games);
+      this.listen_dead(games);
 
-         // Control Flow
-         this.listen_leave_game(games);
-         this.listen_game_ended(games);
-         this.listen_create_game(games);
-         this.listen_create_password(games);
-         this.listen_ask_permission(games);
-         this.listen_check_permission(games);
-         this.listen_player_joined(games);
-         this.listen_spectator_joined(games);
-         this.listen_spectator_left(games);
-         this.listen_end_round(games);
-         this.listen_round_delay(games);
-         this.listen_dead(games);
+      // Data Congruence
+      this.listen_board(games);
+      this.listen_org(games);
+      this.listen_game(games);
+      this.listen_teams(games);
+      this.listen_flag(games);
+      this.listen_ability(games);
 
-         // Data Congruence
-         this.listen_board(games);
-         this.listen_org(games);
-         this.listen_game(games);
-         this.listen_teams(games);
-         this.listen_flag(games);
-         this.listen_ability(games);
+      // Ability Transmission
+      this.listen_abilities();
 
-         // Ability Transmission
-         this.listen_abilities();
+      // Miscellaneous
+      this.listen_error();
+      this.listen_test();
+   }
 
-         // Miscellaneous
-         this.listen_error();
-         this.listen_test();
+   /**
+    * Listen for the test event from client
+    */
+   listen_test() {
+      this.socket.on('Test', (data, callback) => {
+         console.log('Test Successful');
+         callback(data);
       });
    }
 
@@ -61,7 +66,7 @@ class SocketListener {
     */
    listen_error() {
       this.socket.on('error', error => {
-         console.log('Error -- this.socket.io: ', error);
+         console.error('Error -- socket.io:\n', error);
       });
    }
 
@@ -81,6 +86,7 @@ class SocketListener {
                   for (let k = 0; k < this.io.sockets.sockets.length; k++) {
                      if (games.list[i].players[j] === this.io.sockets.sockets[k].id) {
                         this.io.sockets.sockets[k].leave(games.list[i].info.title);
+                        break;
                      }
                   }
                }
@@ -88,6 +94,7 @@ class SocketListener {
                   for (let k = 0; k < this.io.sockets.sockets.length; k++) {
                      if (games.list[i].spectators[j] === this.io.sockets.sockets[k].id) {
                         this.io.sockets.sockets[k].leave(games.list[i].info.title);
+                        break;
                      }
                   }
                }
@@ -96,46 +103,66 @@ class SocketListener {
                for (let j = 0; j < password_count; j++) {
                   if (games.securities[j].title === games.list[i].info.title) {
                      games.securities.splice(j, 1);
-                     j--; // Unnecessary when break proceeds
                      break;
                   }
                }
-               games.splice(i, 1); // Delete Game
+               games.list.splice(i, 1); // Delete Game
                clearInterval(games.intervals[i]); // Clear Game Interval
                games.intervals.splice(i, 1);
-               i--;
-               break; // Break can be removed to remove multiple games if player is host of multiple games by some bug
-               } else { // If player is not host
-               for (let j = 0; j < games.list[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-                  if (games.list[i].board.list[j].player === this.socket.id) { // Find player in leaderboard
-                     games.list[i].board.list.splice(j, 1); // Remove player from leaderboard
-                     j--;
-                     break;
-                  }
-               }
-               for (let j = 0; j < games.list[i].players.length; j++) { // Search Players
-                  if (games.list[i].players[j] === this.socket.id) { // Find Player
-                     this.socket.leave(games.list[i].info.title); // Leave 'Game' Room
-                     if (games.list[i].teams.length !== 0) { // If is a team game
-                        let team = games.list[i].teams[teamColors.indexOf(games.list[i].orgs[j].team)]; // Identify player's team
-                        team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
+               break; // User can only host one game
+            } else { // If player is not host
+               let game_count = games.count;
+               for (let g = 0; g < game_count; g++) { // Search games.list for the game this socket is in
+                  let game;
+
+                  let user_found = false;
+                  let user_count = games.list[g].board.list.length;
+                  for (let p = 0; p < user_count; p++) { // Find user in the user list (board.list) in the currently iterated game
+                     if (this.socket.id === games.list[g].board.list[p]) {
+                        game = games.list[g];
+                        user_found = true;
+                        break;
                      }
-                     games.list[i].players.splice(j, 1); // Remove Player
-                     games.list[i].orgs.splice(j, 1); // Remove Player Org
-                     games.list[i].abilities.splice(j, 1); // Remove Player Abilities
-                     games.list[i].info.count = games.list[i].orgs.length;
-                     j--;
-                     if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
-                     break;
                   }
-               }
-               for (let j = 0; j < games.list[i].spectators.length; j++) { // Search Spectators
-                  if (games.list[i].spectators[j] === this.socket.id) { // Find Spectator
-                     this.socket.leave(games.list[i].info.title);
-                     games.list[i].spectators.splice(j, 1);
-                     j--;
-                     if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
-                     break;
+                  if (! user_found) continue; // If user is not found in this game's users list, continue searching in the next game
+
+                  this.socket.leave(game.info.title); // Leave 'Game' Room
+
+                  let player_count = games.list[g].players.length;
+                  for (let l = 0; l < player_count; l++) { // Search leaderboard rather than players and spectators because players and spectators both have place on leaderboard
+                     if (games.list[g].board.list[l].player === this.socket.id) { // Find player in leaderboard
+                        games.list[g].board.list.splice(l, 1); // Remove player from leaderboard
+                        break;
+                     }
+                  }
+
+                  let is_player = false;
+                  for (let p = 0; p < player_count; p++) { // Search players array to determine if user is a player or not
+                     if (games.list[g].players[p] === this.socket.id) { // Find Player
+                        is_player = true;
+
+                        if (games.list[g].teams.length > 0) { // If is a team game, remove player from team
+                           let team = games.list[g].teams[teamColors.indexOf(games.list[g].orgs[p].team)]; // Identify player's team
+                           team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
+                        }
+                        games.list[g].players.splice(p, 1); // Remove player from game's players list
+                        games.list[g].orgs.splice(p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
+                        games.list[g].abilities.splice(p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
+                        games.list[g].info.count--; // Reduce the number of players in the game
+
+                        if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
+                        break;
+                     }
+                  }
+                  if (! is_player) { // If user is a spectator
+                     for (let s = 0; s < games.list[g].spectators.length; s++) { // Search Spectators
+                        if (games.list[g].spectators[s] === this.socket.id) { // Find Spectator
+                           games.list[g].spectators.splice(s, 1);
+
+                           if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
+                           break;
+                        }
+                     }
                   }
                }
             }
@@ -147,73 +174,71 @@ class SocketListener {
     * Listen for leave game event from client
     */
    listen_leave_game(games) {
-      this.socket.on('Leave Game', (game) => {
+      this.socket.on('leave game', (game) => {
          if (game.info.host === this.socket.id) { // If player is host
             this.io.to(game.info.title).emit('Game Ended', game); // Copied from 'Game Ended'
-            for (let i = 0; i < game.players.length; i++) { // If player
-               for (let j = 0; j < this.io.sockets.sockets.length; j++) {
-                  if (game.players[i] === this.io.sockets.sockets[j].id) {
-                     this.io.sockets.sockets[j].leave(game.info.title); // Leave server room
-                  }
-               }
-            }
-            for (let i = 0; i < game.spectators.length; i++) { // If spectator
-               for (let j = 0; j < this.io.sockets.sockets.length; j++) {
-                  if (game.spectators[i] === this.io.sockets.sockets[j].id) {
-                     this.io.sockets.sockets[j].leave(game.info.title); // Leave server room
-                  }
-               }
-            }
+            this.socket.leave(game.info.title);
+
             let password_count = games.securities.length;
             for (let i = 0; i < password_count; i++) {
                if (games.securities[i].title === game.info.title) {
                   games.securities.splice(i, 1); // Remove game from securities array
-                  i--; // Not necessary with break statement, but it is here to avoid future bugs
                   break;
                }
             }
             if (this.config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
-            for (let i = 0; i < games.length; i++) {
+
+            let game_count = games.count;
+            for (let i = 0; i < game_count; i++) {
                if (games.list[i].info.host === game.info.host) {
-                  games.splice(i, 1); // Delete Game
+                  games.list.splice(i, 1); // Delete Game
                   clearInterval(games.intervals[i]); // Clear Game Interval
                   games.intervals.splice(i, 1); // Remove game interval from intervals array
-                  i--;
                   break;
                }
             }
          } else { // If player is not host
-            for (let i = 0; i < games.length; i++) { // Copied from 'disconnect'
-               for (let j = 0; j < games.list[i].board.list.length; j++) { // Search leaderboard outside players and spectators because players and spectators both have place on leaderboard
-                  if (games.list[i].board.list[j].player === this.socket.id) { // Find player in leaderboard
-                     games.list[i].board.list.splice(j, 1); // Remove player from leaderboard
-                     j--;
+            this.socket.leave(game.info.title); // Leave 'Game' Room
+
+            let game_count = games.count;
+            for (let g = 0; g < game_count; g++) { // Search games.list for the game this socket is in
+               if (games.list[g].title !== game.info.title) continue; // Match game with the game the player was in
+
+               let player_count = games.list[g].players.length;
+
+               for (let l = 0; l < player_count; l++) { // Search leaderboard rather than players and spectators because players and spectators both have place on leaderboard
+                  if (games.list[g].board.list[l].player === this.socket.id) { // Find player in leaderboard
+                     games.list[g].board.list.splice(l, 1); // Remove player from leaderboard
                      break;
                   }
                }
-               for (let j = 0; j < games.list[i].players.length; j++) { // Search Players
-                  if (games.list[i].players[j] === this.socket.id) { // Find Player
-                     this.socket.leave(games.list[i].info.title); // Leave 'Game' Room
-                     if (games.list[i].teams.length !== 0) { // If is a team game
-                        let team = games.list[i].teams[teamColors.indexOf(games.list[i].orgs[j].team)]; // Identify player's team
+
+               let is_player = false;
+               for (let p = 0; p < player_count; p++) { // Search players array to determine if user is a player or not
+                  if (games.list[g].players[p] === this.socket.id) { // Find Player
+                     is_player = true;
+
+                     if (games.list[g].teams.length > 0) { // If is a team game, remove player from team
+                        let team = games.list[g].teams[teamColors.indexOf(games.list[g].orgs[p].team)]; // Identify player's team
                         team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
                      }
-                     games.list[i].players.splice(j, 1); // Remove Player
-                     games.list[i].orgs.splice(j, 1); // Remove Player Org
-                     games.list[i].abilities.splice(j, 1); // Remove Player Abilities
-                     games.list[i].info.count = games.list[i].orgs.length;
-                     j--;
-                     if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
+                     games.list[g].players.splice(p, 1); // Remove player from game's players list
+                     games.list[g].orgs.splice(p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
+                     games.list[g].abilities.splice(p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
+                     games.list[g].info.count--; // Reduce the number of players in the game
+
+                     if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
                      break;
                   }
                }
-               for (let j = 0; j < games.list[i].spectators.length; j++) { // Search Spectators
-                  if (games.list[i].spectators[j] === this.socket.id) { // Find Spectator
-                     this.socket.leave(games.list[i].info.title);
-                     games.list[i].spectators.splice(j, 1);
-                     j--;
-                     if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
-                     break;
+               if (! is_player) { // If user is a spectator
+                  for (let s = 0; s < games.list[g].spectators.length; s++) { // Search Spectators
+                     if (games.list[g].spectators[s] === this.socket.id) { // Find Spectator
+                        games.list[g].spectators.splice(s, 1);
+
+                        if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
+                        break;
+                     }
                   }
                }
             }
@@ -228,38 +253,36 @@ class SocketListener {
       this.socket.on('Game Ended', (game) => {
          if (game.info.host === this.socket.id) {
             this.io.to(game.info.title).emit('Game Ended', game);
-            for (let i = 0; i < game.players.length; i++) {
-               for (let j = 0; j < this.io.sockets.sockets.length; j++) {
-                  if (game.players[i] === this.io.sockets.sockets[j].id) {
-                     this.io.sockets.sockets[j].leave(game.info.title); // Make all players in 'game' leave the server group
+            this.io.of('/').in(game.info.title).clients((error, ids) => { // Get each client in room
+               let client_count = ids.length;
+               for (let i = 0; i < client_count; i++) {
+                  io.sockets.sockets[ids[i]].leave(game.info.title); // Direct each player to leave the room
+               }
+            });
+
+            if (game.info.protected) { // If game is protected by a password, remove the security info from the securities array
+               let password_count = games.securities.length;
+               for (let p = 0; p < password_count; p++) {
+                  if (games.securities[p].title === game.info.title) { // Find game's security info and remove it
+                     games.securities.splice(p, 1);
+                     // p--; // Unnecessary since already breaking from the loop, but if break is not here, this may cause a difficult bug to find
+                     break;
                   }
                }
             }
-            for (let i = 0; i < games.list[i].spectators.length; i++) {
-               for (let j = 0; j < this.io.sockets.sockets.length; j++) {
-                  if (game.spectators[i] === this.io.sockets.sockets[j].id) {
-                     this.io.sockets.sockets[j].leave(game.info.title); // Make all spectators in 'game' leave the server group
-                  }
-               }
-            }
-            let password_count = games.securities.length;
-            for (let i = 0; i < password_count; i++) {
-               if (games.securities[i].title === game.info.title) {
-                  games.securities.splice(i, 1);
-                  i--;
+
+            let game_count = games.count;
+            for (let g = 0; g < game_count; g++) {
+               if (games.list[g].info.host === game.info.host) {
+                  games.list.splice(g, 1); // Delete Game
+                  clearInterval(games.intervals[g]); // Clear Game Interval
+                  games.intervals.splice(g, 1);
+                  // g--; // Unnecessary since already breaking from the loop, but if break is not here, this may cause a difficult bug to find
                   break;
                }
             }
+
             if (this.config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
-            for (let i = 0; i < games.length; i++) {
-               if (games.list[i].info.host === game.info.host) {
-                  games.splice(i, 1); // Delete Game
-                  clearInterval(games.intervals[i]); // Clear Game Interval
-                  games.intervals.splice(i, 1);
-                  i--;
-                  break;
-               }
-            }
          }
       });
    }
@@ -270,42 +293,31 @@ class SocketListener {
    listen_create_game(games) {
       /**
        * Create a game instance on the server and emit it to all clients
-       * @param data {Map} {
-       *                      game: {Game}
-       *                   }
+       * @param data {Map} game object
        */
-      this.socket.on('Create Game', (data) => {
-         console.log('create game');
-         games.createGame(data.game, this.socket.id, this.io);
+      this.socket.on('create game', (game) => {
+         games.createGame(game, this.socket.id, this.io);
 
          this.socket.leave('Lobby'); // Leave 'Lobby' Room (this.socket.io)
-         this.socket.join(data.game.info.title); // Join 'Game' Room (this.socket.io)
+         this.socket.join(game.info.title); // Join 'Game' Room (this.socket.io)
       });
    }
 
    /**
     * Listen for create password event from client
+    * @param {Games} games Game instance
     */
    listen_create_password(games) {
-      this.socket.on('Create Password', (data) => {
+      this.socket.on('create password', (data) => {
          let permissions = new Permissions(data.info.title, data.pass);
          permissions.permiss(this.socket.id);
          games.securities.push(permissions);
       });
    }
 
-
-   /**
-    * Listen for the test event from client
-    */
-   listen_test() {
-      this.socket.on('Test', data => {
-         console.log('test successful');
-      });
-   }
-
    /**
     * Verify Password on Join or Spectate
+    *    Callback with argument 'true' if client is permissed, else callback 'false'
     */
    listen_ask_permission(games) {
       this.socket.on('Ask Permission', (data, callback) => {
@@ -317,10 +329,8 @@ class SocketListener {
                permissions.permiss(this.socket.id);
                callback(true);
             }
-            return true;
          }
          callback(false);
-         return false;
       });
    }
 
@@ -340,28 +350,22 @@ class SocketListener {
       this.socket.on('Check Permission', (data, callback) => {
          let has_password = false;
          let granted = false;
-         let password_count = games.securities.length;
+         let secured_count = games.securities.length;
 
-         for (let i = 0; i < password_count; i++) {
+         for (let i = 0; i < secured_count; i++) {
             if (games.securities[i].title === data.title) { // Identify game
                has_password = true;
-               console.log('has password');
                if (games.securities[i].isPermissed(this.socket.id)) {
-                  console.log('granted');
                   granted = true;
                }
                break;
             }
          }
 
-         console.log(this.socket.id, data, 'has password ' + has_password, 'granted ' + granted);
-
          if (!has_password || granted) {
-            // this.socket.emit('Permission Granted', data);
-            callback('Permission Granted');
+            callback('permission granted');
          } else { // (has_password && !granted)
-            // this.socket.emit('Permission Denied', data);
-            callback('Permission Denied');
+            callback('permission denied');
          }
       });
    }
@@ -379,15 +383,17 @@ class SocketListener {
        *                    }
        */
       this.socket.on('Player Joined', (data) => {
-         for (let i = 0; i < games.length; i++) {
+         let len = games.count;
+         for (let i = 0; i < len; i++) {
             if (games.list[i].info.host === data.info.host) {
                this.socket.leave('Lobby'); // Leave 'Lobby' Room
                this.socket.join(data.info.title); // Join 'Game' Room
                games.list[i].players.push(this.socket.id); // Add player to server's list of players in game
-               games.list[i].orgs.push(data.org); // Create server instance of org
+               games.list[i].orgs.push(data.org); // Create server instance of compressed org (no functions)
                games.list[i].abilities.push(data.ability); // Create server instance of ability
                games.list[i].info.count = games.list[i].orgs.length;
-               this.socket.emit('Enter');
+
+               this.socket.emit('enter');
                if (this.config.project_state === 'development') console.log('                                               Player Spawned: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
                break;
             }
@@ -397,15 +403,17 @@ class SocketListener {
 
    /**
     * Listen for spectator joined event from client
+    * @return {void}
     */
    listen_spectator_joined(games) {
       this.socket.on('Spectator Joined', (game) => {
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === game.info.host) {
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === game.info.host) {
                this.socket.leave('Lobby'); // Leave 'Lobby' Room
                this.socket.join(game.info.title); // Join 'Game' Room
-               games.list[i].spectators.push(this.socket.id);
-               if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
+               games.list[g].spectators.push(this.socket.id);
+               if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
                break;
             }
          }
@@ -414,18 +422,21 @@ class SocketListener {
 
    /**
     * Listen for spectator left event from client
+    * @return {void}
     */
    listen_spectator_left(games) {
       this.socket.on('Spectator Left', (data) => { // data is game.info
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === data.host) {
-               for (let j = 0; j < games.list[i].spectators.length; j++) {
-                  if (games.list[i].spectators[j] === this.socket.id) {
-                     games.list[i].spectators.splice(j, 1);
-                     break;
+         const game_count = games.count;
+         outer:
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.host) {
+               let spectator_count = games.list[g].spectators.length;
+               for (let s = 0; s < spectator_count; s++) {
+                  if (games.list[g].spectators[s] === this.socket.id) {
+                     games.list[g].spectators.splice(s, 1);
+                     break outer;
                   }
                }
-               break;
             }
          }
       });
@@ -442,36 +453,42 @@ class SocketListener {
        * @return {void}
        */
       this.socket.on('End Round', (data) => { // data is game.info
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === data.host) { // Identify game
-               games.list[i].rounds.waiting = false;
-               games.list[i].rounds.delayed = true;
-               games.list[i].rounds.delaystart = (new Date()).valueOf();
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.host) { // Identify game
+               games.list[g].rounds.waiting = false;
+               games.list[g].rounds.delayed = true;
+               games.list[g].rounds.delaystart = (new Date()).valueOf();
                break;
             }
          }
+
          let delay = setTimeout(() => { // End of round delay
-            for (let i = 0; i < games.length; i++) {
-               if (games.list[i].info.host === data.host) {
-                  games.list[i].rounds.waiting = true;
-                  games.list[i].rounds.delayed = false;
+            const game_count = games.count;
+            for (let g = 0; g < game_count; g++) {
+               if (games.list[g].info.host === data.host) {
+                  games.list[g].rounds.waiting = true;
+                  games.list[g].rounds.delayed = false;
                   break;
                }
             }
             this.io.in(data.title).emit('Force Spawn');
          }, this.config.delay_time);
+
          if (data.mode === 'srv') {
-            for (let i = 0; i < games.shrinkIntervals.length; i++) {
-               if (games.shrinkIntervals[i].host === data.host) { // Identify shrink interval
-                  clearInterval(games.shrinkIntervals[i].interval);
-                  for (let j = 0; j < games.length; j++) {
-                     if (games.list[j].info.host === data.host) {
-                        games.list[j].world.width = games.shrinkIntervals[i].width; // games.shrinkIntervals[i].world is preserved from 'Round Delay'
-                        games.list[j].world.height = games.shrinkIntervals[i].height; // Reset world width and height
+            for (let s = 0; s < games.shrinkIntervals.length; s++) {
+               if (games.shrinkIntervals[s].host === data.host) { // Identify shrink interval
+                  clearInterval(games.shrinkIntervals[s].interval);
+
+                  const game_count = games.count;
+                  for (let g = 0; g < game_count; g++) {
+                     if (games.list[g].info.host === data.host) {
+                        games.list[g].world.width = games.shrinkIntervals[s].width; // games.shrinkIntervals[s].world is preserved from 'Round Delay'
+                        games.list[g].world.height = games.shrinkIntervals[s].height; // Reset world width and height
                         break;
                      }
                   }
-                  games.shrinkIntervals.splice(i, 1); // Remove shrink interval
+                  games.shrinkIntervals.splice(s, 1); // Remove shrink interval
                   break;
                }
             }
@@ -484,38 +501,41 @@ class SocketListener {
     */
    listen_round_delay(games) {
       this.socket.on('Round Delay', (game) => {
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === game.info.host) { // Identify game
-               games.list[i].rounds.waiting = true;
-               games.list[i].rounds.delayed = true;
-               games.list[i].rounds.delaystart = (new Date()).valueOf();
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === game.info.host) { // Identify game
+               games.list[g].rounds.waiting = true;
+               games.list[g].rounds.delayed = true;
+               games.list[g].rounds.delaystart = (new Date()).valueOf();
                break;
             }
          }
          let delay = setTimeout(() => {
-            for (let i = 0; i < games.length; i++) {
-               if (games.list[i].info.host === game.info.host) { // Identify game
-                  games.list[i].rounds.waiting = false; // Start Round
-                  games.list[i].rounds.delayed = false;
+            const game_count = games.count;
+            for (let g = 0; g < game_count; g++) {
+               if (games.list[g].info.host === game.info.host) { // Identify game
+                  games.list[g].rounds.waiting = false; // Start Round
+                  games.list[g].rounds.delayed = false;
                   if (game.info.mode === 'srv') { // If is survival mode
                      games.shrinkIntervals.push({ // Shrink the world
                         host: game.info.host,
                         width: game.world.width, // Preserve initial width of world
                         height: game.world.height, // Preserve initial height of world
                         interval: setInterval(() => {
-                           for (let j = 0; j < games.length; j++) {
-                              if (games.list[j].info.host === game.info.host && (games.list[j].world.width > 200 && games.list[j].world.height > 200)) { // Identify game; If both dimensions are greater than minimum
-                                 games.list[j].world.width -= config.shrink_rate;
-                                 games.list[j].world.height -= config.shrink_rate;
-                                 games.list[j].world.x += config.shrink_rate / 2; // World shrinks to center
-                                 games.list[j].world.y += config.shrink_rate / 2;
+                           const game_count = games.count;
+                           for (let g = 0; g < game_count; g++) {
+                              if (games.list[g].info.host === game.info.host && (games.list[g].world.width > 200 && games.list[g].world.height > 200)) { // Identify game; If both dimensions are greater than minimum
+                                 games.list[g].world.width -= config.shrink_rate;
+                                 games.list[g].world.height -= config.shrink_rate;
+                                 games.list[g].world.x += config.shrink_rate / 2; // World shrinks to center
+                                 games.list[g].world.y += config.shrink_rate / 2;
                                  break;
                               }
                            }
                         }, this.config.render_frequency) // Same frequency as game interval
                      });
                   }
-                  games.list[i].rounds.start = (new Date()).valueOf();
+                  games.list[g].rounds.start = (new Date()).valueOf();
                   break;
                }
             }
@@ -532,9 +552,10 @@ class SocketListener {
     */
    listen_board(games) {
       this.socket.on('Board', (data) => { // data: { list: board.list, host: game.board.host }
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === data.host) { // Find board's game
-               games.list[i].board.list = data.list; // Update server leaderboard list
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.host) { // Find board's game
+               games.list[g].board.list = data.list; // Update server leaderboard list
                break;
             }
          }
@@ -548,39 +569,39 @@ class SocketListener {
    listen_org(games) {
       /*
        * Update Server Org
-       * @param data: [
-       *     org.alive,
-       *     org.cells,
-       *     org.off,
-       *     org.pos,
-       *     org.color,
-       *     org.skin,
-       *     org.team,
-       *     org.coefficient,
-       *     org.range
-       *  ]
+       * @param data: {
+       *     cells: org.cells,
+       *     off: org.off,
+       *     pos: org.pos,
+       *     color: org.color,
+       *     skin: org.skin,
+       *     team: org.team,
+       *     coefficient: org.coefficient,
+       *     range: org.range
+       *  }
        */
       this.socket.on('Org Update', (data) => { // data is an array in order to decrease json data sent over web this.socket
          let done = false;
-         for (let i = 0; i < games.length; i++) {
-            for (let j = 0; j < games.list[i].orgs.length; j++) {
+         const game_count = games.count;
+
+         outer:
+         for (let i = 0; i < game_count; i++) {
+            const org_count = games.list[i].orgs.length;
+            for (let j = 0; j < org_count; j++) {
                if (games.list[i].orgs[j].player === this.socket.id) {
-                  // games.list[i].orgs[j] = org;
-                  games.list[i].orgs[j].alive = data[0]; // Only the following attributes of org need to be updated
-                  games.list[i].orgs[j].cells = data[1]; // Latency is decreased by only sending necessary data
-                  games.list[i].orgs[j].count = data[1].length;
-                  games.list[i].orgs[j].off = data[2];
-                  games.list[i].orgs[j].pos = data[3];
-                  games.list[i].orgs[j].color = data[4];
-                  games.list[i].orgs[j].skin = data[5];
-                  games.list[i].orgs[j].team = data[6];
-                  games.list[i].orgs[j].coefficient = data[7];
-                  games.list[i].orgs[j].range = data[8];
-                  done = true;
-                  break;
+                  // games.list[i].orgs[j] = org; // Latency is decreased by only sending necessary data rather than the entire org object
+                  games.list[i].orgs[j].cells = data.cells; // Only the following attributes of org need to be updated and shared
+                  games.list[i].orgs[j].count = data.cells.length;
+                  games.list[i].orgs[j].off = data.off;
+                  games.list[i].orgs[j].pos = data.cursor;
+                  games.list[i].orgs[j].color = data.color;
+                  games.list[i].orgs[j].skin = data.skin;
+                  games.list[i].orgs[j].team = data.team;
+                  games.list[i].orgs[j].coefficient = data.coefficient;
+                  games.list[i].orgs[j].range = data.range;
+                  break outer;
                }
             }
-            if (done) break;
          }
       });
    }
@@ -591,15 +612,16 @@ class SocketListener {
    listen_ability(games) {
       this.socket.on('Ability', (ability) => {
          let done = false;
-         for (let i = 0; i < games.length; i++) {
-            for (let j = 0; j < games.list[i].info.count; j++) {
-               if (games.list[i].abilities[j].player === this.socket.id) { // Find ability of this.socket
-                  games.list[i].abilities[j] = ability;
-                  done = true;
-                  break;
+         const game_count = games.count;
+         outer:
+         for (let g = 0; g < game_count; g++) {
+            const player_count = games.list[g].info.count;
+            for (let p = 0; p < player_count; p++) {
+               if (games.list[g].abilities[p].player === this.socket.id) { // Find ability of this.socket
+                  games.list[g].abilities[p] = ability;
+                  break outer;
                }
             }
-            if (done) break;
          }
       });
    }
@@ -608,10 +630,11 @@ class SocketListener {
     * Listen for game event from client
     */
    listen_game(games) {
-      this.socket.on('Game', (data) => { // data: { game: {} } (data object literal exists rather than just 'game' to allow for customization of input beyond 'game')
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === data.game.host) {
-               games.list[i] = data.game;
+      this.socket.on('game', (data) => { // data: { game: {} } (data object literal exists rather than just 'game' to allow for customization of input beyond 'game')
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.game.host) {
+               games.list[g] = data.game;
                break;
             }
          }
@@ -623,9 +646,10 @@ class SocketListener {
     */
    listen_teams(games) {
       this.socket.on('Teams', (data) => { // data: { teams: game.teams, host: game.info.host }
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === data.host) { // Identify game
-               games.list[i].teams = data.teams; // All data in teams array must be updated
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.host) { // Identify game
+               games.list[g].teams = data.teams; // All data in teams array must be updated
                break;
             }
          }
@@ -638,15 +662,16 @@ class SocketListener {
    listen_flag(games) {
       /**
        * Update the server's instance of game's flag
-       * @param Object data {
+       * @param {Object} data {
        *       flag: game.flag,
        *       host: game.info.host
        *    }
        */
-      this.socket.on('Flag', (game) => {
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].info.host === game.info.host) {
-               games.list[i].flag = game.flag;
+      this.socket.on('Flag', (data) => { // Be careful
+         const game_count = games.count;
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].info.host === data.host) {
+               games.list[g].flag = data.flag;
                break;
             }
          }
@@ -658,31 +683,23 @@ class SocketListener {
     */
    listen_dead(games) {
       this.socket.on('Dead', (spectating) => {
-         for (let i = 0; i < games.length; i++) {
-            if (games.list[i].players.indexOf(this.socket.id) !== -1) {
-               for (let j = 0; j < games.list[i].players.length; j++) { // Remove Player
-                  if (games.list[i].players[j] === this.socket.id) {
-                     games.list[i].players.splice(j, 1);
-                     break;
-                  }
-               }
-               for (let j = 0; j < games.list[i].abilities.length; j++) { // Remove Ability
-                  if (games.list[i].abilities[j].player === this.socket.id) {
-                     games.list[i].abilities.splice(j, 1);
-                     break;
-                  }
-               }
-               for (let j = 0; j < games.list[i].orgs.length; j++) { // Do not use games.list[i].info.count server-side (orgs.length may change before count changes)
-                  if (games.list[i].orgs[j].player === this.socket.id) {
-                     games.list[i].orgs.splice(j, 1); // Remove Org
-                     games.list[i].info.count = games.list[i].orgs.length;
+         const game_count = games.count;
+         outer:
+         for (let g = 0; g < game_count; g++) {
+            if (games.list[g].players.indexOf(this.socket.id) !== -1) {
+               const player_count = games.list[g].players.length;
+               for (let p = 0; p < player_count; p++) { // Do not use games.list[g].info.count server-side (orgs.length may change before count changes)
+                  if (games.list[g].players[p] === this.socket.id) {
+                     games.list[g].players.splice(p, 1); // User is no longer a player, but a spectator
+                     games.list[g].abilities.splice(p, 1); // Abilities array should be indexed identically to players array
+                     games.list[g].orgs.splice(p, 1); // Orgs array should be indexed identically to players array
+                     games.list[g].info.count--; // One less player in the game
                      if (spectating) {
                         this.socket.emit('Spectate'); // Dead player becomes spectator
                      }
-                     break;
+                     break outer;
                   }
                }
-               break;
             }
          }
       });
@@ -690,98 +707,39 @@ class SocketListener {
 
    /**
     * Listen for ability events from client
+    * The client emitting the event is requesting to the server that his ability be applied to either himself or an opponent
     *    Standard: Extend, Compress, Immortality, Freeze, Neutralize, Toxin, Spore
     *    Special: Tag
     *    Old: Speed, Slow, Stimulate, Poison
     */
+
    listen_abilities() {
-      this.socket.on('Tag', function(player) {
+      /**
+       * Emit an ability to the specified player
+       * @param {String} ability The ability to be applied
+       *                            First letter is capitalized
+       * @param {String} player The player to whom the ability will be applied
+       *                           Corresponds to a socket.id String in the player's game's org array
+       */
+      function emit_ability(ability, player) {
          if (player === this.socket.id) {
-            this.socket.emit('Tag');
+            this.socket.emit(ability);
          } else {
-            this.socket.to(player).emit('Tag');
+            this.socket.to(player).emit(ability);
          }
-      });
+      }
 
-      this.socket.on('Extend', function(player=this.socket.id) {
-         if (player === this.socket.id) {
-            this.socket.emit('Extend');
-         } else {
-            this.socket.to(player).emit('Extend');
-         }
-      });
-
-      this.socket.on('Compress', function(player) {
-         if (player === this.socket.id) {
-            this.socket.emit('Compress');
-         } else {
-            this.socket.to(player).emit('Compress');
-         }
-      });
-
-      this.socket.on('Immortality', function(player=this.socket.id) {
-         if (player === this.socket.id) {
-            this.socket.emit('Immortality');
-         } else {
-            this.socket.to(player).emit('Immortality');
-         }
-      });
-
-      this.socket.on('Freeze', function(player) {
-         if (player === this.socket.id) {
-            this.socket.emit('Freeze');
-         } else {
-            this.socket.to(player).emit('Freeze');
-         }
-      });
-
-      this.socket.on('Neutralize', function(player=this.socket.id) {
-         if (player === this.socket.id) {
-            this.socket.emit('Neutralize');
-         } else {
-            this.socket.to(player).emit('Neutralize');
-         }
-      });
-
-      this.socket.on('Toxin', function(player) {
-         if (player === this.socket.id) {
-            this.socket.emit('Toxin');
-         } else {
-            this.socket.to(player).emit('Toxin');
-         }
-      });
-
-      // this.socket.on('Speed', function(player) {
-      //    if (player === this.socket.id) {
-      //       this.socket.emit('Speed');
-      //    } else {
-      //       this.socket.to(player).emit('Speed');
-      //    }
-      // });
-
-      // this.socket.on('Slow', function(player) {
-      //    if (player === this.socket.id) {
-      //       this.socket.emit('Slow');
-      //    } else {
-      //       this.socket.to(player).emit('Slow');
-      //    }
-      // });
-
-      // this.socket.on('Stimulate', function(player) {
-      //    if (player === this.socket.id) {
-      //       this.socket.emit('Stimulate');
-      //    } else {
-      //       this.socket.to(player).emit('Stimulate');
-      //    }
-      // });
-
-      // this.socket.on('Poison', function(player) {
-      //    if (player === this.socket.id) {
-      //       this.socket.emit('Poison');
-      //    } else {
-      //       this.socket.to(player).emit('Poison');
-      //    }
-      // });
+      this.socket.on('Extend', player => emit_ability('Extend', player));
+      this.socket.on('Compress', player => emit_ability('Compress', player));
+      this.socket.on('Immortality', player => emit_ability('Immortality', player));
+      this.socket.on('Freeze', player => emit_ability('Freeze', player));
+      this.socket.on('Neutralize', player => emit_ability('Neutralize', player));
+      this.socket.on('Toxin', player => emit_ability('Toxin', player));
+      this.socket.on('Tag', player => emit_ability('Tag', player)); // UNRELEASED
+      // this.socket.on('Speed', player => emit_ability('Speed', player)); // OLD
+      // this.socket.on('Slow', player => emit_ability('Slow', player)); // OLD
+      // this.socket.on('Stimulate', player => emit_ability('Stimulate', player)); // OLD
+      // this.socket.on('Poison', player => emit_ability('Poison', player)); // OLD
    }
 }
 

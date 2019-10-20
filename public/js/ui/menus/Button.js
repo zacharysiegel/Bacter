@@ -23,14 +23,14 @@ class Button extends React.Component {
          case 'leave game':
          case 'leave tutorial':
             org.clearIntervals();
-            // ability = new Ability({ player: Socket.socket.id }); // Ability reset occurs already in renderTitle()
+            // ability = new Ability({ player: connection.socket.id }); // Ability reset occurs already in Title.render()
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
-               Socket.socket.emit('Leave Game', Game.game);
+               connection.socket.binary(false).emit('leave game', Game.game);
                for (let i = 0; i < Game.game.board.list.length; i++) {
-                  if (Game.game.board.list[i].player == Socket.socket.id) { // Find player in leaderboard
+                  if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
                      Game.game.board.list.splice(i, 1); // Remove player from leaderboard
-                     orderBoard(Game.game.board.list); // Sort the list
-                     Socket.socket.emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Send updated board to server
+                     Board.order(Game.game.board.list); // Sort the list before emitting to the server
+                     connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Send updated board to server
                      break;
                   }
                }
@@ -39,7 +39,7 @@ class Button extends React.Component {
                tutorial.clear(); // Clear tutorial intervals
             }
             org = undefined; // Clear org variable
-            renderTitle();
+            Title.render();
             title = new Title();
             break;
       }
