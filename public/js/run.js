@@ -406,7 +406,7 @@ function roundBehaviors() {
             if (Game.game.board.list[i].player === connection.socket.id) {
                // connection.socket.binary(false).emit('End Round', Game.game.info);
                Game.game.board.list[i].wins++;
-               Board.order(Game.game.board.list);
+               Board.order(Game.game.board);
                connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host });
             }
          }

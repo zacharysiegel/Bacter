@@ -267,7 +267,7 @@ function submit(menuType) {
                // alert('Game is at maximum player capacity');
             }
          } { // Game Closed
-            const closed = ! Game.exists(Game.game.info.host);
+            const closed = ! Game.exists(Game.game.info.host); // If the game doesn't exist, it has been closed
             if (closed) { // If game does not exist, it has been closed; return user to the title screen
                ok = false;
                // issues.push({ ['']: 'The game has closed' }); // Empty quotes for game closed instance because it is not specific to a single input
@@ -306,7 +306,7 @@ function submit(menuType) {
                      wins: 0
                   });
                }
-               Board.order(Game.game.board.list);
+               Board.order(Game.game.board);
                connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                // Abilities
                if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
@@ -395,7 +395,8 @@ function submit(menuType) {
                            indices.push(i);
                         }
                      }
-                     team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
+                     const team_index = indices[Math.floor(Math.random() * indices.length)];
+                     team = teamColors[team_index]; // Set team to the team with the fewest players; If there are multiple, choose one at random
                   }
                   for (let i = 0; i < teamColors.length; i++) {
                      if (team === teamColors[i]) {
@@ -492,7 +493,7 @@ function submit(menuType) {
                      wins: 0
                   });
                }
-               Board.order(Game.game.board.list);
+               Board.order(Game.game.board);
                connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                // Initialize
                clearInterval(title.interval);
@@ -577,14 +578,8 @@ function submit(menuType) {
                }
             }
          } { // Game Closed
-            let closed = true;
-            for (let i = 0; i < Game.games.length; i++) {
-               if (Game.games[i].info.host === Game.game.info.host) {
-                  closed = false;
-                  break;
-               }
-            }
-            if (closed === true) {
+            let closed = ! Game.exists(Game.game.info.host); // If game doesn't exist, it has been closed
+            if (closed) {
                ok = false;
                // issues.push({ ['']: 'The game has closed' });
                alert('The game has closed');

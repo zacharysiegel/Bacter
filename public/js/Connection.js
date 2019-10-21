@@ -95,7 +95,7 @@ class Connection {
                   renderSpores(Game.game.abilities[i]);
                }
                renderUI();
-               renderLeaderboard();
+               Board.render();
                translate(org.off.x, org.off.y);
 
                renderMessages(); // Render messages outside translation
@@ -122,7 +122,7 @@ class Connection {
                for (let i = 0; i < Game.game.info.count; i++) {
                   renderSpores(Game.game.abilities[i]);
                }
-               renderLeaderboard();
+               Board.render();
                translate(org.off.x, org.off.y);
             }
                renderMessages();

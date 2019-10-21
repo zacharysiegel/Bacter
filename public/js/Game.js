@@ -81,12 +81,15 @@ class Game {
     * @return {Boolean} True if game was found in games array, else false
     */
    static exists(host) {
-      Game.games.forEach(game => {
+      let exists = false;
+
+      Game.games.forEach(game => { // return statement in here does not return Game.exists, it returns the arrow function
          if (game.info.host === host) {
-            return true;
+            exists = true;
          }
       });
-      return false;
+
+      return exists;
    }
 }
 
