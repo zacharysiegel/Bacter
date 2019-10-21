@@ -721,13 +721,13 @@ class SocketListener {
        * @param {String} player The player to whom the ability will be applied
        *                           Corresponds to a socket.id String in the player's game's org array
        */
-      function emit_ability(ability, player) {
+      const emit_ability = (ability, player) => {
          if (player === this.socket.id) {
-            this.socket.emit(ability);
+            this.socket.emit(ability); // Arrow function or bind is necessary in order for 'this' to point to the correct object
          } else {
             this.socket.to(player).emit(ability);
          }
-      }
+      };
 
       this.socket.on('Extend', player => emit_ability('Extend', player));
       this.socket.on('Compress', player => emit_ability('Compress', player));
