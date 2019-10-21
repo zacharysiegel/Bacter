@@ -19,5 +19,6 @@ package-lock.json
 # archives/'Previous Versions'
 
 # Bacter
+docs/notes.md
 public/build/*
 src/build/*

@@ -10,4 +10,4 @@
 </ol>
 
 <hr>
-<sup>1</sup>: It may be necessary to run the server with root privilages
+<sup>1</sup> It may be necessary to run the server with root privilages or through the <code>authbind</code> program
