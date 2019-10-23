@@ -508,9 +508,10 @@ function submit(menuType) {
          }
          break;
       case 'respawn':
-         if (skins.indexOf(skin) === -1 && skin !== 'none') // Skins
+         if (skins.indexOf(skin) === -1 && skin !== 'none') { // Skins; If the skin value is not 'none' or any other possible skin (should never occur)
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
+         }
          { // Abilities
             if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (!first) {
@@ -669,8 +670,10 @@ function submit(menuType) {
          }
          break;
       case 'pauseGame':
-         if (skins.indexOf(skin) === -1 || skin === 'none') // Skins
-            issues.push({ skin: 'There is an issue with the skin selection' });
+         if (skins.indexOf(skin) === -1 || skin === 'none') { // Skins
+            ok = false;
+            issues.push({ skin: 'There is an issue with the skin selection' }); // If the skin value is not 'none' or any other possible skin (should never occur)
+         }
          { // Game Closed
             const closed = ! Game.exists(Game.game.info.host); // If game doesn't exist, it has been closed
             if (closed) { // If closed, return user to the title screen
@@ -704,7 +707,7 @@ function submit(menuType) {
                   }
                }
             }
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
          } else {
             this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
          }
@@ -724,7 +727,7 @@ function submit(menuType) {
             Labels = label; // Set name labels setting (Boolean)
             Messages = message; // Set messages setting (Boolean)
             Game.state = 'spectate';
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
          } else {
             this.issue(issues); // this keyword refers to Menu (after binding submit in MenuSubmit props)
          }
@@ -732,7 +735,7 @@ function submit(menuType) {
       case 'pauseTutorial':
          if (ok) {
             Game.state = 'tutorial';
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
          } else {
             this.issue(issues); // this keyword refers to Menu (after binding submit in MenuSubmit props)
          }

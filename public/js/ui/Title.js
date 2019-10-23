@@ -82,7 +82,7 @@ class Title {
          strokeWeight(1);
          rect(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.width, this.world.height);
 
-         Org.renderAll() // Orgs
+         Org.renderAll(); // Orgs
 
          // Calculate
          for (let i = 0; i < this.orgs.length; i++) {
@@ -121,13 +121,15 @@ class Title {
 
    static render() {
       Game.state = 'title';
+
       if (org) org.clearIntervals(); // If global org variable exists (such as after exiting a game) clear its interval(s) so as to not interfere with title animations
-      ability = new Ability({ player: connection.socket.id });
+      ability = new Ability({ player: connection.socket.id }); // Reset the ability object
+
       let a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
          <div id='title'>
             <CanvasCont />
             <TitleMenu />
          </div>
-         , Z.eid('cont')); // TitleMenu will not retain its this. namespace
+         , Z.eid('root')); // TitleMenu will not retain its this. namespace
    }
 }

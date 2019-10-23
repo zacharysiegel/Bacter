@@ -31,7 +31,7 @@ class MenuFooter extends React.Component {
          case 'pauseSpectate': // Do not use submit() so changes are not saved when using back button
          case 'respawn':
             Game.state = 'spectate';
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
             break;
          case 'pauseGame': {
             let skip = false;
@@ -50,12 +50,12 @@ class MenuFooter extends React.Component {
                   }
                }
             }
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
             break;
          }
          case 'pauseTutorial':
             Game.state = 'tutorial';
-            ReactDOM.render(<CanvasCont />, Z.eid('cont'));
+            ReactDOM.render(<CanvasCont />, Z.eid('root'));
             break;
       }
    }

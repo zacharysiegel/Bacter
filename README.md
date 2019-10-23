@@ -19,7 +19,7 @@
 
 #### Contact
 > Send an email to bactergame@gmail.com to contact a developer in an official capacity.<br/>
-> Suggestions and criticisms are welcomed!<br/>
+> Suggestions and notifications of bugs are appreciated.
 
 #### License
 > View the [license](./docs/LICENSE) in the ./docs directory

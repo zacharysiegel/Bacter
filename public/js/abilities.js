@@ -1,12 +1,12 @@
 let ability;
 
-function Ability(data) { // data: { player: }
+function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
    this.player = data.player;
    this.auto = false;
    this.extend = {
       value: false,
-      activated: false,
-      can: false,
+      activated: false, // If this ability was selected in the join menu
+      can: false, // If this ability is currently available for use
       i: 0,
       j: 0,
       start: undefined,
@@ -29,24 +29,6 @@ function Ability(data) { // data: { player: }
       time: 3500,
       cooldown: 4000
    };
-   // speed: { // Not updated
-   //    value: false, 
-   //    activated: false, 
-   //    i: 0, 
-   //    j: 0, 
-   //    factor: 2, 
-   //    timeout: undefined, 
-   //    time: 5000
-   // };
-   // slow: { // Not updated
-   //    value: false, 
-   //    activated: false, 
-   //    i: 0, 
-   //    j: 1, 
-   //    factor: 2, 
-   //    timeout: undefined, 
-   //    time: 5000
-   // };
    this.immortality = {
       value: false,
       activated: false,
@@ -74,34 +56,6 @@ function Ability(data) { // data: { player: }
       time: 4000,
       cooldown: 6000
    };
-   // stimulate: {
-   //    value: false, 
-   //    activated: false, 
-   //    can: false, 
-   //    i: 2, 
-   //    j: 0, 
-   //    factor: 9, // Factor must be equal to that of poison
-   //    timeout: undefined, 
-   //    start: undefined, 
-   //    end: undefined, 
-   //    cooling: false, 
-   //    time: 3000, 
-   //    cooldown: 5000
-   // }, 
-   // poison: {
-   //    value: false, 
-   //    activated: false, 
-   //    can: false, 
-   //    i: 2, 
-   //    j: 1, 
-   //    factor: 9, // Factor must be equal to that of stimulate
-   //    timeout: undefined, 
-   //    start: undefined, 
-   //    end: undefined, 
-   //    cooling: false, 
-   //    time: 3000, 
-   //    cooldown: 5000
-   // }, 
    this.neutralize = {
       value: false,
       activated: false,
@@ -205,6 +159,52 @@ function Ability(data) { // data: { player: }
       time: 0,
       cooldown: 5000
    };
+   // speed: { // Not updated
+   //    value: false,
+   //    activated: false,
+   //    i: 0,
+   //    j: 0,
+   //    factor: 2,
+   //    timeout: undefined,
+   //    time: 5000
+   // };
+   // slow: { // Not updated
+   //    value: false,
+   //    activated: false,
+   //    i: 0,
+   //    j: 1,
+   //    factor: 2,
+   //    timeout: undefined,
+   //    time: 5000
+   // };
+   // stimulate: {
+   //    value: false,
+   //    activated: false,
+   //    can: false,
+   //    i: 2,
+   //    j: 0,
+   //    factor: 9, // Factor must be equal to that of poison
+   //    timeout: undefined,
+   //    start: undefined,
+   //    end: undefined,
+   //    cooling: false,
+   //    time: 3000,
+   //    cooldown: 5000
+   // },
+   // poison: {
+   //    value: false,
+   //    activated: false,
+   //    can: false,
+   //    i: 2,
+   //    j: 1,
+   //    factor: 9, // Factor must be equal to that of stimulate
+   //    timeout: undefined,
+   //    start: undefined,
+   //    end: undefined,
+   //    cooling: false,
+   //    time: 3000,
+   //    cooldown: 5000
+   // }, 
 }
 
 /**

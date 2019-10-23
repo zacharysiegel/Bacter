@@ -1,10 +1,4 @@
-var tutorial; // Initialize in global scope; TODO: Convert this into static field on class Tutorial
-
-function renderTutorial() {
-   clearInterval(title.interval);
-   ReactDOM.render(<CanvasCont />, Z.eid('cont'));
-   Game.state = 'tutorial';
-}
+let tutorial; // Initialize in global scope; TODO: Convert this into static field on class Tutorial
 
 class Tutorial {
    constructor() { // TODO: Clean up class conversion
@@ -19,14 +13,17 @@ class Tutorial {
                colors.push(orgColors.black[j]);
             }
          }
-         let color = Math.random() * colors;
+         let color = colors[Math.floor(Math.random() * colors.length)];
+         if (connection.socket.id === undefined) {
+            console.error("Connection not made yet");
+         }
          org = new Org({ player: connection.socket.id, color: color, skin: 'none', spectating: false, cursor: { x: center.x, y: center.y } });
          org.cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
          org.count++;
       }
-      this.orgs = [org];
-      this.abilities = [ability];
-      this.ointerval = setInterval(() => {
+      this.orgs = [ org ];
+      this.abilities = [ ability ];
+      this.org_interval = setInterval(() => {
          for (let i = 0; i < this.orgs.length; i++) {
             this.orgs[i].grow();
             if (org.count === 0) {
@@ -36,7 +33,7 @@ class Tutorial {
          }
       }, _orgfrequency); // 70ms
 
-      this.rinterval = setInterval(() => {
+      this.render_interval = setInterval(() => {
          // Render
          background(this.world.backdrop.r, this.world.backdrop.g, this.world.backdrop.b); // Render Background
 
@@ -102,18 +99,25 @@ class Tutorial {
    stop() {
       this.stopped = true;
       this.stopdate = new Date();
-      clearInterval(this.ointerval);
+      clearInterval(this.org_interval);
    }
 
    clear() {
-      clearInterval(this.ointerval);
-      clearInterval(this.rinterval);
+      clearInterval(this.org_interval);
+      clearInterval(this.render_interval);
    }
 
    detect() {
       switch (this.task) {
          case 'move': {
-            if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code) || keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code) || keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code) || keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) { // If a directional key is pressed
+            if (keyIsDown(Controls.left1.code) ||
+                keyIsDown(Controls.left2.code) ||
+                keyIsDown(Controls.up1.code) ||
+                keyIsDown(Controls.up2.code) ||
+                keyIsDown(Controls.right1.code) ||
+                keyIsDown(Controls.right2.code) ||
+                keyIsDown(Controls.down1.code) ||
+                keyIsDown(Controls.down2.code)) { // If a directional key is pressed
                this.task = 'fullscreen';
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
@@ -216,7 +220,7 @@ class Tutorial {
                this.orgs[1].count++;
                this.abilities[1] = new Ability({ player: 'bot' + 1 });
             }
-            if (ability.compress.applied === true) {
+            if (ability.compress.applied) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -231,7 +235,7 @@ class Tutorial {
             break;
          }
          case 'freeze': {
-            if (ability.freeze.applied === true) {
+            if (ability.freeze.applied) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -267,7 +271,7 @@ class Tutorial {
             if (ability.secrete.value === true) {
                if (this.stopped === true) {
                   this.stopped = false;
-                  this.ointerval = setInterval(() => { // Restart
+                  this.org_interval = setInterval(() => { // Restart
                      for (let i = 0; i < this.orgs.length; i++) {
                         this.orgs[i].grow();
                         if (org.count === 0) {
@@ -314,6 +318,12 @@ class Tutorial {
          this.orgs[i].count = 1;
       }
       this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
-      if (Game.state === 'tutorial') renderTutorial(); // Only render if Game.state is 'tutorial'; otherwise, will render over pause menu
+      if (Game.state === 'tutorial') this.render(); // Only render if Game.state is 'tutorial'; otherwise, will render over pause menu
+   }
+
+   render() {
+      clearInterval(title.interval);
+      ReactDOM.render(<CanvasCont />, Z.eid('root'));
+      Game.state = 'tutorial';
    }
 }

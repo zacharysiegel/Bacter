@@ -15,7 +15,8 @@ class SocketListener {
       games.connections++;
       if (this.config.project_state === 'development') console.log('Client connected:     ' + this.socket.id + ' (' + games.connections + ')'); // Server Message
 
-      this.socket.join('Lobby'); // Join 'Lobby' room in '/' namespace
+      this.socket.join('lobby'); // Join 'lobby' room in '/' namespace
+      this.socket.inGame = false;
       this.socket.emit('Games', { games: games.list, connections: games.connections }); // Copied from 'Games Request'
 
       // Socket Management
@@ -71,102 +72,16 @@ class SocketListener {
    }
 
    /**
-   * Listen for the socket disconnect
+    * Listen for the socket disconnect
    */
    listen_disconnect(games) {
       this.socket.on('disconnect', () => {
          games.connections--;
          if (this.config.project_state === 'development') console.log('Client disconnected:  ' + this.socket.id + ' (' + games.connections + ')'); // Server Message
 
-         // End Hosted Game
-         for (let i = 0; i < games.count; i++) {
-            if (games.list[i].info.host === this.socket.id) { // If player is host
-               this.io.to(games.list[i].info.title).emit('Game Ended', games.list[i]); // Remove Players From Hosted Game
-               for (let j = 0; j < games.list[i].players.length; j++) {
-                  for (let k = 0; k < this.io.sockets.sockets.length; k++) {
-                     if (games.list[i].players[j] === this.io.sockets.sockets[k].id) {
-                        this.io.sockets.sockets[k].leave(games.list[i].info.title);
-                        break;
-                     }
-                  }
-               }
-               for (let j = 0; j < games.list[i].spectators.length; j++) {
-                  for (let k = 0; k < this.io.sockets.sockets.length; k++) {
-                     if (games.list[i].spectators[j] === this.io.sockets.sockets[k].id) {
-                        this.io.sockets.sockets[k].leave(games.list[i].info.title);
-                        break;
-                     }
-                  }
-               }
-               if (this.config.project_state === 'development') console.log('                                               Game Deleted: ' + games.list[i].info.title + ' (' + games.list[i].info.host + ')'); // Before game deletion so game info can be attained before it is deleted
-               let password_count = games.securities.length;
-               for (let j = 0; j < password_count; j++) {
-                  if (games.securities[j].title === games.list[i].info.title) {
-                     games.securities.splice(j, 1);
-                     break;
-                  }
-               }
-               games.list.splice(i, 1); // Delete Game
-               clearInterval(games.intervals[i]); // Clear Game Interval
-               games.intervals.splice(i, 1);
-               break; // User can only host one game
-            } else { // If player is not host
-               let game_count = games.count;
-               for (let g = 0; g < game_count; g++) { // Search games.list for the game this socket is in
-                  let game;
-
-                  let user_found = false;
-                  let user_count = games.list[g].board.list.length;
-                  for (let p = 0; p < user_count; p++) { // Find user in the user list (board.list) in the currently iterated game
-                     if (this.socket.id === games.list[g].board.list[p]) {
-                        game = games.list[g];
-                        user_found = true;
-                        break;
-                     }
-                  }
-                  if (! user_found) continue; // If user is not found in this game's users list, continue searching in the next game
-
-                  this.socket.leave(game.info.title); // Leave 'Game' Room
-
-                  let player_count = games.list[g].players.length;
-                  for (let l = 0; l < player_count; l++) { // Search leaderboard rather than players and spectators because players and spectators both have place on leaderboard
-                     if (games.list[g].board.list[l].player === this.socket.id) { // Find player in leaderboard
-                        games.list[g].board.list.splice(l, 1); // Remove player from leaderboard
-                        break;
-                     }
-                  }
-
-                  let is_player = false;
-                  for (let p = 0; p < player_count; p++) { // Search players array to determine if user is a player or not
-                     if (games.list[g].players[p] === this.socket.id) { // Find Player
-                        is_player = true;
-
-                        if (games.list[g].teams.length > 0) { // If is a team game, remove player from team
-                           let team = games.list[g].teams[teamColors.indexOf(games.list[g].orgs[p].team)]; // Identify player's team
-                           team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
-                        }
-                        games.list[g].players.splice(p, 1); // Remove player from game's players list
-                        games.list[g].orgs.splice(p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
-                        games.list[g].abilities.splice(p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
-                        games.list[g].info.count--; // Reduce the number of players in the game
-
-                        if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-                        break;
-                     }
-                  }
-                  if (! is_player) { // If user is a spectator
-                     for (let s = 0; s < games.list[g].spectators.length; s++) { // Search Spectators
-                        if (games.list[g].spectators[s] === this.socket.id) { // Find Spectator
-                           games.list[g].spectators.splice(s, 1);
-
-                           if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-                           break;
-                        }
-                     }
-                  }
-               }
-            }
-         }
+         if (this.socket.inGame) { // If client is in a game
+            this.removeMember(games); // Remove the client from the game and update the game's data
+         } // Nothing else is necessary because client is disconnecting from the server entirely
       });
    }
 
@@ -174,75 +89,11 @@ class SocketListener {
     * Listen for leave game event from client
     */
    listen_leave_game(games) {
-      this.socket.on('leave game', (game) => {
-         if (game.info.host === this.socket.id) { // If player is host
-            this.io.to(game.info.title).emit('Game Ended', game); // Copied from 'Game Ended'
-            this.socket.leave(game.info.title);
+      this.socket.on('leave game', () => {
+         this.removeMember(games);
 
-            let password_count = games.securities.length;
-            for (let i = 0; i < password_count; i++) {
-               if (games.securities[i].title === game.info.title) {
-                  games.securities.splice(i, 1); // Remove game from securities array
-                  break;
-               }
-            }
-            if (this.config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
-
-            let game_count = games.count;
-            for (let i = 0; i < game_count; i++) {
-               if (games.list[i].info.host === game.info.host) {
-                  games.list.splice(i, 1); // Delete Game
-                  clearInterval(games.intervals[i]); // Clear Game Interval
-                  games.intervals.splice(i, 1); // Remove game interval from intervals array
-                  break;
-               }
-            }
-         } else { // If player is not host
-            this.socket.leave(game.info.title); // Leave 'Game' Room
-
-            let game_count = games.count;
-            for (let g = 0; g < game_count; g++) { // Search games.list for the game this socket is in
-               if (games.list[g].title !== game.info.title) continue; // Match game with the game the player was in
-
-               let player_count = games.list[g].players.length;
-
-               for (let l = 0; l < player_count; l++) { // Search leaderboard rather than players and spectators because players and spectators both have place on leaderboard
-                  if (games.list[g].board.list[l].player === this.socket.id) { // Find player in leaderboard
-                     games.list[g].board.list.splice(l, 1); // Remove player from leaderboard
-                     break;
-                  }
-               }
-
-               let is_player = false;
-               for (let p = 0; p < player_count; p++) { // Search players array to determine if user is a player or not
-                  if (games.list[g].players[p] === this.socket.id) { // Find Player
-                     is_player = true;
-
-                     if (games.list[g].teams.length > 0) { // If is a team game, remove player from team
-                        let team = games.list[g].teams[teamColors.indexOf(games.list[g].orgs[p].team)]; // Identify player's team
-                        team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
-                     }
-                     games.list[g].players.splice(p, 1); // Remove player from game's players list
-                     games.list[g].orgs.splice(p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
-                     games.list[g].abilities.splice(p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
-                     games.list[g].info.count--; // Reduce the number of players in the game
-
-                     if (this.config.project_state === 'development') console.log('                                               Player Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-                     break;
-                  }
-               }
-               if (! is_player) { // If user is a spectator
-                  for (let s = 0; s < games.list[g].spectators.length; s++) { // Search Spectators
-                     if (games.list[g].spectators[s] === this.socket.id) { // Find Spectator
-                        games.list[g].spectators.splice(s, 1);
-
-                        if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-                        break;
-                     }
-                  }
-               }
-            }
-         }
+         this.socket.join('lobby');
+         this.socket.inGame = false;
       });
    }
 
@@ -250,9 +101,9 @@ class SocketListener {
     * Listen for game ended event from client
     */
    listen_game_ended(games) {
-      this.socket.on('Game Ended', (game) => {
-         if (game.info.host === this.socket.id) {
-            this.io.to(game.info.title).emit('Game Ended', game);
+      this.socket.on('game ended', (game) => {
+         if (game.info.host === this.socket.id) { // 'game ended' event can only fire when it is sent by the game's host
+            this.io.to(game.info.title).emit('game ended', game);
             this.io.of('/').in(game.info.title).clients((error, ids) => { // Get each client in room
                let client_count = ids.length;
                for (let i = 0; i < client_count; i++) {
@@ -298,8 +149,10 @@ class SocketListener {
       this.socket.on('create game', (game) => {
          games.createGame(game, this.socket.id, this.io);
 
-         this.socket.leave('Lobby'); // Leave 'Lobby' Room (this.socket.io)
+         // Switching to game's room is necessary here (rather than waiting until join) so game is deleted correctly if client disconnects before joining, but after creating
+         this.socket.leave('lobby'); // Leave 'lobby' Room (this.socket.io)
          this.socket.join(game.info.title); // Join 'Game' Room (this.socket.io)
+         this.socket.inGame = true;
       });
    }
 
@@ -386,8 +239,10 @@ class SocketListener {
          let len = games.count;
          for (let i = 0; i < len; i++) {
             if (games.list[i].info.host === data.info.host) {
-               this.socket.leave('Lobby'); // Leave 'Lobby' Room
+               this.socket.leave('lobby'); // Leave 'lobby' Room
                this.socket.join(data.info.title); // Join 'Game' Room
+               this.socket.inGame = true;
+
                games.list[i].players.push(this.socket.id); // Add player to server's list of players in game
                games.list[i].orgs.push(data.org); // Create server instance of compressed org (no functions)
                games.list[i].abilities.push(data.ability); // Create server instance of ability
@@ -410,8 +265,10 @@ class SocketListener {
          const game_count = games.count;
          for (let g = 0; g < game_count; g++) {
             if (games.list[g].info.host === game.info.host) {
-               this.socket.leave('Lobby'); // Leave 'Lobby' Room
+               this.socket.leave('lobby'); // Leave 'lobby' Room
                this.socket.join(game.info.title); // Join 'Game' Room
+               this.socket.inGame = true;
+
                games.list[g].spectators.push(this.socket.id);
                if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
                break;
@@ -740,6 +597,66 @@ class SocketListener {
       // this.socket.on('Slow', player => emit_ability('Slow', player)); // OLD
       // this.socket.on('Stimulate', player => emit_ability('Stimulate', player)); // OLD
       // this.socket.on('Poison', player => emit_ability('Poison', player)); // OLD
+   }
+
+   /**
+    * Remove a member from his game
+    *    Depends if the member is a host or not
+    * @param {Games} games The server's games object
+    */
+   removeMember(games) {
+      const index = games.getIndexByHost(this.socket.id);
+      const isHost = index !== -1;
+      if (isHost) { // If current socket is the host of his game, end the game
+         const indices = games.getIndicesByMember(this.socket.id, index);
+         const game = games.list[indices.g];
+
+         this.io.to(game.info.title).emit('game ended', game); // Remove Players From Hosted Game
+         this.io.of('/').in(game.info.title).clients((error, clients) => {
+            if (error) throw error;
+            clients.forEach(id => {
+               this.io.sockets.sockets[id].leave(game.info.title); // Remove all players from Socket.io room
+            });
+         });
+
+         let secured_count = games.securities.length;
+         for (let s = 0; s < secured_count; s++) {
+            if (games.securities[s].title === game.info.title) {
+               games.securities.splice(s, 1); // Remove password form securities collection
+               break;
+            }
+         }
+
+         clearInterval(games.intervals[indices.g]); // Clear Game Interval
+         games.list.splice(indices.g, 1); // Remove game from games.list
+         games.intervals.splice(indices.g, 1); // Remvoe the game's interval from the collection of intervals
+
+         if (this.config.project_state === 'development') console.log('                                               Game Removed: ' + game.info.title + ' (' + game.info.host + ')');
+      } else { // If current socket is not the host of his game
+         const indices = games.getIndicesByMember(this.socket.id);
+         const game = games.list[indices.g];
+         if (game === undefined) return; // If this socket is not a member of any game, don't do anything (would crash server otherwise)
+
+         this.socket.leave(game.info.title); // Leave 'Game' Room
+
+         game.board.list.splice(indices.l, 1); // Remove member from the leaderboard
+         if (indices.p !== -1) { // If member is a player
+            game.players.splice(indices.p, 1); // Remove player from game's players list
+            game.orgs.splice(indices.p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
+            game.abilities.splice(indices.p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
+            game.info.count--; // Reduce the number of players in the game
+            if (game.teams.length > 0) { // If is a team game, remove player from team
+               let team = game.teams[teamColors.indexOf(game.orgs[indices.p].team)]; // Identify player's team
+               team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
+            }
+
+            if (this.config.project_state === 'development') console.log('                                               Player Left: ' + game.info.title + ' (' + this.socket.id + ')');
+         } else { // If member is a spectator
+            game.spectators.splice(indices.s, 1); // Remove spectator from spectators array
+
+            if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + game.info.title + ' (' + this.socket.id + ')');
+         }
+      }
    }
 }
 

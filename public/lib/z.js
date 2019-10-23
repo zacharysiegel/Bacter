@@ -13,7 +13,7 @@ class Z {
    /**
     * Get the frequency of an element in an array or string
     * @param  {Array}   arr Array to be traversed
-    * @param  {Generic} elt Element for which to search
+    * @param  elt Element for which to search
     * @return {Number}     The frequency of elt in arr
     */
    static freq(arr, elt) {
@@ -29,7 +29,7 @@ class Z {
          } while (index !== -1);
          return freq;
       }
-   };
+   }
    
    /**
     * Set the character at the specified index in a string to c
@@ -73,7 +73,7 @@ class Z {
          arr.push(i);
       }
       return arr;
-   };
+   }
 
    /**
     * Request that the browser place the specified element into fulscreen mode
@@ -105,7 +105,7 @@ class Z {
     */
    static exitFullscreen(elt) {
       if (elt === undefined) {
-         elt = getFullscreenElement()
+         elt = getFullscreenElement();
       }
       if (elt.exitFullscreen) {
          elt.requestFullscreen();

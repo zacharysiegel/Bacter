@@ -8,7 +8,7 @@ class Browser extends React.Component {
    
    static renderBrowser() {
       Game.state = 'browser';
-      ReactDOM.render(<Browser games={Game.games} />, Z.eid('cont'));
+      ReactDOM.render(<Browser games={Game.games} />, Z.eid('root'));
    }
 
    // React Lifecycle Hooks

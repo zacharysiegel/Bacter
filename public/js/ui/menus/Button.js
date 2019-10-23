@@ -25,7 +25,7 @@ class Button extends React.Component {
             org.clearIntervals();
             // ability = new Ability({ player: connection.socket.id }); // Ability reset occurs already in Title.render()
             if (getSrc().src === 'game') { // No game object in pause tutorial menu
-               connection.socket.binary(false).emit('leave game', Game.game);
+               connection.socket.binary(false).emit('leave game');
                for (let i = 0; i < Game.game.board.list.length; i++) {
                   if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
                      Game.game.board.list.splice(i, 1); // Remove player from leaderboard

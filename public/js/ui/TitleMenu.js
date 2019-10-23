@@ -12,8 +12,8 @@ class TitleMenu extends React.Component {
             Browser.renderBrowser();
             break;
          case 'tutorial':
-            renderTutorial();
             tutorial = new Tutorial();
+            tutorial.render();
             break;
       }
    }

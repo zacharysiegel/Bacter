@@ -160,11 +160,12 @@ class Connection {
       });
    }
    listen_game_ended() {
-      this.socket.on('game ended', function(game) {
+      this.socket.on('game ended', (game) => {
          if (game.info.host !== this.socket.id) { // Don't alert host (he already knows)
             alert('The game has ended');
          }
          Title.render();
+         title = new Title();
       });
    }
    listen_spectate() {

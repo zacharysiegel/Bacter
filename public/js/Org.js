@@ -326,7 +326,7 @@ class Org {
       let ability;
       for (let i = 0; i < src.abilities.length; i++) {
          if (src.abilities[i].player === this.player) {
-            ability = src.abilities[i];
+            ability = src.abilities[i]; // Set local 'ability' variable to the correct ability object
             break;
          }
       }
@@ -497,66 +497,17 @@ class Org {
       //       continue;
       //    }
       // }
-      adjacent:
       for (let cell of this.regions.adjacent.values()) { // Only Adjacent Regions Can Produce New Cells
          // Don't birth new cell outside world boundary
-         if (src.world) {
-            if (src.world.type === 'rectangle') { // If new cell would be outside a rectangular world's boundary
-               if (cell.x - _cellwidth / 2 <= src.world.x || cell.x + _cellwidth / 2 >= src.world.x + src.world.width || cell.y - _cellwidth / 2 <= src.world.x || cell.y + _cellwidth / 2 >= src.world.y + src.world.height) {
-                  continue;
-               }
-            } else if (src.world.type === 'ellipse') { // If the new cell would be outside an elliptical world's boundary
-               let a = src.world.width / 2;
-               let a2 = sq(a);
-               let b = src.world.height / 2;
-               let b2 = sq(b);
-               let x = (cell.x - _cellwidth / 2) - a;
-               let y = (cell.y - _cellwidth / 2) - b;
-               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
-                  continue;
-               }
-               x = (cell.x + _cellwidth / 2) - a;
-               y = (cell.y - _cellwidth / 2) - b;
-               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
-                  continue;
-               }
-               x = (cell.x + _cellwidth / 2) - a;
-               y = (cell.y + _cellwidth / 2) - b;
-               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
-                  continue;
-               }
-               x = (cell.x - _cellwidth / 2) - a;
-               y = (cell.y + _cellwidth / 2) - b;
-               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
-                  continue;
-               }
-            }
+         if (cellIsOutsideWorld.call(this, cell)) { // Call the function whild sustaining the value of 'this'
+            continue;
          }
-
          // Don't birth new cell on top of an opponent's org
-         let org_count = src.orgs.length;
-         for (let j = 0; j < org_count; j++) {
-            if (this.player === this.player) { // If org is player's org
-               continue;
-            }
-            for (let k = 0; k < this.count; k++) {
-               if (this.cells[k].x - _cellwidth / 2 <= cell.x + _cellwidth / 2 && cell.x + _cellwidth / 2 <= this.cells[k].x + _cellwidth / 2) { // If right side collides
-                  if (this.cells[k].y - _cellwidth / 2 <= cell.y + _cellwidth / 2 && cell.y + _cellwidth / 2 <= this.cells[k].y + _cellwidth / 2) { // If bottom side collides
-                     continue adjacent;
-                  } else if (this.cells[k].y - _cellwidth / 2 <= cell.y - _cellwidth / 2 && cell.y - _cellwidth / 2 <= this.cells[k].y + _cellwidth / 2) { // If top side collides
-                     continue adjacent;
-                  }
-               } else if (this.cells[k].x - _cellwidth / 2 <= cell.x - _cellwidth / 2 && cell.x - _cellwidth / 2 <= this.cells[k].x + _cellwidth / 2) { // If left side collides
-                  if (this.cells[k].y - _cellwidth / 2 <= cell.y + _cellwidth / 2 && cell.y + _cellwidth / 2 <= this.cells[k].y + _cellwidth / 2) { // If bottom side collides
-                     continue adjacent;
-                  } else if (this.cells[k].y - _cellwidth / 2 <= cell.y - _cellwidth / 2 && cell.y - _cellwidth / 2 <= this.cells[k].y + _cellwidth / 2) { // If top side collides
-                     continue adjacent;
-                  }
-               }
-            }
+         if (cellCollidesWithOpponent.call(this, cell)) { // Call the function whild sustaining the value of 'this'
+            continue;
          }
 
-         // Birth new cell accordingly
+         // Birth new cell accordingly; If execution has reached this point, the spawn location is confirmed to be valid
          if (ability.compress.value && ability.extend.value || ! ability.compress.value && ! ability.extend.value) { // compress.value NOT XOR extend.value (if both false or both true)
             this.coefficient = -27.5;
             this.range = _range;
@@ -567,6 +518,7 @@ class Org {
             this.coefficient = -25.5;
             this.range = _range + 20;
          }
+
          let chance = this.coefficient * Math.log(sqrt(sq(cell.x - this.cursor.x) + sq(cell.y - this.cursor.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
          if (Math.random() * 100 <= chance) {
             let repeat = false;
@@ -581,6 +533,100 @@ class Org {
                this.count++;
             }
          }
+      }
+
+      /**
+       * Determine if the given cell location would be outside the world boundary
+       * @param {x:, y:} cell The cell location to check
+       * @returns {Boolean} True if the location is out of the world bounds
+       */
+      function cellIsOutsideWorld(cell) { // Not an instance member of Cell because 'cell' is an adjacent location, not a Cell instance
+         let src = getSrc();
+
+         if (src.world) {
+            if (src.world.type === 'rectangle') { // If new cell would be outside a rectangular world's boundary
+               if (cell.x - _cellwidth / 2 <= src.world.x || // West
+                  cell.x + _cellwidth / 2 >= src.world.x + src.world.width || // East
+                  cell.y - _cellwidth / 2 <= src.world.y || // North
+                  cell.y + _cellwidth / 2 >= src.world.y + src.world.height) { // South
+                  return true;
+               }
+            } else if (src.world.type === 'ellipse') { // If the new cell would be outside an elliptical world's boundary
+               let a = src.world.width / 2;
+               let a2 = sq(a);
+               let b = src.world.height / 2;
+               let b2 = sq(b);
+               let x = (cell.x - _cellwidth / 2) - a;
+               let y = (cell.y - _cellwidth / 2) - b;
+
+               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
+                  return true;
+               }
+               x = (cell.x + _cellwidth / 2) - a;
+               y = (cell.y - _cellwidth / 2) - b;
+               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
+                  return true;
+               }
+               x = (cell.x + _cellwidth / 2) - a;
+               y = (cell.y + _cellwidth / 2) - b;
+               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
+                  return true;
+               }
+               x = (cell.x - _cellwidth / 2) - a;
+               y = (cell.y + _cellwidth / 2) - b;
+               if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
+                  return true;
+               }
+            }
+         }
+
+         return false;
+      }
+
+      /**
+       * Detect collisions between the given cell and an opponent's org
+       * @param {x:, y:} cell The friendly cell on which collisions are checked
+       *                      Not a Cell instance
+       * @return {Boolean} True if collision is detected, else false
+       */
+      function cellCollidesWithOpponent(cell) { // Not an instance member of Cell because 'cell' is an adjacent location, not a Cell instance
+         const src = getSrc();
+
+         let org_count = src.orgs.length;
+         for (let o = 0; o < org_count; o++) {
+            const opp_org = src.orgs[o];
+            if (opp_org.player === this.player) { // If org is player's org
+               continue;
+            }
+
+            for (let c = 0; c < opp_org.count; c++) {
+               const opp = opp_org.cells[c]; // Opponent's cell
+               const cell_bottom = cell.y + _cellwidth / 2;
+               const cell_right = cell.x + _cellwidth / 2;
+               const cell_top = cell_bottom - _cellwidth;
+               const cell_left = cell_right - _cellwidth;
+               const opp_bottom = opp.y + _cellwidth / 2;
+               const opp_right = opp.x + _cellwidth / 2;
+               const opp_top = opp_bottom - _cellwidth;
+               const opp_left = opp_right - _cellwidth;
+
+               if (opp_left <= cell_right && cell_right <= opp_right) { // If right side of the new cell is between the right and left sides of opp cell
+                  if (opp_top <= cell_bottom && cell_bottom <= opp_bottom) { // If bottom side of the new cell is between the top and bottom sides of opp cell
+                     return true;
+                  } else if (opp_top <= cell_top && cell_top <= opp_bottom) { // If top side of the new cell is between the top and bottom sides of opp cell
+                     return true;
+                  }
+               } else if (opp_left <= cell_left && cell_left <= opp_right) { // If left side of the new cell is between the right and left sides of opp cell
+                  if (opp_top <= cell_bottom && cell_bottom <= opp_bottom) { // If bottom side of the new cell is between the top and bottom sides of opp cell
+                     return true;
+                  } else if (opp_top <= cell_top && cell_top <= opp_bottom) { // If top side of the new cell is between the top and bottom sides of opp cell
+                     return true;
+                  }
+               }
+            }
+         }
+
+         return false;
       }
    }
 

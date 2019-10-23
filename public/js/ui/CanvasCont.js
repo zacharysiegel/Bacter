@@ -1,5 +1,5 @@
-var cnv;
-var center = {
+let cnv;
+const center = {
    x: undefined,
    y: undefined
 };
