@@ -123,8 +123,8 @@ function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
       time: 800
    };
    this.shoot = {
-      value: [false, false, false],
-      can: [true, true, true],
+      value: [ false, false, false ],
+      can: [ true, true, true ],
       secrete: [{}, {}, {}
          // { // Sets values on use
          //    value: false, 
@@ -204,7 +204,7 @@ function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
    //    cooling: false,
    //    time: 3000,
    //    cooldown: 5000
-   // }, 
+   // },
 }
 
 /**

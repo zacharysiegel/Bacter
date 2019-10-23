@@ -670,7 +670,7 @@ function submit(menuType) {
          }
          break;
       case 'pauseGame':
-         if (skins.indexOf(skin) === -1 || skin === 'none') { // Skins
+         if (skins.indexOf(skin) === -1 && skin !== 'none') { // Skins
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' }); // If the skin value is not 'none' or any other possible skin (should never occur)
          }

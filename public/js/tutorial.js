@@ -1,7 +1,7 @@
 let tutorial; // Initialize in global scope; TODO: Convert this into static field on class Tutorial
 
 class Tutorial {
-   constructor() { // TODO: Clean up class conversion
+   constructor() {
       this.src = 'tutorial';
       this.task = 'move';
       this.taskTimeout = undefined;
@@ -127,7 +127,7 @@ class Tutorial {
                }
             }
             break;
-         }
+         } // TODO: Skip fullscreen task once F11 is pressed
          case 'survive': {
             if (this.taskTimeout === undefined) {
                this.taskTimeout = setTimeout(() => {

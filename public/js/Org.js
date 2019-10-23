@@ -374,15 +374,15 @@ class Org {
 
    checkAbilities() {
       let src = getSrc();
-      const ability_count = src.abilities.length;
-      for (let i = 0; i < ability_count; i++) {
+
+      for (let ability of src.abilities) {
          if ((this.team === this.team && typeof team === 'string') && this.player !== connection.socket.id) { // If is friendly org but not own org
             continue; // No friendly fire but can hurt self
          }
-         if (src.abilities[i].secrete.value === true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
+         if (ability.secrete.value === true) { // Secrete (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact)
             for (let j = 0; j < this.count; j++) {
-               for (let k = 0; k < src.abilities[i].spore.count; k++) {
-                  if (sqrt(sq(this.cells[j].x - src.abilities[i].spore.spores[k].x) + sq(this.cells[j].y - src.abilities[i].spore.spores[k].y)) <= src.abilities[i].secrete.radius) { // If center of cell is within secrete circle (subject to change)
+               for (let k = 0; k < ability.spore.count; k++) {
+                  if (sqrt(sq(this.cells[j].x - ability.spore.spores[k].x) + sq(this.cells[j].y - ability.spore.spores[k].y)) <= ability.secrete.radius) { // If center of cell is within secrete circle (subject to change)
                      let skip = false;
                      for (let l = 0; l < src.abilities.length; l++) {
                         if (src.abilities[l].neutralize.value === true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
@@ -390,10 +390,9 @@ class Org {
                            break;
                         }
                      }
-                     if (skip) {
-                        continue; // Acid is ineffectual when neutralized
-                     }
-                     this.hit = src.abilities[i].player;
+                     if (skip) continue; // Acid is ineffectual when neutralized
+
+                     this.hit = ability.player;
                      if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                         for (let l = 0; l < src.teams.length; l++) { // Search teams
                            if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
@@ -402,20 +401,19 @@ class Org {
                            }
                         }
                      }
-                     if (skip) {
-                        continue; // Acid is ineffectual when neutralized
-                     }
+                     if (skip) continue; // Acid is ineffectual if friendly
+
                      this.removeCell(j);
-                     // j--; // Unnecessary with break
+                     j--;
                      break;
                   }
                }
             }
          }
          for (let j = 0; j < 3; j++) { // Shoot secretion (placed in grow interval so cells will be killed on any overlap with secretion, not just initial impact) (Shoot secretion is smaller than spore secretion)
-            if (src.abilities[i].shoot.secrete[j].value === true) {
+            if (ability.shoot.secrete[j].value === true) { // Kill cells inside shoot secretion
                for (let k = 0; k < this.count; k++) {
-                  if (sqrt(sq(this.cells[k].x - src.abilities[i].shoot.spore[j].x) + sq(this.cells[k].y - src.abilities[i].shoot.spore[j].y)) <= src.abilities[i].shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
+                  if (sqrt(sq(this.cells[k].x - ability.shoot.spore[j].x) + sq(this.cells[k].y - ability.shoot.spore[j].y)) <= ability.shoot.secrete[j].radius) { // If center of cell is within shoot circle (subject to change)
                      let skip = false;
                      for (let l = 0; l < src.abilities.length; l++) {
                         if (src.abilities[l].neutralize.value === true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
@@ -426,7 +424,7 @@ class Org {
                      if (skip) {
                         continue; // Acid is ineffectual when neutralized
                      }
-                     this.hit = src.abilities[i].player;
+                     this.hit = ability.player;
                      if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                         for (let l = 0; l < src.teams.length; l++) { // Search teams
                            if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
@@ -445,12 +443,12 @@ class Org {
                }
             }
          }
-         if (src.abilities[i].toxin.value === true) { // Toxin
+         if (ability.toxin.value === true) { // Toxin
             for (let j = 0; j < this.count; j++) {
-               if (this.player === src.abilities[i].player) { // If is own org's toxin
-                  continue; // Do not kill own cells
+               if (this.player === ability.player) { // If is own org's toxin
+                  break; // Do not kill own cells
                }
-               if (sqrt(sq(this.cells[j].x - src.abilities[i].toxin.x) + sq(this.cells[j].y - src.abilities[i].toxin.y)) <= src.abilities[i].toxin.radius) { // If center of cell is within toxin circle
+               if (sqrt(sq(this.cells[j].x - ability.toxin.x) + sq(this.cells[j].y - ability.toxin.y)) <= ability.toxin.radius) { // If center of cell is within toxin circle
                   let skip = false;
                   for (let l = 0; l < src.abilities.length; l++) {
                      if (src.abilities[l].neutralize.value === true && sqrt(sq(this.cells[j].x - src.abilities[l].neutralize.x) + sq(this.cells[j].y - src.abilities[l].neutralize.y)) <= src.abilities[l].neutralize.radius) { // If center of cell is within neutralize circle
@@ -461,7 +459,7 @@ class Org {
                   if (skip) {
                      continue; // Acid is ineffectual when neutralized
                   }
-                  this.hit = src.abilities[i].player;
+                  this.hit = ability.player;
                   if (src.src === 'game' && this.hit !== this.player) { // Only for game; Only for other player hits
                      for (let l = 0; l < src.teams.length; l++) { // Search teams
                         if (src.teams[l].indexOf(this.hit) !== -1 && src.teams[l].indexOf(this.player) !== -1) { // If player and hitter are on same team
@@ -488,6 +486,15 @@ class Org {
     */
    birth() {
       let src = getSrc();
+
+      let ability;
+      for (let i = 0; i < src.abilities.length; i++) {
+         if (src.abilities[i].player === this.player) {
+            ability = src.abilities[i]; // Set local 'ability' variable to the    ability object
+            break;
+         }
+      }
+
       if (ability.freeze.value) { // If this org is frozen, no natural birth occurs
          return;
       }
@@ -637,6 +644,14 @@ class Org {
     */
    naturalDeath() {
       let src = getSrc();
+      let ability;
+      for (let i = 0; i < src.abilities.length; i++) {
+         if (src.abilities[i].player === this.player) {
+            ability = src.abilities[i]; // Set local 'ability' variable to the    ability object
+            break;
+         }
+      }
+
       if (ability.freeze.value || ability.immortality.value) { // If org is frozen or immortal, natural death should not occur
          return;
       }

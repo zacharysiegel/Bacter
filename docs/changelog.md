@@ -233,7 +233,7 @@
       Changed cursor over radio buttons to pointer
       Improved efficiency of organism generation
       Improved other documentation
-      Fixed 'issue with skin detection' bug in the spawn menu
+      Fixed 'issue with skin detection' bug in the spawn and pause menus
       Fixed frequent disconnect and reconnection of client
       Fixed occasional client non-connection to socket
       Fixed unnecessary client-to-server data emissions on title screen
