@@ -1,22 +1,32 @@
 let title; // Initialize in global scope -- Convert this to a static field on class Title later
 
 class Title {
+   /**
+    * Create a new Title object (Factory constructor)
+    *    The main purpose of this function is to ensure the previous title interval is cleared before creating a new one
+    * @return {Title} A new Title instance
+    */
+   static create() {
+      if (title) clearInterval(title.interval); // Clear the previous title interval before creating the new one
+      return new Title();
+   }
+
    constructor() {
       Game.state = 'title';
       this.src = 'title'; // Specifiy that this instance is the source object for the title screen
-      this.margin = _margin; // Set the margin width to that specified in config file
+      this.margin = config.game.margin_width; // Set the margin width to that specified in config file
       this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin });
 
       this.orgs = []; // Spawn org bots
       this.abilities = [];
       let quadrants = [];
-      for (let i = 0; i < _dummies; i++) {
+      for (let i = 0; i < config.game.dummy_count; i++) {
          let colors = [];
-         for (let j in orgColors.black) {
-            colors.push(orgColors.black[j]);
+         for (let j in config.colors.orgs.black) {
+            colors.push(config.colors.orgs.black[j]);
          }
          let color = colors[Math.floor(Math.random() * colors.length)];
-         let arr = skins.slice();
+         let arr = config.game.skins.slice();
          arr.push('none');
          let skin = arr[Math.floor(Math.random() * arr.length)];
          let xoff;
@@ -42,11 +52,11 @@ class Title {
                yoff = 1;
             }
             quadrants[i] = quadrant;
-         } while (Z.freq(quadrants, quadrant) > Math.floor(_dummies / 4) + 1);
-         let min_x = this.world.x + _cellwidth + this.world.width / 2 * xoff;
-         let min_y = this.world.y + _cellwidth + this.world.height / 2 * yoff;
-         let max_x = this.world.x - _cellwidth + this.world.width / 2 * (xoff + 1);
-         let max_y = this.world.y - _cellwidth + this.world.height / 2 * (yoff + 1);
+         } while (Z.freq(quadrants, quadrant) > Math.floor(config.game.dummy_count / 4) + 1);
+         let min_x = this.world.x + config.game.cell_width + this.world.width / 2 * xoff;
+         let min_y = this.world.y + config.game.cell_width + this.world.height / 2 * yoff;
+         let max_x = this.world.x - config.game.cell_width + this.world.width / 2 * (xoff + 1);
+         let max_y = this.world.y - config.game.cell_width + this.world.height / 2 * (yoff + 1);
          let cursor = {
             x: min_x + Math.random() * (max_x - min_x),
             y: min_y + Math.random() * (max_y - min_y)
@@ -88,7 +98,7 @@ class Title {
          for (let i = 0; i < this.orgs.length; i++) {
             this.orgs[i].grow();
          }
-      }, _orgfrequency);
+      }, config.game.org_frequency);
    }
 
    /**

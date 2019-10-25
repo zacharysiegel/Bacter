@@ -5,12 +5,12 @@ class Tutorial {
       this.src = 'tutorial';
       this.task = 'move';
       this.taskTimeout = undefined;
-      this.margin = _margin;
+      this.margin = config.game.margin_width;
       this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin }); { // Org
          let colors = [];
-         for (let j in orgColors.black) {
+         for (let j in config.colors.orgs.black) {
             if (j !== 'sun' && j !== 'sky') { // No bright colors which would obscure the crosshair in tutorial to minimize confusion
-               colors.push(orgColors.black[j]);
+               colors.push(config.colors.orgs.black[j]);
             }
          }
          let color = colors[Math.floor(Math.random() * colors.length)];
@@ -31,7 +31,7 @@ class Tutorial {
                this.orgs[i].count++;
             }
          }
-      }, _orgfrequency); // 70ms
+      }, config.game.org_frequency); // 70ms
 
       this.render_interval = setInterval(() => {
          // Render
@@ -41,7 +41,7 @@ class Tutorial {
          fill(this.world.backdrop.r - 20, this.world.backdrop.g - 20, this.world.backdrop.b - 20); // World Shadow
          noStroke();
          rect(this.world.x + this.world.width / 2 + 7, this.world.y + this.world.height / 2 + 6, this.world.width, this.world.height);
-         if (Messages === true) { // Render Messages; TODO: Should users be allowed to turn these messages off?
+         if (config.settings.messages === true) { // Render Messages; TODO: Should users be allowed to turn these messages off?
             textFont('Helvetica');
             textStyle(NORMAL);
             let message = currentMessage();
@@ -91,7 +91,7 @@ class Tutorial {
             }
          }
          this.detect();
-      }, _renderfrequency); // 40ms
+      }, render_frequency); // 40ms
       this.stopped = false;
       this.stopdate = undefined;
    }
@@ -110,14 +110,14 @@ class Tutorial {
    detect() {
       switch (this.task) {
          case 'move': {
-            if (keyIsDown(Controls.left1.code) ||
-                keyIsDown(Controls.left2.code) ||
-                keyIsDown(Controls.up1.code) ||
-                keyIsDown(Controls.up2.code) ||
-                keyIsDown(Controls.right1.code) ||
-                keyIsDown(Controls.right2.code) ||
-                keyIsDown(Controls.down1.code) ||
-                keyIsDown(Controls.down2.code)) { // If a directional key is pressed
+            if (keyIsDown(config.settings.controls.left1.code) ||
+                keyIsDown(config.settings.controls.left2.code) ||
+                keyIsDown(config.settings.controls.up1.code) ||
+                keyIsDown(config.settings.controls.up2.code) ||
+                keyIsDown(config.settings.controls.right1.code) ||
+                keyIsDown(config.settings.controls.right2.code) ||
+                keyIsDown(config.settings.controls.down1.code) ||
+                keyIsDown(config.settings.controls.down2.code)) { // If a directional key is pressed
                this.task = 'fullscreen';
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
@@ -141,7 +141,7 @@ class Tutorial {
             break;
          }
          case 'extend': {
-            if (keyIsDown(Controls.ability1.code)) {
+            if (keyIsDown(config.settings.controls.ability1.code)) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -157,7 +157,7 @@ class Tutorial {
             break;
          }
          case 'immortality': {
-            if (keyIsDown(Controls.ability2.code)) {
+            if (keyIsDown(config.settings.controls.ability2.code)) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -173,7 +173,7 @@ class Tutorial {
             break;
          }
          case 'neutralize': {
-            if (keyIsDown(Controls.ability3.code)) {
+            if (keyIsDown(config.settings.controls.ability3.code)) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -206,15 +206,15 @@ class Tutorial {
          case 'compress': {
             if (this.orgs.length === 1) {
                let colors = [];
-               for (let j in orgColors.black) {
+               for (let j in config.colors.orgs.black) {
                   if (j !== 'sun' && j !== 'lime')
-                     colors.push(orgColors.black[j]);
+                     colors.push(config.colors.orgs.black[j]);
                }
                let color = colors[Math.floor(Math.random() * colors.length)];
                let cursor;
                do {
                   cursor = { x: Math.random() * this.world.width, y: Math.random() * this.world.height };
-               } while (sqrt(sq(cursor.x - org.cursor.x) + sq(cursor.y - org.cursor.y)) < _range + 30); // _range + 20 is maximum extend range
+               } while (sqrt(sq(cursor.x - org.cursor.x) + sq(cursor.y - org.cursor.y)) < config.game.default_range + 30); // config.game.default_range + 20 is maximum extend range
                this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', spectating: false, cursor: cursor }));
                this.orgs[1].cells[0] = new Cell(this.orgs[1].cursor.x, this.orgs[1].cursor.y, this.orgs[1]); // Create first cell in org
                this.orgs[1].count++;
@@ -250,7 +250,7 @@ class Tutorial {
             break;
          }
          case 'toxin': { // TODO: Add 'Damage the bot to progress
-            if (keyIsDown(Controls.ability3.code)) {
+            if (keyIsDown(config.settings.controls.ability3.code)) {
                if (this.taskTimeout === undefined) {
                   this.taskTimeout = setTimeout(() => {
                      this.taskTimeout = undefined;
@@ -279,7 +279,7 @@ class Tutorial {
                            this.orgs[i].count++;
                         }
                      }
-                  }, _orgfrequency); // 70ms
+                  }, config.game.org_frequency); // 70ms
                   ability.spore.end = new Date();
                   ability.secrete.start = new Date();
                }

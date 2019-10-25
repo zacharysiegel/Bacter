@@ -37,7 +37,7 @@ function renderUI() {
    // }
 
    // Screen Name Labels
-   if (Labels && src.src === 'game') {
+   if (config.settings.labels && src.src === 'game') {
       fill(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b); // Same color as border to maintain contrast with background
       noStroke();
       textFont('Helvetica');
@@ -67,9 +67,9 @@ function renderUI() {
                   return average;
                };
                if (Game.game.board.list[j].name.length <= 30) {
-                  text(Game.game.board.list[j].name, x() - textWidth(Game.game.board.list[j].name) / 2, y() + sqrt(sq(_cellwidth) * Game.game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+                  text(Game.game.board.list[j].name, x() - textWidth(Game.game.board.list[j].name) / 2, y() + sqrt(sq(config.game.cell_width) * Game.game.orgs[i].count / PI) + 2 * config.game.cell_width + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                } else {
-                  text(Game.game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(Game.game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(_cellwidth) * Game.game.orgs[i].count / PI) + 2 * _cellwidth + 8); // sqrt expression approximates radius as a circle; 6 is buffer
+                  text(Game.game.board.list[j].name.slice(0, 20) + '...', x() - textWidth(Game.game.board.list[j].name.slice(0, 20)) / 2, y() + sqrt(sq(config.game.cell_width) * Game.game.orgs[i].count / PI) + 2 * config.game.cell_width + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                }
             }
          }
@@ -119,16 +119,16 @@ function renderUI() {
                      rect(center.x - 150 + i * 100, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
                      let letter;
                      if (i === 0) {
-                        letter = Controls.ability1.key;
+                        letter = config.settings.controls.ability1.key;
                      } else if (i === 1) {
-                        letter = Controls.ability2.key;
+                        letter = config.settings.controls.ability2.key;
                      } else if (i === 2) {
-                        letter = Controls.ability3.key;
+                        letter = config.settings.controls.ability3.key;
                      } else if (i === 3) {
-                        if (Controls.ability4.key === ' ') {
+                        if (config.settings.controls.ability4.key === ' ') {
                            letter = '_'; // Display space bar as underscore
                         } else {
-                           letter = Controls.ability4.key;
+                           letter = config.settings.controls.ability4.key;
                         }
                      }
                      fill(0);
@@ -210,16 +210,16 @@ function renderUI() {
       rect(center.x, height * 9 / 10 + 30, 24, 38, 0, 0, 4, 4); // Letter background box
       let letter;
       if (ability.tag.i === 0) {
-         letter = Controls.ability1.key;
+         letter = config.settings.controls.ability1.key;
       } else if (ability.tag.i === 1) {
-         letter = Controls.ability2.key;
+         letter = config.settings.controls.ability2.key;
       } else if (ability.tag.i === 2) {
-         letter = Controls.ability3.key;
+         letter = config.settings.controls.ability3.key;
       } else if (ability.tag.i === 3) {
-         if (Controls.ability4.key === ' ') {
+         if (config.settings.controls.ability4.key === ' ') {
             letter = '_';
          } else {
-            letter = Controls.ability4.key;
+            letter = config.settings.controls.ability4.key;
          }
       }
       fill(0);
@@ -299,16 +299,16 @@ function getSrc() {
  */
 function move() {
    let keys = '';
-   if (keyIsDown(Controls.left1.code) || keyIsDown(Controls.left2.code)) {
+   if (keyIsDown(config.settings.controls.left1.code) || keyIsDown(config.settings.controls.left2.code)) {
       keys += 'l';
    }
-   if (keyIsDown(Controls.up1.code) || keyIsDown(Controls.up2.code)) {
+   if (keyIsDown(config.settings.controls.up1.code) || keyIsDown(config.settings.controls.up2.code)) {
       keys += 'u';
    }
-   if (keyIsDown(Controls.right1.code) || keyIsDown(Controls.right2.code)) {
+   if (keyIsDown(config.settings.controls.right1.code) || keyIsDown(config.settings.controls.right2.code)) {
       keys += 'r';
    }
-   if (keyIsDown(Controls.down1.code) || keyIsDown(Controls.down2.code)) {
+   if (keyIsDown(config.settings.controls.down1.code) || keyIsDown(config.settings.controls.down2.code)) {
       keys += 'd';
    }
    switch (keys) {
@@ -325,26 +325,26 @@ function move() {
          org.cursor.y += org.speed;
          break;
       case 'lu':
-         org.cursor.x -= org.speed * cos45;
-         org.cursor.y -= org.speed * cos45;
+         org.cursor.x -= org.speed * Z.cos45;
+         org.cursor.y -= org.speed * Z.cos45;
          break;
       case 'lr':
          // Net zero
          break;
       case 'ld':
-         org.cursor.x -= org.speed * cos45;
-         org.cursor.y += org.speed * cos45;
+         org.cursor.x -= org.speed * Z.cos45;
+         org.cursor.y += org.speed * Z.cos45;
          break;
       case 'ur':
-         org.cursor.x += org.speed * cos45;
-         org.cursor.y -= org.speed * cos45;
+         org.cursor.x += org.speed * Z.cos45;
+         org.cursor.y -= org.speed * Z.cos45;
          break;
       case 'ud':
          // Net zero
          break;
       case 'rd':
-         org.cursor.x += org.speed * cos45;
-         org.cursor.y += org.speed * cos45;
+         org.cursor.x += org.speed * Z.cos45;
+         org.cursor.y += org.speed * Z.cos45;
          break;
       case 'lur':
          org.cursor.y -= org.speed; // Net up
@@ -374,7 +374,7 @@ function move() {
  */
 function enter() {
    if (!org.intervals.length) { // org.intervals array must be of length 0
-      org.intervals.push(setInterval(() => runLoop(), _orgfrequency));
+      org.intervals.push(setInterval(() => runLoop(), config.game.org_frequency));
    }
 }
 

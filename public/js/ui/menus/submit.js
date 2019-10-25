@@ -27,20 +27,20 @@ function submit(menuType) {
    let mode = modeInput ? modeInput.value : null;
    let name = snInput ? snInput.value : null;
    let color = cInput ? cInput.value.toLowerCase() : null;
-   let first = this.state.values[menus[this.type].options.indexOf('1st Ability')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
-   let second = this.state.values[menus[this.type].options.indexOf('2nd Ability')]; // Value of second ability input
-   let third = this.state.values[menus[this.type].options.indexOf('3rd Ability')]; // Valeu of third ability input
+   let first = this.state.values[config.menus[this.type].options.indexOf('1st Ability')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let second = this.state.values[config.menus[this.type].options.indexOf('2nd Ability')]; // Value of second ability input
+   let third = this.state.values[config.menus[this.type].options.indexOf('3rd Ability')]; // Valeu of third ability input
    first = first ? first.toLowerCase() : ''; // toLowerCase() is separated so entire getting of first value need not be repeated in ternary expression
    second = second ? second.toLowerCase() : '';
    third = third ? third.toLowerCase() : '';
-   let skin = this.state.values[menus[this.type].options.indexOf('Skin')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let skin = this.state.values[config.menus[this.type].options.indexOf('Skin')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    skin = skin || 'none'; // If no skin is selected, set value of skin to 'none'
    let team = teamInput ? teamInput.value.toLowerCase() : null;
-   let auto = this.state.values[menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let auto = this.state.values[config.menus[this.type].options.indexOf('Auto Assign')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    auto = !!auto; // Set auto assign to Boolean value
-   let label = this.state.values[menus[this.type].options.indexOf('Name Labels')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let label = this.state.values[config.menus[this.type].options.indexOf('Name Labels')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    label = label === 'name labels'; // Set label to Boolean value
-   let message = this.state.values[menus[this.type].options.indexOf('Messages')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
+   let message = this.state.values[config.menus[this.type].options.indexOf('Messages')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
    message = message === 'messages'; // Set messages to Boolean value
 
    switch (menuType) {
@@ -208,7 +208,7 @@ function submit(menuType) {
             }
          }
          // Skins
-         if (skins.indexOf(skin) === -1 && skin !== 'none') { // If the skin value is not 'none' or any other possible skin (should never occur)
+         if (config.game.skins.indexOf(skin) === -1 && skin !== 'none') { // If the skin value is not 'none' or any other possible skin (should never occur)
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
          }
@@ -240,20 +240,20 @@ function submit(menuType) {
             if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                if (!auto) {
                   for (let i = 0; i < Game.game.teams.length; i++) {
-                     if (i === teamColors.indexOf(team)) { // If i is selected team
+                     if (i === config.colors.teams.indexOf(team)) { // If i is selected team
                         continue;
                      }
-                     if (Game.game.teams[teamColors.indexOf(team)].length > Game.game.teams[i].length) { // If there are more players on selected team than another
+                     if (Game.game.teams[config.colors.teams.indexOf(team)].length > Game.game.teams[i].length) { // If there are more players on selected team than another
                         if (org && typeof team === 'string' && org.team === team) { // If player is already on selected team
                            break; // Allow spawn
                         }
                         ok = false;
-                        issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[i] });
-                        // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
+                        issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it already has more players than ' + config.colors.teams[i] });
+                        // alert('Cannot join ' + team + ' team because it already has more players than ' + config.colors.teams[i]);
                         break;
                      }
                   }
-                  if (org && org.team !== team && Game.game.teams[teamColors.indexOf(org.team)].length === Game.game.teams[teamColors.indexOf(team)].length) {
+                  if (org && org.team !== team && Game.game.teams[config.colors.teams.indexOf(org.team)].length === Game.game.teams[config.colors.teams.indexOf(team)].length) {
                      ok = false;
                      issues.push({ ['auto assign']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
                      // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
@@ -396,10 +396,10 @@ function submit(menuType) {
                         }
                      }
                      const team_index = indices[Math.floor(Math.random() * indices.length)];
-                     team = teamColors[team_index]; // Set team to the team with the fewest players; If there are multiple, choose one at random
+                     team = config.colors.teams[team_index]; // Set team to the team with the fewest players; If there are multiple, choose one at random
                   }
-                  for (let i = 0; i < teamColors.length; i++) {
-                     if (team === teamColors[i]) {
+                  for (let i = 0; i < config.colors.teams.length; i++) {
+                     if (team === config.colors.teams[i]) {
                         Game.game.teams[i].push(connection.socket.id); // Add player to selected team
                         // connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
                         break;
@@ -409,22 +409,22 @@ function submit(menuType) {
                // Color
                let color;
                if (Game.game.info.mode === 'inf') { // If inf mode
-                  color = teamColorDef.green; // All players healthy by default
+                  color = config.colors.teamsDef.green; // All players healthy by default
                } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf' && Z.eid('color input')) { // If is not a team game and there is a color input field
                   color = Z.eid('color input').value.toLowerCase();
                } else {
-                  color = teamColorDef[team]; // Color must be after Team
+                  color = config.colors.teamsDef[team]; // Color must be after Team
                }
                // Initialize
                clearInterval(title.interval);
                if (Game.game.rounds.util) {
                   if (Game.game.rounds.waiting) {
-                     initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+                     initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
                   } else {
-                     initialize(Game.game, { spectate: true, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+                     initialize(Game.game, { spectate: true, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
                   }
                } else {
-                  initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+                  initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
                }
             };
 
@@ -508,7 +508,7 @@ function submit(menuType) {
          }
          break;
       case 'respawn':
-         if (skins.indexOf(skin) === -1 && skin !== 'none') { // Skins; If the skin value is not 'none' or any other possible skin (should never occur)
+         if (config.game.skins.indexOf(skin) === -1 && skin !== 'none') { // Skins; If the skin value is not 'none' or any other possible skin (should never occur)
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' });
          }
@@ -541,20 +541,20 @@ function submit(menuType) {
                ability.auto = auto; // auto variable is Boolean
                if (!auto) { // If auto assign is not selected
                   for (let i = 0; i < Game.game.teams.length; i++) {
-                     if (i === teamColors.indexOf(team)) {
+                     if (i === config.colors.teams.indexOf(team)) {
                         continue;
                      }
-                     if (Game.game.teams[teamColors.indexOf(team)].length > Game.game.teams[i].length) { // If chosen team has greater players than another team
+                     if (Game.game.teams[config.colors.teams.indexOf(team)].length > Game.game.teams[i].length) { // If chosen team has greater players than another team
                         if (org && org.team === team && typeof team === 'string') { // If player is already on loaded team
                            break; // Allow respawn
                         } else {
                            ok = false; // Disallow respawn
-                           issues.push({ ['team input']: 'Cannot join ' + team + ' team because it already has more players than ' + teamColors[i] });
-                           // alert('Cannot join ' + team + ' team because it already has more players than ' + teamColors[i]);
+                           issues.push({ ['team input']: 'Cannot join ' + team + ' team because it already has more players than ' + config.colors.teams[i] });
+                           // alert('Cannot join ' + team + ' team because it already has more players than ' + config.colors.teams[i]);
                            break;
                         }
                      }
-                     if (org && org.team !== team && Game.game.teams[teamColors.indexOf(org.team)].length === Game.game.teams[teamColors.indexOf(team)].length) { // If chosen team has equal players as current team (and is not current team)
+                     if (org && org.team !== team && Game.game.teams[config.colors.teams.indexOf(org.team)].length === Game.game.teams[config.colors.teams.indexOf(team)].length) { // If chosen team has equal players as current team (and is not current team)
                         ok = false; // Disallow respawn
                         issues.push({ ['team input']: 'Cannot join ' + team + ' team because it will have more players than ' + org.team });
                         // alert('Cannot join ' + team + ' team because it will have more players than ' + org.team);
@@ -575,7 +575,7 @@ function submit(menuType) {
                         indices.push(i);
                      }
                   }
-                  team = teamColors[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
+                  team = config.colors.teams[indices[floor(random(0, indices.length))]]; // Set team to the team with the fewest players; If there are multiple, choose one at random
                }
             }
          } { // Game Closed
@@ -650,27 +650,27 @@ function submit(menuType) {
             // Team
             if (Game.game.info.mode === 'skm' || Game.game.info.mode === 'ctf') { // If is a team game
                if (org.team !== team) { // Only add player to team if not already on team
-                  Game.game.teams[teamColors.indexOf(team)].push(connection.socket.id); // Add player to selected team
-                  Game.game.teams[teamColors.indexOf(org.team)].splice(Game.game.teams[teamColors.indexOf(org.team)].indexOf(connection.socket.id), 1);
+                  Game.game.teams[config.colors.teams.indexOf(team)].push(connection.socket.id); // Add player to selected team
+                  Game.game.teams[config.colors.teams.indexOf(org.team)].splice(Game.game.teams[config.colors.teams.indexOf(org.team)].indexOf(connection.socket.id), 1);
                   connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
                }
             }
             // Color
             if (Game.game.info.mode === 'inf') { // If inf mode
-               color = teamColorDef.green; // All players healthy by default
+               color = config.colors.teamsDef.green; // All players healthy by default
             } else if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode
                color = Z.eid('color input').value.toLowerCase();
             } else {
-               color = teamColorDef[team]; // Color must be after Team
+               color = config.colors.teamsDef[team]; // Color must be after Team
             }
             // Initialize
-            initialize(Game.game, { spectate: false, color: orgColors[Game.game.world.color][color], skin: skin, team: team });
+            initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
          } else {
             this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
          }
          break;
       case 'pauseGame':
-         if (skins.indexOf(skin) === -1 && skin !== 'none') { // Skins
+         if (config.game.skins.indexOf(skin) === -1 && skin !== 'none') { // Skins
             ok = false;
             issues.push({ skin: 'There is an issue with the skin selection' }); // If the skin value is not 'none' or any other possible skin (should never occur)
          }
@@ -686,11 +686,11 @@ function submit(menuType) {
          }
          if (ok) {
             if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If is not a team mode
-               org.color = orgColors[Game.game.world.color][color]; // Set org color
+               org.color = config.colors.orgs[Game.game.world.color][color]; // Set org color
             } // Cannot change team in pause menu
             org.skin = skin; // Set org skin
-            Labels = label; // Set labels setting (Boolean)
-            Messages = message; // Set messages setting (Boolean)
+            config.settings.labels = label; // Set labels setting (Boolean)
+            config.settings.messages = message; // Set messages setting (Boolean)
             let skip = false;
             for (let i = 0; i < Game.game.players.length; i++) {
                if (Game.game.players[i] === connection.socket.id) { // If still is a player
@@ -724,8 +724,8 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            Labels = label; // Set name labels setting (Boolean)
-            Messages = message; // Set messages setting (Boolean)
+            config.settings.labels = label; // Set name labels setting (Boolean)
+            config.settings.messages = message; // Set messages setting (Boolean)
             Game.state = 'spectate';
             ReactDOM.render(<CanvasCont />, Z.eid('root'));
          } else {

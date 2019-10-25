@@ -1,8 +1,8 @@
 class Cell {
    constructor(x, y, org) {
       this.player = org.player;
-      this.width = _cellwidth;
-      this.height = _cellwidth; // this.width should equal this.height
+      this.width = config.game.cell_width;
+      this.height = config.game.cell_width; // this.width should equal this.height
       this.x = x; // Cell Center's x coordinate
       this.y = y; // Cell Center's y coordinate
       this.color = org.color; // ^ Causes errors when sending cells to server in 'org update'

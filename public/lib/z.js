@@ -158,3 +158,8 @@ class Z {
       return fullElement !== null;
    }
 }
+
+(() => {
+   Z.cos45 = 0.70710678118;
+   Z.root2 = 1.41421356;
+})();

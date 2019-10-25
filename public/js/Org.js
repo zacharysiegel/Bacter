@@ -5,7 +5,7 @@ class Org {
       this.color = data.color;
       this.skin = data.skin;
       this.team = data.team;
-      this.speed = data.spectating ? _spectatespeed : _movespeed;
+      this.speed = data.spectating ? config.game.spectate_speed : config.game.move_speed;
 
       let src = getSrc();
       if (src && src.src === 'game') {
@@ -31,10 +31,10 @@ class Org {
       } else {
          let repos;
          do {
-            let min_x = src.world.x + 50 + _cellwidth / 2; // +- 50 acts as buffer
-            let min_y = src.world.y + 50 + _cellwidth / 2;
-            let max_x = src.world.x + src.world.width - 50 - _cellwidth / 2;
-            let max_y = src.world.y + src.world.height - 50 - _cellwidth / 2;
+            let min_x = src.world.x + 50 + config.game.cell_width / 2; // +- 50 acts as buffer
+            let min_y = src.world.y + 50 + config.game.cell_width / 2;
+            let max_x = src.world.x + src.world.width - 50 - config.game.cell_width / 2;
+            let max_y = src.world.y + src.world.height - 50 - config.game.cell_width / 2;
             this.cursor = { // Position is the target's location in the world
                x: floor(min_x + Math.random() * (max_x - min_x)),
                y: floor(min_y + Math.random() * (max_y - min_y))
@@ -98,7 +98,7 @@ class Org {
       };
 
       this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
-      this.range = _range;
+      this.range = config.game.default_range;
 
       this.hit = undefined;
       this.count = this.cells.length;
@@ -121,7 +121,7 @@ class Org {
       //    right: this.cursor.x,
       //    top: this.cursor.y,
       //    bottom: this.cursor.y,
-      //    buffer: _cellwidth / 2,
+      //    buffer: config.game.cell_width / 2,
       //    color: this.color
       // };
       // this.setClickbox = () => { // DO NOT DELETE
@@ -313,12 +313,12 @@ class Org {
          this.tracker.end = Date.now();
          this.tracker.elap = this.tracker.end - this.tracker.start;
       }
-      if (this.tracker.elap < _orgfrequency * .6) { // If org is growing ~twice as frequently as it should
+      if (this.tracker.elap < config.game.org_frequency * .6) { // If org is growing ~twice as frequently as it should
          switch (Game.state) { // Recreate org growth interval (stored in an array so if multiple intervals are created accidentally, they can be cleared)
             case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
             case 'pauseGameMenu':
                this.clearIntervals();
-               this.intervals.push(setInterval(() => runLoop(), _orgfrequency));
+               this.intervals.push(setInterval(() => runLoop(), config.game.org_frequency));
                break;
          }
       }
@@ -517,13 +517,13 @@ class Org {
          // Birth new cell accordingly; If execution has reached this point, the spawn location is confirmed to be valid
          if (ability.compress.value && ability.extend.value || ! ability.compress.value && ! ability.extend.value) { // compress.value NOT XOR extend.value (if both false or both true)
             this.coefficient = -27.5;
-            this.range = _range;
+            this.range = config.game.default_range;
          } else if (ability.compress.value === true) {
             this.coefficient = -31.5;
-            this.range = _range - 10;
+            this.range = config.game.default_range - 10;
          } else if (ability.extend.value === true) {
             this.coefficient = -25.5;
-            this.range = _range + 20;
+            this.range = config.game.default_range + 20;
          }
 
          let chance = this.coefficient * Math.log(sqrt(sq(cell.x - this.cursor.x) + sq(cell.y - this.cursor.y)) + 1) + 100; // -27.5(ln(r + 1)) + 100
@@ -552,10 +552,10 @@ class Org {
 
          if (src.world) {
             if (src.world.type === 'rectangle') { // If new cell would be outside a rectangular world's boundary
-               if (cell.x - _cellwidth / 2 <= src.world.x || // West
-                  cell.x + _cellwidth / 2 >= src.world.x + src.world.width || // East
-                  cell.y - _cellwidth / 2 <= src.world.y || // North
-                  cell.y + _cellwidth / 2 >= src.world.y + src.world.height) { // South
+               if (cell.x - config.game.cell_width / 2 <= src.world.x || // West
+                  cell.x + config.game.cell_width / 2 >= src.world.x + src.world.width || // East
+                  cell.y - config.game.cell_width / 2 <= src.world.y || // North
+                  cell.y + config.game.cell_width / 2 >= src.world.y + src.world.height) { // South
                   return true;
                }
             } else if (src.world.type === 'ellipse') { // If the new cell would be outside an elliptical world's boundary
@@ -563,24 +563,24 @@ class Org {
                let a2 = sq(a);
                let b = src.world.height / 2;
                let b2 = sq(b);
-               let x = (cell.x - _cellwidth / 2) - a;
-               let y = (cell.y - _cellwidth / 2) - b;
+               let x = (cell.x - config.game.cell_width / 2) - a;
+               let y = (cell.y - config.game.cell_width / 2) - b;
 
                if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
                   return true;
                }
-               x = (cell.x + _cellwidth / 2) - a;
-               y = (cell.y - _cellwidth / 2) - b;
+               x = (cell.x + config.game.cell_width / 2) - a;
+               y = (cell.y - config.game.cell_width / 2) - b;
                if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
                   return true;
                }
-               x = (cell.x + _cellwidth / 2) - a;
-               y = (cell.y + _cellwidth / 2) - b;
+               x = (cell.x + config.game.cell_width / 2) - a;
+               y = (cell.y + config.game.cell_width / 2) - b;
                if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
                   return true;
                }
-               x = (cell.x - _cellwidth / 2) - a;
-               y = (cell.y + _cellwidth / 2) - b;
+               x = (cell.x - config.game.cell_width / 2) - a;
+               y = (cell.y + config.game.cell_width / 2) - b;
                if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
                   return true;
                }
@@ -608,14 +608,14 @@ class Org {
 
             for (let c = 0; c < opp_org.count; c++) {
                const opp = opp_org.cells[c]; // Opponent's cell
-               const cell_bottom = cell.y + _cellwidth / 2;
-               const cell_right = cell.x + _cellwidth / 2;
-               const cell_top = cell_bottom - _cellwidth;
-               const cell_left = cell_right - _cellwidth;
-               const opp_bottom = opp.y + _cellwidth / 2;
-               const opp_right = opp.x + _cellwidth / 2;
-               const opp_top = opp_bottom - _cellwidth;
-               const opp_left = opp_right - _cellwidth;
+               const cell_bottom = cell.y + config.game.cell_width / 2;
+               const cell_right = cell.x + config.game.cell_width / 2;
+               const cell_top = cell_bottom - config.game.cell_width;
+               const cell_left = cell_right - config.game.cell_width;
+               const opp_bottom = opp.y + config.game.cell_width / 2;
+               const opp_right = opp.x + config.game.cell_width / 2;
+               const opp_top = opp_bottom - config.game.cell_width;
+               const opp_left = opp_right - config.game.cell_width;
 
                if (opp_left <= cell_right && cell_right <= opp_right) { // If right side of the new cell is between the right and left sides of opp cell
                   if (opp_top <= cell_bottom && cell_bottom <= opp_bottom) { // If bottom side of the new cell is between the top and bottom sides of opp cell

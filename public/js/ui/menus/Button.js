@@ -40,7 +40,7 @@ class Button extends React.Component {
             }
             org = undefined; // Clear org variable
             Title.render();
-            title = new Title();
+            title = Title.create();
             break;
       }
    }

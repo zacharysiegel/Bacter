@@ -40,9 +40,9 @@ let io = socketio(server);
 // Import Configurations
 let config;
 try { // Production code in try
-   config = require('../config/config.json');
+   config = require('./config/config.json');
 } catch (ex) {
-   config = require('../../config/config.json');
+   config = require('./../config/config.json');
 }
 if (config.project_state !== 'production' && config.project_state !== 'development') {
    console.error('Non-Enumerated Value -- config.project_state should be "production" or "development"');

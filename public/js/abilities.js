@@ -115,7 +115,7 @@ function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
       i: 3,
       j: 1,
       color: { r: undefined, g: undefined, b: undefined },
-      radius: _cellwidth / cos45 * 2.9,
+      radius: config.game.cell_width / Z.cos45 * 2.9,
       can: false,
       timeout: undefined,
       start: undefined,
@@ -129,7 +129,7 @@ function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
          // { // Sets values on use
          //    value: false, 
          //    color: undefined, 
-         //    radius: _cellwidth / cos45 * 2.7 / 2, // Half 'secrete'
+         //    radius: config.game.cell_width / Z.cos45 * 2.7 / 2, // Half 'secrete'
          //    hit: false, 
          //    timeout: undefined, 
          //    start: undefined, 
@@ -293,7 +293,7 @@ function shoot(I, J) { // Both parameters are required
    } else if (ability.shoot.value[I] === true) { // If currently shooting (secrete)
       ability.shoot.end[I] = new Date();
       ability.shoot.value[I] = false;
-      ability.shoot.secrete[I].radius = _cellwidth / cos45 * 2.9 / 2; // Not predefined (Half secrete)
+      ability.shoot.secrete[I].radius = config.game.cell_width / Z.cos45 * 2.9 / 2; // Not predefined (Half secrete)
       ability.shoot.secrete[I].hit = false;
       ability.shoot.secrete[I].time = 800; // Not predefined (Same as secrete)
       clearTimeout(ability.shoot.timeout[I]);

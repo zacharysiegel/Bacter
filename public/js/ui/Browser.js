@@ -74,7 +74,7 @@ class GameRow extends React.Component {
       return (
          <tr>
             <td className='title'>{game.info.title}</td>
-            <td className='mode'>{modes[game.info.mode]}</td>
+            <td className='mode'>{config.game.modes[game.info.mode]}</td>
             <td className='players'>{game.players.length}</td>
             <td className='spectators'>{game.spectators.length}</td>
             <td className='playercap'>{game.info.cap}</td>

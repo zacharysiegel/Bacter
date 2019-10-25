@@ -1,7 +1,7 @@
 class Games {
    /**
     * Construct a new Games instance
-    * @param config A configuration object (Converted from ../config.json)
+    * @param config A configuration object (Converted from ./config.json)
     */
    constructor(config) {
       this.config = config;
@@ -67,7 +67,7 @@ class Games {
     * @param {String} id The socket.id of the socket to search for
     * @param {Number} start_index (Optional) The index of the game in {Games}.list to start search in (if game has already been found)
     *                     Default Value: 0 (If game hasn't been found already, search from the beginning)
-    * @return {Map} {
+    * @return {Object} {
     *            {Number} g: The index in {Games}.list[] of the game which contains the given user in its players array
     *            {Number} p: The index in {Games}.list[].players of the given player (or -1 if spectator)
     *            {Number} s: The index in {Games}.list[].spectators of the given player (or -1 if player)

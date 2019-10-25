@@ -15,9 +15,9 @@ let World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
    }
    this.type = data.type;
    this.color = data.color;
-   for (let i in worldColors) {
+   for (let i in config.colors.world) {
       if (i === this.color) {
-         this.background = worldColors[i];
+         this.background = config.colors.world[i];
          break;
       }
    }
@@ -26,7 +26,7 @@ let World = function(datA) { // datA: { width: , height: , type: , color: , x: ,
       color: undefined,
       weight: 1
    };
-   this.backdrop = backdrop_color;
+   this.backdrop = config.colors.backdrop;
    this.border.weight = 1;
    if (this.color === 'black') {
       this.border.color = { r: 255, g: 255, b: 255 };
@@ -132,7 +132,7 @@ function renderWorld() {
       rectMode(CENTER);
    } { // Messages
       translate(org.off.x, org.off.y);
-      if (Messages === true) {
+      if (config.settings.messages === true) {
          textFont('Helvetica');
          textStyle(NORMAL);
          let message = currentMessage();
@@ -159,8 +159,8 @@ function renderWorld() {
    if (Game.game.info.mode === 'ctf') {
       // Bases
       for (let i = 1; i < Game.game.teams.length + 1; i++) {
-         let color = teamColorDef[teamColors[i - 1]];
-         stroke(orgColors[Game.game.world.color][color].r, orgColors[Game.game.world.color][color].g, orgColors[Game.game.world.color][color].b);
+         let color = config.colors.teamsDef[config.colors.teams[i - 1]];
+         stroke(config.colors.orgs[Game.game.world.color][color].r, config.colors.orgs[Game.game.world.color][color].g, config.colors.orgs[Game.game.world.color][color].b);
          strokeWeight(3);
          let bin = i.toString(2); // Convert i to binary string
          if (bin.length < 2) {
@@ -183,8 +183,8 @@ function renderWorld() {
             arc(x, y, l, l, -theta + 1, -theta + 89); // -1 to avoid world border overlap with a degree cushion either side
          } else if (Game.game.world.type === 'ellipse') {
             let r = Game.game.world.width / 2;
-            let h = x + cos(-theta + 45) * r * (root2 - 1); // l = r(root2 - 1); length from circle to square corner
-            let k = y + sin(-theta + 45) * r * (root2 - 1); // yoff = l*sin(-theta + 45); -theta + 45 gives angle to center
+            let h = x + cos(-theta + 45) * r * (Z.root2 - 1); // l = r(Z.root2 - 1); length from circle to square corner
+            let k = y + sin(-theta + 45) * r * (Z.root2 - 1); // yoff = l*sin(-theta + 45); -theta + 45 gives angle to center
             let a = Game.game.world.x + r; // a is world center x
             let b = Game.game.world.y + r; // b is world center y
             let diffs = [];

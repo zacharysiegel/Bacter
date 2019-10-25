@@ -152,7 +152,7 @@ class Connection {
             Menu.renderMenu('pauseGame', Game.game); // Move to correct menu if on spectate menu
          } else if (Game.state === 'respawnMenu') {
             Menu.renderMenu('pauseGame', Game.game);
-            menus.pauseGame.submit();
+            config.menus.pauseGame.submit(); // TODO: pretty sure this is wrong
          }
          spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
          org.spawn = false;
@@ -165,7 +165,7 @@ class Connection {
             alert('The game has ended');
          }
          Title.render();
-         title = new Title();
+         title = Title.create();
       });
    }
    listen_spectate() {

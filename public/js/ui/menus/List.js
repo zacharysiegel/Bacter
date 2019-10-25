@@ -29,17 +29,17 @@ class List extends React.Component {
             ];
             break;
          case 'game mode':
-            for (let i in modes) {
-               let mode = modes[i];
+            for (let i in config.game.modes) {
+               let mode = config.game.modes[i];
                let disabled = false;
                if (i === 'ctf' || i === 'inf' || i === 'kth') disabled = true; // CTF, INF, and KTH modes are currently not available
-               info.push({ value: i, inner: modes[i], disabled: disabled });
+               info.push({ value: i, inner: config.game.modes[i], disabled: disabled });
             }
             break;
          case 'color':
-            for (let i in orgColors[Game.game.world.color]) { // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
+            for (let i in config.colors.orgs[Game.game.world.color]) { // Renders all colors as a ffa game; If it is a team mode, rendering should be blocked in Menu.render()
                let color = i; // Key: Color name: String
-               let rgb = orgColors[Game.game.world.color][i]; // Value: RGB: Object
+               let rgb = config.colors.orgs[Game.game.world.color][i]; // Value: RGB: Object
                info.push({ value: color, inner: color[0].toUpperCase() + color.slice(1), 
                   style: { backgroundColor: 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')' }
                });
@@ -47,8 +47,8 @@ class List extends React.Component {
             if (this.menuType === 'respawn' || this.menuType === 'pauseGame') {
                for (let i = 0; i < info.length; i++) {
                   let color;
-                  for (let j in orgColors[Game.game.world.color]) {
-                     if (orgColors[Game.game.world.color][j] === org.color) {
+                  for (let j in config.colors.orgs[Game.game.world.color]) {
+                     if (config.colors.orgs[Game.game.world.color][j] === org.color) {
                         color = j;
                         break;
                      }
@@ -73,7 +73,7 @@ class List extends React.Component {
                }
             }
             for (let i = 0; i < Game.game.teams.length; i++) { // If is not a team mode, rendering should be blocked in Menu.render()
-               info.push({ value: teamColors[i], inner: teamColors[i][0].toUpperCase() + teamColors[i].slice(1) + ': ' + Game.game.teams[i].length });
+               info.push({ value: config.colors.teams[i], inner: config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1) + ': ' + Game.game.teams[i].length });
             }
             if (this.menuType === 'join') { // Team auto-selection in join menu
                let lengths = Game.game.teams.map((team) => team.length); // Array which records the number of players on each team
@@ -92,7 +92,7 @@ class List extends React.Component {
                }
             } else if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Team auto-selection in respawn menu
                for (let i = 0; i < info.length; i++) {
-                  if (org.team === teamColors[i]) {
+                  if (org.team === config.colors.teams[i]) {
                      let new_value = info[i].value;
                      this.setState({ value: new_value });
                      this.props.update(this.instance, new_value); // update(instance, value)

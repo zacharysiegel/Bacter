@@ -17,7 +17,7 @@ function setup() { // p5 function runs on window.onload (I think)
    let mu = () => mouseDown = false; // "
    page.removeEventListener('mouseup', mu); // "
    page.addEventListener('mouseup', mu); // "
-   
+
    let socketInterval = setInterval(() => { // Create instance of Ability, but socket object must exist first, so loop until socket exists
       ability = new Ability({ player: connection.socket.id }); // Create new instance of Ability
       if (connection.socket.id) { // If connection.socket.id has loaded
@@ -29,7 +29,7 @@ function setup() { // p5 function runs on window.onload (I think)
       y: window.innerHeight / 2
    };
    Title.render();
-   title = new Title();
+   title = Title.create();
 }
 
 /**
@@ -56,7 +56,7 @@ function initialize(game, data) {
  */
 function keyPressed() {
    switch (keyCode) {
-      case Controls.ability1.code: // X by default
+      case config.settings.controls.ability1.code: // X by default
          if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
             if (ability.extend.activated === true && ability.extend.can) {
                extend(org.player); // Extend self
@@ -78,7 +78,7 @@ function keyPressed() {
             // }
          }
          break;
-      case Controls.ability2.code: // C by default
+      case config.settings.controls.ability2.code: // C by default
          if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
             if (ability.immortality.activated && ability.immortality.can) {
                immortality(org.player); // Immortalize self
@@ -93,7 +93,7 @@ function keyPressed() {
             }
          }
          break;
-      case Controls.ability3.code: // V by default
+      case config.settings.controls.ability3.code: // V by default
          if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
             // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
             //    stimulate(org.player); // Stimulate self
@@ -113,7 +113,7 @@ function keyPressed() {
             }
          }
          break;
-      case Controls.ability4.code: // SPACE by default
+      case config.settings.controls.ability4.code: // SPACE by default
          if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
             if (! ability.spore.value && ! ability.secrete.value) {
                spore();
@@ -122,7 +122,7 @@ function keyPressed() {
             }
          }
          break;
-      case Controls.respawn.code: // R by default
+      case config.settings.controls.respawn.code: // R by default
          if (Game.state === 'spectate' && ! org.alive && org.spawn) {
             if (Game.game.players.length < Game.game.info.cap) {
                // connection.socket.binary(false).emit('Spectator Left', Game.game.info);
@@ -133,7 +133,7 @@ function keyPressed() {
             }
          }
          break;
-      case Controls.pause.code: { // ESC by default
+      case config.settings.controls.pause.code: { // ESC by default
          switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
             case 'createMenu':
             case 'browser':
@@ -141,7 +141,7 @@ function keyPressed() {
                break;
             case 'joinMenu':
                if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                  // connection.socket.binary(false).emit('game ended', Game.game);
+                  connection.socket.binary(false).emit('game ended', Game.game);
                   Title.render();
                } else {
                   Browser.renderBrowser();
@@ -194,7 +194,7 @@ function keyPressed() {
    }
    // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
    switch (keyCode) {
-      case 27 !== Controls.pause.code ? 27 : '': { // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
+      case 27 !== config.settings.controls.pause.code ? 27 : '': { // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
          switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
             case 'createMenu':
             case 'browser':
@@ -202,7 +202,7 @@ function keyPressed() {
                break;
             case 'joinMenu':
                if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                  // connection.socket.binary(false).emit('game ended', Game.game);
+                  connection.socket.binary(false).emit('game ended', Game.game);
                   Title.render();
                } else {
                   Browser.renderBrowser();

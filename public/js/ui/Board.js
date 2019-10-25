@@ -252,7 +252,7 @@ class Board {
                textFont(board.text.font);
                textStyle(NORMAL);
             }
-            text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
+            text(config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
             fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.cellWeight);
@@ -328,7 +328,7 @@ class Board {
                textFont(board.text.font);
                textStyle(NORMAL);
             }
-            text(teamColors[i][0].toUpperCase() + teamColors[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
+            text(config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
             fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.cellWeight);

@@ -80,7 +80,7 @@ class MenuSubmit extends React.Component { // Button for submitting menu informa
             onMouseOut={this.handleMouseOut} 
             onMouseDown={this.handleMouseDown} 
             onMouseUp={this.handleMouseUp}
-         ><p style={ { margin: 0 } }>{menus[this.menuType].button}</p>
+         ><p style={ { margin: 0 } }>{config.menus[this.menuType].button}</p>
          </button>
       );
    }

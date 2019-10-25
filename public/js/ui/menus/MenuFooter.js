@@ -18,7 +18,7 @@ class MenuFooter extends React.Component {
             Title.render();
             break;
          case 'join':
-            if (Game.game.info.host == connection.socket.id) { // If player is host (If player is joining directly after creating the game)
+            if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
                connection.socket.binary(false).emit('game ended', Game.game);
                Title.render();
             } else {

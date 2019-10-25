@@ -32,7 +32,7 @@ let currentMessage = () => {
                message = 'Round ends in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
             }
          } else {
-            message = 'Press \'' + Controls.respawn.key + '\' to Spawn';
+            message = 'Press \'' + config.settings.controls.respawn.key + '\' to Spawn';
          }
       }
    } else if (Game.state === 'tutorial') {
@@ -86,7 +86,7 @@ let currentMessage = () => {
 };
 
 function renderMessages() {
-   if (Messages === true) {
+   if (config.settings.messages === true) {
       let message = currentMessage();
       if (message !== undefined) {
          let src = getSrc();

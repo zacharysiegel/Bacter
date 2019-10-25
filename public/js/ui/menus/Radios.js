@@ -17,10 +17,10 @@ class Radios extends React.Component {
    applyInstance() { // This funtion is run inside the componentDidMount React lifecycle hook
       switch (this.instance) {
          case 'skin':
-            this.set = skins.slice(); // Set is an array of text to be displayed next to the radio inputs
+            this.set = config.game.skins.slice(); // Set is an array of text to be displayed next to the radio inputs
             if (this.menuType === 'respawn' || this.menuType === 'pauseGame') { // Placed outside for loop so the above will occur by defualt and this will overwrite if applicable
-               for (let i = 0; i < skins.length; i++) {
-                  if (org && org.skin === skins[i]) {
+               for (let i = 0; i < config.game.skins.length; i++) {
+                  if (org && org.skin === config.game.skins[i]) {
                      let selections = this.state.selections.slice(); // Create copy of state selections array
                      selections.fill(false); // Set entire array to false
                      selections[i] = true; // Set current skin to value true
@@ -32,7 +32,7 @@ class Radios extends React.Component {
             }
             break;
          case '1st ability':
-            this.set = firsts.slice(); // Defined in config.js
+            this.set = config.game.firsts.slice(); // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
                let selections = this.state.selections.slice(); // Create copy of state selections array
@@ -47,7 +47,7 @@ class Radios extends React.Component {
             }
             break;
          case '2nd ability':
-            this.set = seconds; // Defined in config.js
+            this.set = config.game.seconds; // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
                let selections = this.state.selections.slice(); // Create copy of state selections array
@@ -62,7 +62,7 @@ class Radios extends React.Component {
             }
             break;
          case '3rd ability':
-            this.set = thirds; // Defined in config.js
+            this.set = config.game.thirds; // Defined in config.js
             if (this.menuType === 'respawn') {
                let index;
                let selections = this.state.selections.slice(); // Create copy of state selections array
@@ -77,7 +77,7 @@ class Radios extends React.Component {
             }
             break;
          case '4th ability': {
-            this.set = fourths; // Defined in config.js
+            this.set = config.game.fourths; // Defined in config.js
             let selections = this.state.selections.slice(); // Create copy of state's selections array
             selections[0] = true; // There is only one fourth ability, and it is always activated
             this.setState({ value: 0, selections: selections });
@@ -99,7 +99,7 @@ class Radios extends React.Component {
             break;
          case 'name labels':
             this.set = ['']; // Do not display any text adjacent to name label radio
-            if (Labels) {// If name labels setting is on
+            if (config.settings.labels) {// If name labels setting is on
                this.setState({ value: this.instance, selections: [ true ] }); // Set value of Radios to instance value ('name labels') and select the radio
                this.props.update(this.instance, this.instance); // update(instance, value); this.instance corresponds to new value
             } else {
@@ -109,7 +109,7 @@ class Radios extends React.Component {
             break;
          case 'messages':
             this.set = ['']; // Do not display any text adjacent to name label radio
-            if (Messages) {// If messages setting is on
+            if (config.settings.messages) {// If messages setting is on
                this.setState({ value: this.instance, selections: [ true ] }); // Set value of Radios to instance value ('messages') and select the radio
                this.props.update(this.instance, this.instance); // update(instance, value); this.instance corresponds to new value
             } else {

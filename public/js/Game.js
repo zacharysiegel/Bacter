@@ -52,7 +52,7 @@ class Game {
             waiting: true,
             delayed: false,
             delaystart: undefined,
-            rounddelay: _rounddelay,
+            rounddelay: config.game.round_delay,
             start: undefined,
             min: undefined, // Min players
             winner: undefined

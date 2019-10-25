@@ -22,32 +22,32 @@ class Num extends React.Component {
    applyInstance() {
       switch (this.instance) {
          case 'world width':
-            this.placeholder = Defaults.worldwidth;
+            this.placeholder = config.game.defaults.world_width;
             this.min = 300;
             this.max = 100000;
             break;
          case 'world height':
-            this.placeholder = Defaults.worldheight;
+            this.placeholder = config.game.defaults.world_height;
             this.min = 300;
             this.max = 100000;
             break;
          case 'player minimum':
-            this.placeholder = Defaults.playermin;
+            this.placeholder = config.game.defaults.player_min;
             this.min = 2;
             break;
          case 'player cap':
-            this.placeholder = Defaults.playercap;
+            this.placeholder = config.game.defaults.player_cap;
             this.min = 2;
             break;
          case 'leaderboard length':
-            this.placeholder = Defaults.boardlength;
+            this.placeholder = config.game.defaults.board_length;
             this.min = 1;
             this.max = 20;
             break;
          case 'team count':
-            this.placeholder = Defaults.teamcount;
+            this.placeholder = config.game.defaults.team_count;
             this.min = 2;
-            this.max = teamColors.length;
+            this.max = config.colors.teams.length;
             break;
       }
    }

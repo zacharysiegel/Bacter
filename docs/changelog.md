@@ -233,7 +233,10 @@
       Changed cursor over radio buttons to pointer
       Improved efficiency of organism generation
       Improved other documentation
+      Fixed failure to apply compress and extend abilities in the tutorial
+      Fixed blank background on forced exit of a game
       Fixed 'issue with skin detection' bug in the spawn and pause menus
+      Fixed text alignment in selection input type
       Fixed frequent disconnect and reconnection of client
       Fixed occasional client non-connection to socket
       Fixed unnecessary client-to-server data emissions on title screen
