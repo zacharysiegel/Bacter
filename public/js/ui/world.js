@@ -135,11 +135,9 @@ function renderWorld() {
       if (config.settings.messages === true) {
          textFont('Helvetica');
          textStyle(NORMAL);
-         let message = currentMessage();
-         if (message !== undefined) {
-            let breaks = Z.freq(message, '\n');
-            let width = messageWidth(message);
-            rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
+         const message = new Message();
+         if (message.hasText) {
+            rect(5 + 25 + message.width / 2, 4 + 25 + 9 * message.breaks, 25 + message.width, 26 + 18 * message.breaks);
          }
       }
       translate(-org.off.x, -org.off.y);

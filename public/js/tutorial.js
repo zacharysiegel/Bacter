@@ -41,14 +41,13 @@ class Tutorial {
          fill(this.world.backdrop.r - 20, this.world.backdrop.g - 20, this.world.backdrop.b - 20); // World Shadow
          noStroke();
          rect(this.world.x + this.world.width / 2 + 7, this.world.y + this.world.height / 2 + 6, this.world.width, this.world.height);
+
+         const message = new Message();
          if (config.settings.messages === true) { // Render Messages; TODO: Should users be allowed to turn these messages off?
             textFont('Helvetica');
             textStyle(NORMAL);
-            let message = currentMessage();
-            if (message !== undefined) {
-               let breaks = Z.freq(message, '\n');
-               let width = messageWidth(message);
-               rect(5 + 25 + width / 2, 4 + 25 + 9 * breaks, 25 + width, 26 + 18 * breaks);
+            if (message.hasText) {
+               rect(5 + 25 + message.width / 2, 4 + 25 + 9 * message.breaks, 25 + message.width, 26 + 18 * message.breaks);
             }
          }
 
@@ -75,7 +74,7 @@ class Tutorial {
          strokeWeight(1);
          line(org.cursor.x - 4, org.cursor.y, org.cursor.x + 4, org.cursor.y);
          line(org.cursor.x, org.cursor.y - 4, org.cursor.x, org.cursor.y + 4);
-         renderMessages(); // Render messages outside translation
+         message.render(); // Render messages outside translation
 
          if (this.stopped === false) { // Calculate
             if (ability.spore.value === true) {

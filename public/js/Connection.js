@@ -98,7 +98,7 @@ class Connection {
                Board.render();
                translate(org.off.x, org.off.y);
 
-               renderMessages(); // Render messages outside translation
+               (new Message()).render(); // Render messages outside translation
                if (Game.state === 'game') {
                   move(); // Move goes at the end so player does not render his movements before others
                }
@@ -106,7 +106,6 @@ class Connection {
             case 'spectate':
             case 'pauseSpectateMenu':
             case 'respawnMenu':
-            {
                translate(-org.off.x, -org.off.y);
                renderWorld();
                for (let i = 0; i < Game.game.info.count; i++) {
@@ -124,8 +123,8 @@ class Connection {
                }
                Board.render();
                translate(org.off.x, org.off.y);
-            }
-               renderMessages();
+
+               (new Message()).render();
                if (Game.state === 'spectate') {
                   move(); // Move is after messages so everything has same offset
                }
