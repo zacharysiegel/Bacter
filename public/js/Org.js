@@ -276,16 +276,16 @@ class Org {
             exposed.add(this.cells[i]);
          }
          if (! left) { // Push all empty regions adjacent to org
-            adjacent.add({x: this.cells[i].x - this.cells[i].width, y: this.cells[i].y});
+            adjacent.add({ x: this.cells[i].x - this.cells[i].width, y: this.cells[i].y });
          }
          if (! top) {
-            adjacent.add({x: this.cells[i].x, y: this.cells[i].y - this.cells[i].height});
+            adjacent.add({ x: this.cells[i].x, y: this.cells[i].y - this.cells[i].height });
          }
          if (! right) {
-            adjacent.add({x: this.cells[i].x + this.cells[i].width, y: this.cells[i].y});
+            adjacent.add({ x: this.cells[i].x + this.cells[i].width, y: this.cells[i].y });
          }
          if (! bottom) {
-            adjacent.add({x: this.cells[i].x, y: this.cells[i].y + this.cells[i].height});
+            adjacent.add({ x: this.cells[i].x, y: this.cells[i].y + this.cells[i].height });
          }
       }
 
@@ -673,24 +673,14 @@ class Org {
          }
 
          // Remove cells if they are outside the world
-         if (src.world.type === 'rectangle' && (cell.x < src.world.x || cell.x > src.world.x + src.world.width || cell.y < src.world.y || cell.y > src.world.y + src.world.height)) { // If cell is outside rectangular world
-            for (let j = 0; j < this.count; j++) { // Find exposed cell in org cells array
-               if (cell.equals(this.cells[j])) {
-                  this.removeCell(j);
+         if (cell.isOutsideWorld) {
+            for (let c = 0; c < this.count; c++) {
+               if (cell.equals(this.cells[c])) {
+                  this.removeCell(c);
                   this.regions.exposed.delete(cell);
                   continue exposed; // Since cell is removed, if no continue, the program would continue to perform checks on the previous cell
                }
             }
-            console.error("Element Not Found :: Org.naturalDeath :: Could not find exposed cell in org's cells array");
-         } else if (src.world.type === 'ellipse' && sq(cell.x - src.world.x - src.world.width / 2) / sq(src.world.width / 2) + sq(cell.y - src.world.y - src.world.height / 2) / sq(src.world.height / 2) > 1) { // If outside elliptical world
-            for (let j = 0; j < this.count; j++) { // Find exposed cell in org cells array
-               if (cell.equals(this.cells[j])) { // Identify cell
-                  this.removeCell(j);
-                  this.regions.exposed.delete(cell);
-                  continue exposed; // Since cell is removed, if no continue, the program would continue to perform checks on the previous cell
-               }
-            }
-            console.error("Element Not Found :: Org.naturalDeath :: Could not find exposed cell in org's cells array");
          }
 
          // Kill normal cells based on their distance from the org's cursor

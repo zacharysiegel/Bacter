@@ -75,9 +75,6 @@
       Fixed cannot spawn over opponent org
       Fixed leaderboard cover end of long name
 
-## a2.1.2
-      Added popunder advertising
-
 ## a2.2.0
       Added game creation options menu
       Added join game options menu
@@ -99,7 +96,6 @@
       Added peacock color option to white world
       Added burnt color option to white world
       Added forest color option to white world
-      Removed popunder advertising
       Removed ability selection screen
       Removed password entry column from browser
       Removed display of spectators in leaderboard
@@ -236,6 +232,7 @@
       Fixed failure to apply compress and extend abilities in the tutorial
       Fixed blank background on forced exit of a game
       Fixed 'issue with skin detection' bug in the spawn and pause menus
+      Fixed org world border detection
       Fixed text alignment in selection input type
       Fixed frequent disconnect and reconnection of client
       Fixed occasional client non-connection to socket

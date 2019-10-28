@@ -36,7 +36,94 @@ class Cell {
       return sq(this.x - this.org_cursor.x) + sq(this.y - this.org_cursor.y);
    }
 
-   // d() {
-   //    return sqrt(sq(this.x - org.cursor.x) + sq(this.y - org.cursor.y)); // Distance from target (Position in world)
-   // }
+   /**
+    * Determine if the given cell is outside the world boundary
+    * @returns {Boolean} True if the location is out of the world bounds
+    */
+   get isOutsideWorld() {
+      let src = getSrc();
+
+      if (src.world) {
+         if (src.world.type === 'rectangle') { // If new cell would be outside a rectangular world's boundary
+            if (this.x - this.width / 2 <= src.world.x || // West
+               this.x + this.width / 2 >= src.world.x + src.world.width || // East
+               this.y - this.height / 2 <= src.world.y || // North
+               this.y + this.height / 2 >= src.world.y + src.world.height) { // South
+               return true;
+            }
+         } else if (src.world.type === 'ellipse') { // If the new cell would be outside an elliptical world's boundary
+            let a = src.world.width / 2;
+            let a2 = sq(a);
+            let b = src.world.height / 2;
+            let b2 = sq(b);
+            let x = (this.x - this.width / 2) - a;
+            let y = (this.y - this.height / 2) - b;
+
+            if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
+               return true;
+            }
+            x = (this.x + this.width / 2) - a;
+            y = (this.y - this.height / 2) - b;
+            if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
+               return true;
+            }
+            x = (this.x + this.width / 2) - a;
+            y = (this.y + this.height / 2) - b;
+            if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
+               return true;
+            }
+            x = (this.x - this.width / 2) - a;
+            y = (this.y + this.height / 2) - b;
+            if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
+   /**
+    * Detect collisions between the given cell and an opponent's org
+    * @return {Boolean} True if collision is detected, else false
+    */
+   get collidesWithOpponent() {
+      const src = getSrc();
+
+      let org_count = src.orgs.length;
+      for (let o = 0; o < org_count; o++) {
+         const opp_org = src.orgs[o];
+         if (opp_org.player === this.player) { // If org is player's org
+            continue;
+         }
+
+         for (let c = 0; c < opp_org.count; c++) {
+            const opp = opp_org.cells[c]; // Opponent's cell
+            const cell_bottom = this.y + this.height / 2;
+            const cell_right = this.x + this.width / 2;
+            const cell_top = cell_bottom - this.height;
+            const cell_left = cell_right - this.width;
+            const opp_bottom = opp.y + this.height / 2;
+            const opp_right = opp.x + this.width / 2;
+            const opp_top = opp_bottom - this.height;
+            const opp_left = opp_right - this.width;
+
+            if (opp_left <= cell_right && cell_right <= opp_right) { // If right side of the new cell is between the right and left sides of opp cell
+               if (opp_top <= cell_bottom && cell_bottom <= opp_bottom) { // If bottom side of the new cell is between the top and bottom sides of opp cell
+                  return true;
+               } else if (opp_top <= cell_top && cell_top <= opp_bottom) { // If top side of the new cell is between the top and bottom sides of opp cell
+                  return true;
+               }
+            } else if (opp_left <= cell_left && cell_left <= opp_right) { // If left side of the new cell is between the right and left sides of opp cell
+               if (opp_top <= cell_bottom && cell_bottom <= opp_bottom) { // If bottom side of the new cell is between the top and bottom sides of opp cell
+                  return true;
+               } else if (opp_top <= cell_top && cell_top <= opp_bottom) { // If top side of the new cell is between the top and bottom sides of opp cell
+                  return true;
+               }
+            }
+         }
+      }
+
+      return false;
+   }
 }
