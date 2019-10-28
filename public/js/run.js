@@ -66,6 +66,7 @@ function renderUI() {
                   let average = sum / Game.game.orgs[i].count;
                   return average;
                };
+
                if (Game.game.board.list[j].name.length <= 30) {
                   text(Game.game.board.list[j].name, x() - textWidth(Game.game.board.list[j].name) / 2, y() + sqrt(sq(config.game.cell_width) * Game.game.orgs[i].count / PI) + 2 * config.game.cell_width + 8); // sqrt expression approximates radius as a circle; 6 is buffer
                } else {
@@ -407,7 +408,7 @@ function roundBehaviors() {
                // connection.socket.binary(false).emit('End Round', Game.game.info);
                Game.game.board.list[i].wins++;
                Board.order(Game.game.board);
-               connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host });
+               connection.emit_board(Game.game.board);
             }
          }
       }
@@ -438,5 +439,5 @@ function die(spectating) {
       ability.shoot.start[i] = undefined;
       ability.shoot.end[i] = undefined;
    }
-   connection.socket.binary(false).emit('Ability', ability);
+   connection.emit_ability(ability);
 }

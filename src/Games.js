@@ -123,6 +123,22 @@ class Games {
 
       return result;
    }
+
+   /**
+    * Detemine the index of a shrink interval in {Games}.shrinkIntervals
+    * @param {String} host The host of the game in question
+    * @return {Number} The index of the target interval in {Games}.shrinkIntervals or -1 if not found
+    */
+   getShrinkIndex(host) {
+      const len = this.shrinkIntervals.length;
+      for (let s = 0; s < len; s++) {
+         const shrink = this.shrinkIntervals[s];
+         if (shrink.host === host) {
+            return s;
+         }
+      }
+      return -1;
+   }
 }
 
 module.exports = Games;

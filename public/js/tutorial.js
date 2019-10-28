@@ -135,7 +135,7 @@ class Tutorial {
                   this.task = 'extend';
                   ability.extend.activated = true;
                   ability.extend.can = true;
-                  // connection.socket.binary(false).emit('Ability', ability);
+                  connection.emit_ability(ability);
                }, 4500);
             }
             break;
@@ -150,7 +150,7 @@ class Tutorial {
                      this.task = 'immortality';
                      ability.immortality.activated = true;
                      ability.immortality.can = true;
-                     connection.socket.binary(false).emit('Ability', ability);
+                     connection.emit_ability(ability);
                   }, ability.extend.time);
                }
             }
@@ -166,7 +166,7 @@ class Tutorial {
                      this.task = 'neutralize';
                      ability.neutralize.activated = true;
                      ability.neutralize.can = true;
-                     connection.socket.binary(false).emit('Ability', ability);
+                     connection.emit_ability(ability);
                   }, ability.immortality.time);
                }
             }
@@ -184,7 +184,7 @@ class Tutorial {
                      ability.compress.can = true;
                      ability.freeze.activated = true;
                      ability.freeze.can = true;
-                     connection.socket.binary(false).emit('Ability', ability);
+                     connection.emit_ability(ability);
                   }, ability.neutralize.time);
                }
             }
@@ -260,7 +260,7 @@ class Tutorial {
                      ability.spore.activated = true;
                      ability.spore.can = true;
                      ability.secrete.activated = true; // .can = false
-                     connection.socket.binary(false).emit('Ability', ability);
+                     connection.emit_ability(ability);
                   }, ability.toxin.time);
                }
             }

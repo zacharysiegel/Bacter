@@ -307,7 +307,7 @@ function submit(menuType) {
                   });
                }
                Board.order(Game.game.board);
-               connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+               connection.emit_board(Game.game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                // Abilities
                if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                   ability.tag.activated = false;
@@ -494,7 +494,7 @@ function submit(menuType) {
                   });
                }
                Board.order(Game.game.board);
-               connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
+               connection.emit_board(Game.game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                // Initialize
                clearInterval(title.interval);
                initialize(Game.game, { spectate: true, color: undefined, skin: undefined });

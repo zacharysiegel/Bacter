@@ -10,9 +10,9 @@ config.game = {
       kth: 'King of the Hill'
    },
 
-   firsts: [ 'Extend', 'Compress' ],
-   seconds: [ 'Immortality', 'Freeze' ],
-   thirds: [ 'Neutralize', 'Toxin' ],
+   firsts:  [ 'Extend',      'Compress' ],
+   seconds: [ 'Immortality', 'Freeze'   ],
+   thirds:  [ 'Neutralize',  'Toxin'    ],
    fourths: [ 'Spore' ],   // There is only one 4th ability, but we use an array to remain consistant with other abilities
 
    org_frequency: 70,      // Org update frequency
@@ -23,13 +23,13 @@ config.game = {
    spectate_speed: 2.5,    // Crosshair movement speed in spectate mode
    round_delay: 10000,     // Delay time (in milliseconds) before survival round starts
    dummy_count: 10,        // Number of dummy orgs in title screen
-   margin_width: 25,        // Title screen margin
+   margin_width: 25,       // Title screen margin
 
    defaults: {
       world_width:  800,
       world_height: 800,
       player_cap:   16,
-      player_min:   4,
+      player_min:   2, // TODO: Reset to 4
       board_length: 10,
       team_count:   2
    }

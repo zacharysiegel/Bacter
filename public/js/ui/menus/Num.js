@@ -5,13 +5,18 @@ class Num extends React.Component {
          value: props.value, // Actuall value of the input field
          focused: false, // If the user is focused on the field
          backgroundColor: 'rgb(255, 255, 255)',
-         display: 'table-row' // Indicates whether 'display: none' property will be set on the container table row
+         display: 'table-row', // Indicates whether 'display: none' property will be set on the container table row
+         placeholder: null,
+         min: null,
+         max: null
       };
       this.style = {};
       this.menuType = props.menuType; // Type of menu rendered inside
       this.instance = props.instance; // Name of input
       // this.index = menus[this.menuType].options.indexOf(Z.capitalize(this.instance)); // Not currently in use
       this.placeholder = null;
+
+      this.applyInstance();
 
       this.applyInstance = this.applyInstance.bind(this);
       this.handleFocus = this.handleFocus.bind(this);
@@ -73,16 +78,24 @@ class Num extends React.Component {
          this.props.submit(this.menuType);
    }
    
-   // React Lifecycle Hooks
-   componentDidMount() {
+   // React Lifecycle Methods
+   componentDidMount(prevProps) {
       this.applyInstance();
    }
-   
+
+   /**
+    * Called right before rendering
+    * @param nextProps
+    * @param prevState
+    * @returns {null|{value: *}} update to this.state
+    */
    static getDerivedStateFromProps(nextProps, prevState) {
-      if (nextProps.value !== prevState.value) {
-         return { value: nextProps.value };
+      if (prevState.value !== nextProps.value) {
+         return { // New State
+            value: nextProps.value, // nextProps.value may not have changed
+         };
       }
-      return null;
+      return null; // Do not edit component state
    }
    
    // componentWillReceiveProps(next) { // Deprecated by React
@@ -92,6 +105,7 @@ class Num extends React.Component {
    render() {
       let style = {};
       for (let i in this.style) {
+         // noinspection JSUnfilteredForInLoop (for of loop doesn't work, don't know why)
          style[i] = this.style[i];
       }
       style.backgroundColor = this.state.backgroundColor;
@@ -102,11 +116,11 @@ class Num extends React.Component {
             className='menuinput' 
             type='number' 
             value={this.state.value} 
-            placeholder={this.placeholder} 
-            min={this.min} 
-            max={this.max} 
+            placeholder={this.placeholder}
+            min={this.min}
+            max={this.max}
             autoComplete='off' 
-            style={style} 
+            style={style}
             onFocus={this.handleFocus} 
             onBlur={this.handleFocus} 
             onChange={this.handleChange} 

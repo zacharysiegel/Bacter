@@ -21,23 +21,29 @@ class Button extends React.Component {
    handleClick() {
       switch (this.instance) {
          case 'leave game':
-         case 'leave tutorial':
+            connection.emit('leave game');
             org.clearIntervals();
             // ability = new Ability({ player: connection.socket.id }); // Ability reset occurs already in Title.render()
-            if (getSrc().src === 'game') { // No game object in pause tutorial menu
-               connection.socket.binary(false).emit('leave game');
-               for (let i = 0; i < Game.game.board.list.length; i++) {
+
+            if (Game.game.info.host !== connection.socket.id) { // Only edit and update the board if the player is not the host
+               for (let i = 0; i < Game.game.board.list.length; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
                   if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
                      Game.game.board.list.splice(i, 1); // Remove player from leaderboard
                      Board.order(Game.game.board); // Sort the list before emitting to the server
-                     connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Send updated board to server
+                     connection.emit_board(Game.game.board); // Send updated board to server
                      break;
                   }
                }
             }
-            if (getSrc().src === 'tutorial') {
-               tutorial.clear(); // Clear tutorial intervals
-            }
+
+            org = undefined; // Clear org variable
+            Title.render();
+            title = Title.create();
+            break;
+         case 'leave tutorial':
+            connection.emit('leave game');
+            org.clearIntervals();
+            tutorial.clear(); // Clear tutorial intervals
             org = undefined; // Clear org variable
             Title.render();
             title = Title.create();

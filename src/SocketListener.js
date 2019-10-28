@@ -416,10 +416,10 @@ class SocketListener {
                      }
 
                      if (games.list[g].world.width > 200 && games.list[g].world.height > 200) { // If both dimensions are greater than minimum
-                        games.list[g].world.width -= config.shrink_rate;
-                        games.list[g].world.height -= config.shrink_rate;
-                        games.list[g].world.x += config.shrink_rate / 2; // World shrinks to center
-                        games.list[g].world.y += config.shrink_rate / 2;
+                        games.list[g].world.width -= this.config.shrink_rate;
+                        games.list[g].world.height -= this.config.shrink_rate;
+                        games.list[g].world.x += this.config.shrink_rate / 2; // World shrinks to center
+                        games.list[g].world.y += this.config.shrink_rate / 2;
                      }
                   }, this.config.render_frequency) // Same frequency as game interval
                });
@@ -440,11 +440,11 @@ class SocketListener {
       /**
        * @param {Object} data { list: board.list, host: game.board.host }
        */
-      this.socket.on('Board', (data) => {
+      this.socket.on('board', (data) => {
          const g = games.getIndexByHost(data.host);
          if (g === -1) {
             console.error(`[ERROR] :: listen_board :: Game not found in {Games}.list with host ${data.host}`);
-            return;
+            return; // Return here prevents an index out of bounds exception
          }
 
          games.list[g].board.list = data.list;
@@ -479,6 +479,11 @@ class SocketListener {
        */
       this.socket.on('Org Update', (data) => { // data is an array in order to decrease json data sent over web this.socket
          const indices = games.getIndicesByMember(this.socket.id);
+         if (indices.g === -1) {
+            console.error(`[ERROR] :: listen_org :: Game not found in {Games}.list with member ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds exception
+         }
+
          // games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary data rather than the entire org object
          games.list[indices.g].orgs[indices.p].cells = data.cells; // Only the following attributes of org need to be updated and shared
          games.list[indices.g].orgs[indices.p].count = data.cells.length;
@@ -517,8 +522,13 @@ class SocketListener {
     * Listen for ability event from client
     */
    listen_ability(games) {
-      this.socket.on('Ability', (ability) => {
+      this.socket.on('ability', (ability) => {
          const indices = games.getIndicesByMember(this.socket.id);
+         if (indices.g === -1) {
+            console.error(`[ERROR] :: listen_ability :: Game not found in {Games}.list with member ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds exception
+         }
+
          games.list[indices.g].abilities[indices.p] = ability;
 
 
@@ -622,6 +632,11 @@ class SocketListener {
    listen_dead(games) {
       this.socket.on('Dead', (spectating) => {
          const indices = games.getIndicesByMember(this.socket.id);
+         if (indices.g === -1) {
+            console.error(`[ERROR] :: listen_dead :: Game not found in {Games}.list with member ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds exception
+         }
+
          games.list[indices.g].players.splice(indices.p, 1); // User is no longer a player, but a spectator
          games.list[indices.g].abilities.splice(indices.p, 1); // Abilities array should be indexed identically to players array
          games.list[indices.g].orgs.splice(indices.p, 1); // Orgs array should be indexed identically to players array
@@ -676,13 +691,13 @@ class SocketListener {
          }
       };
 
-      this.socket.on('Extend', player => emit_ability('Extend', player));
-      this.socket.on('Compress', player => emit_ability('Compress', player));
-      this.socket.on('Immortality', player => emit_ability('Immortality', player));
-      this.socket.on('Freeze', player => emit_ability('Freeze', player));
-      this.socket.on('Neutralize', player => emit_ability('Neutralize', player));
-      this.socket.on('Toxin', player => emit_ability('Toxin', player));
-      this.socket.on('Tag', player => emit_ability('Tag', player)); // UNRELEASED
+      this.socket.on('extend', player => emit_ability('Extend', player));
+      this.socket.on('compress', player => emit_ability('Compress', player));
+      this.socket.on('immortality', player => emit_ability('Immortality', player));
+      this.socket.on('freeze', player => emit_ability('Freeze', player));
+      this.socket.on('neutralize', player => emit_ability('Neutralize', player));
+      this.socket.on('toxin', player => emit_ability('Toxin', player));
+      this.socket.on('tag', player => emit_ability('Tag', player)); // UNRELEASED
       // this.socket.on('Speed', player => emit_ability('Speed', player)); // OLD
       // this.socket.on('Slow', player => emit_ability('Slow', player)); // OLD
       // this.socket.on('Stimulate', player => emit_ability('Stimulate', player)); // OLD
@@ -699,13 +714,20 @@ class SocketListener {
       const isHost = index !== -1;
       if (isHost) { // If current socket is the host of his game, end the game
          const indices = games.getIndicesByMember(this.socket.id, index);
+         if (indices.g === -1) {
+            console.error(`[ERROR] :: removeMember :: Game not found in {Games}.list with member ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds exception
+         }
+
          const game = games.list[indices.g];
 
          this.io.to(game.info.title).emit('game ended', game); // Remove Players From Hosted Game
          this.io.of('/').in(game.info.title).clients((error, clients) => {
             if (error) throw error;
             clients.forEach(id => {
-               this.io.sockets.sockets[id].leave(game.info.title); // Remove all players from Socket.io room
+               let member = this.io.sockets.sockets[id];
+               member.leave(game.info.title); // Remove all players from Socket.io room
+               member.inGame = false; // TODO: Make sure this fixed the "Game not found..." issue
             });
          });
 
@@ -721,9 +743,21 @@ class SocketListener {
          games.list.splice(indices.g, 1); // Remove game from games.list
          games.intervals.splice(indices.g, 1); // Remvoe the game's interval from the collection of intervals
 
+         const shrink_index = games.getShrinkIndex(this.socket.id);
+         if (shrink_index !== -1) {
+            clearInterval(games.shrinkIntervals[shrink_index].interval);
+            games.shrinkIntervals.splice(shrink_index, 1);
+         }
+
+
          if (this.config.project_state === 'development') console.log('                                               Game Removed: ' + game.info.title + ' (' + game.info.host + ')');
       } else { // If current socket is not the host of his game
          const indices = games.getIndicesByMember(this.socket.id);
+         if (indices.g === -1) {
+            console.error(`[ERROR] :: removeMember :: Game not found in {Games}.list with member ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds exception
+         }
+
          const game = games.list[indices.g];
          if (game === undefined) return; // If this socket is not a member of any game, don't do anything (would crash server otherwise)
 
@@ -736,7 +770,7 @@ class SocketListener {
             game.abilities.splice(indices.p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
             game.info.count--; // Reduce the number of players in the game
             if (game.teams.length > 0) { // If is a team game, remove player from team
-               let team = game.teams[config.colors.teams.indexOf(game.orgs[indices.p].team)]; // Identify player's team
+               let team = game.teams[this.config.colors.teams.indexOf(game.orgs[indices.p].team)]; // Identify player's team
                team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
             }
 

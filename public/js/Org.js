@@ -351,7 +351,7 @@ class Org {
                if (Game.game.board.list[i].player === connection.socket.id) { // Add death to leaderboard
                   Game.game.board.list[i].deaths++; // Add 1 to deaths counter
                   Board.order(Game.game.board); // Sort the list by kills then deaths
-                  connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host }); // Send updated board to server
+                  connection.emit_board(Game.game.board); // Send updated board to server
                   break;
                }
             }
@@ -360,7 +360,7 @@ class Org {
                   if (Game.game.board.list[i].player === this.hit) { // Find killer in leaderboard list
                      Game.game.board.list[i].kills++;
                      Board.order(Game.game.board);
-                     connection.socket.binary(false).emit('Board', { list: Game.game.board.list, host: Game.game.board.host });
+                     connection.emit_board(Game.game.board);
                      break;
                   }
                }

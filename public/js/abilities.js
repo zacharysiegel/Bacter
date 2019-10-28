@@ -275,7 +275,7 @@ function shoot(I, J) { // Both parameters are required
       ability.shoot.interval[I] = () => {
          ability.shoot.spore[I].x += ability.shoot.spore[I].speed * cos(ability.shoot.spore[I].theta);
          ability.shoot.spore[I].y += ability.shoot.spore[I].speed * sin(ability.shoot.spore[I].theta);
-         connection.socket.binary(false).emit('Ability', ability);
+         connection.emit_ability(ability);
       };
 
       // Timeout
@@ -286,7 +286,7 @@ function shoot(I, J) { // Both parameters are required
             ability.shoot.cooling[I] = true;
             ability.shoot.end[I] = new Date();
             ability.shoot.secrete[I].end = new Date();
-            connection.socket.binary(false).emit('Ability', ability);
+            connection.emit_ability(ability);
          }
       }, ability.shoot.time);
 
@@ -319,7 +319,7 @@ function shoot(I, J) { // Both parameters are required
       }
 
       ability.shoot.secrete[I].value = true; // Value after hit detection so 'grow' hit detection does not run before initial
-      connection.socket.binary(false).emit('Ability', ability);
+      connection.emit_ability(ability);
       ability.shoot.secrete[I].timeout = setTimeout(() => {
          ability.shoot.secrete[I].value = false;
          ability.shoot.secrete[I].end = new Date(); { // Copy of 'shoot' timeout
@@ -330,7 +330,7 @@ function shoot(I, J) { // Both parameters are required
          }
          clearTimeout(ability.shoot.timeout[I]);
          ability.shoot.timeout[I] = undefined;
-         connection.socket.binary(false).emit('Ability', ability);
+         connection.emit_ability(ability);
       }, ability.shoot.secrete[I].time);
    }
 }
@@ -382,10 +382,10 @@ function use(I, J, playeR) {
 }
 
 function tag(player) {
-   connection.socket.binary(false).emit('Tag', player);
+   connection.emit('tag', player);
    ability.tag.can = false;
    ability.tag.start = new Date();
-   connection.socket.binary(false).emit('Ability', ability);
+   connection.emit_ability(ability);
    setTimeout(() => {
       ability.tag.end = new Date();
       ability.tag.cooling = true;
@@ -394,7 +394,7 @@ function tag(player) {
 
 function extend(player) {
    ability.extend.can = false;
-   connection.socket.binary(false).emit('Extend', player);
+   connection.emit('extend', player);
 }
 
 function compress(player) {
@@ -410,12 +410,12 @@ function compress(player) {
          }
       }
    } else {
-      connection.socket.binary(false).emit('Compress', player);
+      connection.emit('compress', player);
    }
    ability.compress.applied = true;
    ability.compress.can = false; // Redundancy
    ability.compress.start = new Date();
-   connection.socket.binary(false).emit('Ability', ability);
+   connection.emit_ability(ability);
    setTimeout(() => {
       ability.compress.end = new Date();
       ability.compress.applied = false;
@@ -433,7 +433,7 @@ function compress(player) {
 
 function immortality(player) {
    ability.immortality.can = false;
-   connection.socket.binary(false).emit('Immortality', player);
+   connection.emit('immortality', player);
 }
 
 function freeze(player) {
@@ -449,12 +449,12 @@ function freeze(player) {
          }
       }
    } else {
-      connection.socket.binary(false).emit('Freeze', player);
+      connection.emit('freeze', player);
    }
    ability.freeze.applied = true;
    ability.freeze.can = false; // Redundancy
    ability.freeze.start = new Date();
-   connection.socket.binary(false).emit('Ability', ability);
+   connection.emit_ability(ability);
    setTimeout(() => {
       ability.freeze.end = new Date();
       ability.freeze.applied = false;
@@ -462,29 +462,29 @@ function freeze(player) {
    }, ability.freeze.time);
 }
 
-// function stimulate(playeR) {
+// function stimulate(player) {
 //    ability.stimulate.can = false;
-//    connection.socket.binary(false).emit('Stimulate', playeR);
+//    connection.socket.binary(false).emit('Stimulate', player);
 // }
 
-// function poison(playeR) {
-//    connection.socket.binary(false).emit('Poison', playeR);
+// function poison(player) {
+//    connection.socket.binary(false).emit('Poison', player);
 //    ability.poison.can = false; // Redundancy
 //    ability.poison.start = new Date();
-//    connection.socket.binary(false).emit('Ability', ability);
+//    connection.emit_ability(ability);
 //    setTimeout(() => {
 //       ability.poison.end = new Date();
 //       ability.poison.cooling = true;
 //    }, ability.poison.time);
 // }
 
-function neutralize(playeR) {
-   connection.socket.binary(false).emit('Neutralize', playeR);
+function neutralize(player) {
+   connection.emit('neutralize', player);
    ability.neutralize.can = false;
 }
 
-function toxin(playeR) {
-   connection.socket.binary(false).emit('Toxin', playeR);
+function toxin(player) {
+   connection.emit('toxin', player);
    ability.toxin.can = false;
 }
 
@@ -516,7 +516,7 @@ function spore() {
             ability.spore.spores[i].x += ability.spore.spores[i].speed * cos(ability.spore.spores[i].theta);
             ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
          }
-         connection.socket.binary(false).emit('Ability', ability);
+         connection.emit_ability(ability);
       };
       ability.spore.timeout = setTimeout(() => { // End Spore
          if (ability.spore.value === true && ability.secrete.value === false) { // If secrete() has not been called
@@ -524,7 +524,7 @@ function spore() {
             ability.spore.value = false;
             ability.spore.end = new Date();
             ability.spore.cooling = true;
-            connection.socket.binary(false).emit('Ability', ability);
+            connection.emit_ability(ability);
          }
       }, ability.spore.time);
    }
@@ -539,7 +539,7 @@ function secrete() {
       clearTimeout(ability.secrete.timeout);
       ability.secrete.start = new Date();
       ability.secrete.color = org.color;
-      connection.socket.binary(false).emit('Ability', ability);
+      connection.emit_ability(ability);
       ability.secrete.timeout = setTimeout(() => { // End Secrete
          ability.secrete.value = false;
          ability.secrete.can = true; { // Copy of spore timeout so spore ends when secrete ends
@@ -548,7 +548,7 @@ function secrete() {
             ability.spore.cooling = true;
          }
          ability.secrete.end = new Date();
-         connection.socket.binary(false).emit('Ability', ability);
+         connection.emit_ability(ability);
       }, ability.secrete.time);
    }
 }
@@ -667,7 +667,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (Game.games[i].)ab
          if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
             abilitY.can = true; // Re-enable abilitY
             abilitY.cooling = false;
-            connection.socket.binary(false).emit('Ability', ability); // Update server
+            connection.emit_ability(ability); // Update server
          }
       }
    } else { // If is shoot
@@ -677,7 +677,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (Game.games[i].)ab
             if (current - abilitY.end[i] >= abilitY.cooldown[i]) { // If cooldown has passed
                abilitY.can[i] = true; // Re-enable abilitY
                abilitY.cooling[i] = false;
-               connection.socket.binary(false).emit('Ability', ability); // Update server
+               connection.emit_ability(ability); // Update server
             }
          }
       }

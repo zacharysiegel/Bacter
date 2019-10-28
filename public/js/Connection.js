@@ -179,11 +179,11 @@ class Connection {
       this.socket.on('Tag', () => {
          ability.tag.value = true;
          clearTimeout(ability.tag.timeout);
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          if (Game.game.info.mode === '') {
             ability.tag.timeout = setTimeout(() => {
                ability.tag.value = false;
-               this.socket.binary(false).emit('Ability', ability);
+               this.emit_ability(ability);
             }, ability.tag.time);
          }
       });
@@ -193,12 +193,12 @@ class Connection {
          ability.extend.value = true;
          clearTimeout(ability.extend.timeout);
          ability.extend.start = new Date();
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.extend.timeout = setTimeout(() => { // End ability
             ability.extend.value = false;
             ability.extend.end = new Date();
             ability.extend.cooling = true;
-            this.socket.binary(false).emit('Ability', ability);
+            this.emit_ability(ability);
          }, ability.extend.time);
       });
    }
@@ -206,10 +206,10 @@ class Connection {
       this.socket.on('Compress', () => {
          ability.compress.value = true;
          clearTimeout(ability.compress.timeout);
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.compress.timeout = setTimeout(() => {
             ability.compress.value = false;
-            this.socket.binary(false).emit('Ability', ability);
+            this.emit_ability(ability);
          }, ability.compress.time);
       });
    }
@@ -218,7 +218,7 @@ class Connection {
          ability.immortality.value = true;
          clearTimeout(ability.immortality.timeout);
          ability.immortality.start = new Date();
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.immortality.timeout = setTimeout(() => { // End ability
             ability.immortality.value = false;
             ability.immortality.end = new Date();
@@ -230,10 +230,10 @@ class Connection {
       this.socket.on('Freeze', () => {
          ability.freeze.value = true;
          clearTimeout(ability.freeze.timeout);
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.freeze.timeout = setTimeout(() => { // End ability
             ability.freeze.value = false;
-            this.socket.binary(false).emit('Ability', ability);
+            this.emit_ability(ability);
          }, ability.freeze.time);
       });
    }
@@ -244,12 +244,12 @@ class Connection {
          clearTimeout(ability.neutralize.timeout);
          ability.neutralize.x = org.cursor.x; // Center of toxin is the cursor (not center of mass)
          ability.neutralize.y = org.cursor.y;
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.neutralize.timeout = setTimeout(() => {
             ability.neutralize.value = false;
             ability.neutralize.end = new Date();
             ability.neutralize.cooling = true;
-            this.socket.binary(false).emit('Ability', ability);
+            this.emit_ability(ability);
          }, ability.neutralize.time);
       });
    }
@@ -260,12 +260,12 @@ class Connection {
          clearTimeout(ability.toxin.timeout);
          ability.toxin.x = org.cursor.x; // Center of toxin is the cursor (not center of mass)
          ability.toxin.y = org.cursor.y;
-         this.socket.binary(false).emit('Ability', ability);
+         this.emit_ability(ability);
          ability.toxin.timeout = setTimeout(() => {
             ability.toxin.value = false;
             ability.toxin.end = new Date();
             ability.toxin.cooling = true;
-            this.socket.binary(false).emit('Ability', ability);
+            this.emit_ability(ability);
          }, ability.toxin.time);
       });
    }
@@ -274,11 +274,11 @@ class Connection {
    //       ability.speed.value = true;
    //       org.speed *= ability.speed.factor;
    //       clearTimeout(ability.speed.timeout);
-   //       this.socket.binary(false).emit('Ability', ability);
+   //       this.emit_ability(ability);
    //       ability.speed.timeout = setTimeout(() => { // End ability
    //          org.speed /= ability.speed.factor;
    //          ability.speed.value = false;
-   //          this.socket.binary(false).emit('Ability', ability);
+   //          this.emit_ability(ability);
    //       }, ability.speed.time);
    //    });
    // }
@@ -287,11 +287,11 @@ class Connection {
    //       ability.slow.value = true;
    //       org.speed /= ability.slow.factor; // Divide speed by factor
    //       clearTimeout(ability.slow.timeout);
-   //       this.socket.binary(false).emit('Ability', ability);
+   //       this.emit_ability(ability);
    //       ability.slow.timeout = setTimeout(() => { // End ability
    //          org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
    //          ability.slow.value = false;
-   //          this.socket.binary(false).emit('Ability', ability);
+   //          this.emit_ability(ability);
    //       }, ability.slow.time);
    //    });
    // }
@@ -300,12 +300,12 @@ class Connection {
    //       ability.stimulate.value = true;
    //       clearTimeout(ability.stimulate.timeout);
    //       ability.stimulate.start = new Date();
-   //       this.socket.binary(false).emit('Ability', ability);
+   //       this.emit_ability(ability);
    //       ability.stimulate.timeout = setTimeout(() => { // End ability
    //          ability.stimulate.value = false;
    //          ability.stimulate.end = new Date();
    //          ability.stimulate.cooling = true;
-   //          this.socket.binary(false).emit('Ability', ability);
+   //          this.emit_ability(ability);
    //       }, ability.stimulate.time);
    //    });
    // }
@@ -313,10 +313,10 @@ class Connection {
    //    this.socket.on('Poison', () => {
    //       ability.poison.value = true;
    //       clearTimeout(ability.poison.timeout);
-   //       this.socket.binary(false).emit('Ability', ability);
+   //       this.emit_ability(ability);
    //       ability.poison.timeout = setTimeout(() => { // End ability
    //          ability.poison.value = false;
-   //          this.socket.binary(false).emit('Ability', ability);
+   //          this.emit_ability(ability);
    //       }, ability.poison.time);
    //    });
    // }
@@ -338,6 +338,16 @@ class Connection {
       this.socket.binary(false).emit('Test', data || 'Test Successful', result => {
          console.log('Callback: ' + result);
       });
+   }
+
+   /**
+    * Emit a generic event to the server
+    * @param {String} event The name of the event to be emitted to the server
+    * @param {Object} data The data to be sent to the server with the event
+    * @param {Function} callback The callback function to be called by the server's event listener function
+    */
+   emit(event, data, callback) {
+      this.socket.binary(false).emit(event, data, callback);
    }
 
    /**
@@ -368,4 +378,22 @@ class Connection {
           }
        });
    }
-}
+
+   /**
+    * Emit the 'ability' event to the server
+    *    Overwrite the server's copy of this player's ability object
+    * @param {Ability} ability The Ability instance to be sent to the server
+    */
+   emit_ability(ability) {
+      this.socket.binary(false).emit('ability', ability);
+   }
+
+   /**
+    * Emit the 'board' event to the server
+    *    Overwrite the server's copy of the board
+    * @param {Board} board The Board instance to be sent to the server
+    */
+   emit_board(board) {
+      this.socket.binary(false).emit('board', { list: board.list, host: board.host });
+   }
+ }
