@@ -82,9 +82,6 @@ class Message {
                break;
          }
       }
-      if (!this.text) {
-         console.error("[ERROR] :: Messages.constructor :: No applicable message");
-      }
    }
 
    /**

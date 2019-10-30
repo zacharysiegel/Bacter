@@ -1,210 +1,212 @@
 let ability;
 
-function Ability(data) { // data: { player: } TODO: Convert to 'Ability' class
-   this.player = data.player;
-   this.auto = false;
-   this.extend = {
-      value: false,
-      activated: false, // If this ability was selected in the join menu
-      can: false, // If this ability is currently available for use
-      i: 0,
-      j: 0,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 4500,
-      cooldown: 4000
-   };
-   this.compress = {
-      value: false,
-      applied: false,
-      activated: false,
-      can: false,
-      i: 0,
-      j: 1,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 3500,
-      cooldown: 4000
-   };
-   this.immortality = {
-      value: false,
-      activated: false,
-      can: false,
-      i: 1,
-      j: 0,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 3500,
-      cooldown: 6000
-   };
-   this.freeze = {
-      value: false,
-      applied: false,
-      activated: false,
-      can: false,
-      i: 1,
-      j: 1,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 4000,
-      cooldown: 6000
-   };
-   this.neutralize = {
-      value: false,
-      activated: false,
-      can: false,
-      i: 2,
-      j: 0,
-      radius: 60,
-      color: { r: 0, g: 179, b: 12 },
-      weight: 3,
-      x: undefined,
-      y: undefined,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 3500,
-      cooldown: 6500
-   };
-   this.toxin = {
-      value: false,
-      activated: false,
-      can: false,
-      i: 2,
-      j: 1,
-      radius: 60,
-      color: { r: 255, g: 111, b: 92 },
-      weight: 3,
-      x: undefined,
-      y: undefined,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 4000,
-      cooldown: 6000
-   };
-   this.spore = {
-      value: false,
-      activated: false,
-      i: 3,
-      j: 0,
-      interval: undefined,
-      speed: 6,
-      spores: [],
-      count: 0,
-      can: false,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      cooling: false,
-      time: 1700,
-      cooldown: 7500 // 7500 default
-   };
-   this.secrete = {
-      value: false,
-      activated: false,
-      i: 3,
-      j: 1,
-      color: { r: undefined, g: undefined, b: undefined },
-      radius: config.game.cell_width / Z.cos45 * 2.9,
-      can: false,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      time: 800
-   };
-   this.shoot = {
-      value: [ false, false, false ],
-      can: [ true, true, true ],
-      secrete: [{}, {}, {}
-         // { // Sets values on use
-         //    value: false, 
-         //    color: undefined, 
-         //    radius: config.game.cell_width / Z.cos45 * 2.7 / 2, // Half 'secrete'
-         //    hit: false, 
-         //    timeout: undefined, 
-         //    start: undefined, 
-         //    end: undefined, 
-         //    time: 800 // Same as 'secrete'
-         // }
-      ],
-      spore: [undefined, undefined, undefined],
-      speed: 5,
-      interval: [undefined, undefined, undefined],
-      timeout: [undefined, undefined, undefined],
-      start: [undefined, undefined, undefined],
-      end: [undefined, undefined, undefined],
-      time: 1500,
-      cooling: [false, false, false],
-      cooldown: [2000, 2000, 2000]
-   };
-   this.tag = {
-      value: false,
-      activated: false,
-      i: 0,
-      j: 1,
-      can: false,
-      timeout: undefined,
-      start: undefined,
-      end: undefined,
-      time: 0,
-      cooldown: 5000
-   };
-   // speed: { // Not updated
-   //    value: false,
-   //    activated: false,
-   //    i: 0,
-   //    j: 0,
-   //    factor: 2,
-   //    timeout: undefined,
-   //    time: 5000
-   // };
-   // slow: { // Not updated
-   //    value: false,
-   //    activated: false,
-   //    i: 0,
-   //    j: 1,
-   //    factor: 2,
-   //    timeout: undefined,
-   //    time: 5000
-   // };
-   // stimulate: {
-   //    value: false,
-   //    activated: false,
-   //    can: false,
-   //    i: 2,
-   //    j: 0,
-   //    factor: 9, // Factor must be equal to that of poison
-   //    timeout: undefined,
-   //    start: undefined,
-   //    end: undefined,
-   //    cooling: false,
-   //    time: 3000,
-   //    cooldown: 5000
-   // },
-   // poison: {
-   //    value: false,
-   //    activated: false,
-   //    can: false,
-   //    i: 2,
-   //    j: 1,
-   //    factor: 9, // Factor must be equal to that of stimulate
-   //    timeout: undefined,
-   //    start: undefined,
-   //    end: undefined,
-   //    cooling: false,
-   //    time: 3000,
-   //    cooldown: 5000
-   // },
+class Ability {
+   constructor(player) { // TODO: Populate Ability class
+      this.player = player;
+      this.auto = false;
+      this.extend = {
+         value: false,
+         activated: false, // If this ability was selected in the join menu
+         can: false, // If this ability is currently available for use
+         i: 0,
+         j: 0,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 4500,
+         cooldown: 4000
+      };
+      this.compress = {
+         value: false,
+         applied: false,
+         activated: false,
+         can: false,
+         i: 0,
+         j: 1,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 3500,
+         cooldown: 4000
+      };
+      this.immortality = {
+         value: false,
+         activated: false,
+         can: false,
+         i: 1,
+         j: 0,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 3500,
+         cooldown: 6000
+      };
+      this.freeze = {
+         value: false,
+         applied: false,
+         activated: false,
+         can: false,
+         i: 1,
+         j: 1,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 4000,
+         cooldown: 6000
+      };
+      this.neutralize = {
+         value: false,
+         activated: false,
+         can: false,
+         i: 2,
+         j: 0,
+         radius: 60,
+         color: { r: 0, g: 179, b: 12 },
+         weight: 3,
+         x: undefined,
+         y: undefined,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 3500,
+         cooldown: 6500
+      };
+      this.toxin = {
+         value: false,
+         activated: false,
+         can: false,
+         i: 2,
+         j: 1,
+         radius: 60,
+         color: { r: 255, g: 111, b: 92 },
+         weight: 3,
+         x: undefined,
+         y: undefined,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 4000,
+         cooldown: 6000
+      };
+      this.spore = {
+         value: false,
+         activated: false,
+         i: 3,
+         j: 0,
+         interval: undefined,
+         speed: 6,
+         spores: [],
+         count: 0,
+         can: false,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         cooling: false,
+         time: 1700,
+         cooldown: 7500 // 7500 default
+      };
+      this.secrete = {
+         value: false,
+         activated: false,
+         i: 3,
+         j: 1,
+         color: { r: undefined, g: undefined, b: undefined },
+         radius: config.game.cell_width / Z.cos45 * 2.9,
+         can: false,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         time: 800
+      };
+      this.shoot = {
+         value: [ false, false, false ],
+         can: [ true, true, true ],
+         secrete: [{}, {}, {}
+            // { // Sets values on use
+            //    value: false,
+            //    color: undefined,
+            //    radius: config.game.cell_width / Z.cos45 * 2.7 / 2, // Half 'secrete'
+            //    hit: false,
+            //    timeout: undefined,
+            //    start: undefined,
+            //    end: undefined,
+            //    time: 800 // Same as 'secrete'
+            // }
+         ],
+         spore: [undefined, undefined, undefined],
+         speed: 5,
+         interval: [undefined, undefined, undefined],
+         timeout: [undefined, undefined, undefined],
+         start: [undefined, undefined, undefined],
+         end: [undefined, undefined, undefined],
+         time: 1500,
+         cooling: [false, false, false],
+         cooldown: [2000, 2000, 2000]
+      };
+      this.tag = {
+         value: false,
+         activated: false,
+         i: 0,
+         j: 1,
+         can: false,
+         timeout: undefined,
+         start: undefined,
+         end: undefined,
+         time: 0,
+         cooldown: 5000
+      };
+      // speed: { // Not updated
+      //    value: false,
+      //    activated: false,
+      //    i: 0,
+      //    j: 0,
+      //    factor: 2,
+      //    timeout: undefined,
+      //    time: 5000
+      // };
+      // slow: { // Not updated
+      //    value: false,
+      //    activated: false,
+      //    i: 0,
+      //    j: 1,
+      //    factor: 2,
+      //    timeout: undefined,
+      //    time: 5000
+      // };
+      // stimulate: {
+      //    value: false,
+      //    activated: false,
+      //    can: false,
+      //    i: 2,
+      //    j: 0,
+      //    factor: 9, // Factor must be equal to that of poison
+      //    timeout: undefined,
+      //    start: undefined,
+      //    end: undefined,
+      //    cooling: false,
+      //    time: 3000,
+      //    cooldown: 5000
+      // },
+      // poison: {
+      //    value: false,
+      //    activated: false,
+      //    can: false,
+      //    i: 2,
+      //    j: 1,
+      //    factor: 9, // Factor must be equal to that of stimulate
+      //    timeout: undefined,
+      //    start: undefined,
+      //    end: undefined,
+      //    cooling: false,
+      //    time: 3000,
+      //    cooldown: 5000
+      // },
+   }
 }
 
 /**
@@ -275,7 +277,7 @@ function shoot(I, J) { // Both parameters are required
       ability.shoot.interval[I] = () => {
          ability.shoot.spore[I].x += ability.shoot.spore[I].speed * cos(ability.shoot.spore[I].theta);
          ability.shoot.spore[I].y += ability.shoot.spore[I].speed * sin(ability.shoot.spore[I].theta);
-         connection.emit_ability(ability);
+         if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       };
 
       // Timeout
@@ -286,7 +288,7 @@ function shoot(I, J) { // Both parameters are required
             ability.shoot.cooling[I] = true;
             ability.shoot.end[I] = new Date();
             ability.shoot.secrete[I].end = new Date();
-            connection.emit_ability(ability);
+            if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
          }
       }, ability.shoot.time);
 
@@ -319,7 +321,7 @@ function shoot(I, J) { // Both parameters are required
       }
 
       ability.shoot.secrete[I].value = true; // Value after hit detection so 'grow' hit detection does not run before initial
-      connection.emit_ability(ability);
+      if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       ability.shoot.secrete[I].timeout = setTimeout(() => {
          ability.shoot.secrete[I].value = false;
          ability.shoot.secrete[I].end = new Date(); { // Copy of 'shoot' timeout
@@ -330,7 +332,7 @@ function shoot(I, J) { // Both parameters are required
          }
          clearTimeout(ability.shoot.timeout[I]);
          ability.shoot.timeout[I] = undefined;
-         connection.emit_ability(ability);
+         if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       }, ability.shoot.secrete[I].time);
    }
 }
@@ -385,7 +387,7 @@ function tag(player) {
    connection.emit('tag', player);
    ability.tag.can = false;
    ability.tag.start = new Date();
-   connection.emit_ability(ability);
+   if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
    setTimeout(() => {
       ability.tag.end = new Date();
       ability.tag.cooling = true;
@@ -415,7 +417,7 @@ function compress(player) {
    ability.compress.applied = true;
    ability.compress.can = false; // Redundancy
    ability.compress.start = new Date();
-   connection.emit_ability(ability);
+   if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
    setTimeout(() => {
       ability.compress.end = new Date();
       ability.compress.applied = false;
@@ -454,7 +456,7 @@ function freeze(player) {
    ability.freeze.applied = true;
    ability.freeze.can = false; // Redundancy
    ability.freeze.start = new Date();
-   connection.emit_ability(ability);
+   if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
    setTimeout(() => {
       ability.freeze.end = new Date();
       ability.freeze.applied = false;
@@ -464,14 +466,14 @@ function freeze(player) {
 
 // function stimulate(player) {
 //    ability.stimulate.can = false;
-//    connection.socket.binary(false).emit('Stimulate', player);
+//    if (Game.state !== 'tutorial') connection.socket.binary(false).emit('Stimulate', player);
 // }
 
 // function poison(player) {
 //    connection.socket.binary(false).emit('Poison', player);
 //    ability.poison.can = false; // Redundancy
 //    ability.poison.start = new Date();
-//    connection.emit_ability(ability);
+//    if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
 //    setTimeout(() => {
 //       ability.poison.end = new Date();
 //       ability.poison.cooling = true;
@@ -516,7 +518,7 @@ function spore() {
             ability.spore.spores[i].x += ability.spore.spores[i].speed * cos(ability.spore.spores[i].theta);
             ability.spore.spores[i].y += ability.spore.spores[i].speed * sin(ability.spore.spores[i].theta);
          }
-         connection.emit_ability(ability);
+         if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       };
       ability.spore.timeout = setTimeout(() => { // End Spore
          if (ability.spore.value === true && ability.secrete.value === false) { // If secrete() has not been called
@@ -524,7 +526,7 @@ function spore() {
             ability.spore.value = false;
             ability.spore.end = new Date();
             ability.spore.cooling = true;
-            connection.emit_ability(ability);
+            if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
          }
       }, ability.spore.time);
    }
@@ -539,7 +541,7 @@ function secrete() {
       clearTimeout(ability.secrete.timeout);
       ability.secrete.start = new Date();
       ability.secrete.color = org.color;
-      connection.emit_ability(ability);
+      if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       ability.secrete.timeout = setTimeout(() => { // End Secrete
          ability.secrete.value = false;
          ability.secrete.can = true; { // Copy of spore timeout so spore ends when secrete ends
@@ -548,7 +550,7 @@ function secrete() {
             ability.spore.cooling = true;
          }
          ability.secrete.end = new Date();
-         connection.emit_ability(ability);
+         if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
       }, ability.secrete.time);
    }
 }
@@ -667,7 +669,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (Game.games[i].)ab
          if (current - abilitY.end >= abilitY.cooldown) { // If cooldown has passed
             abilitY.can = true; // Re-enable abilitY
             abilitY.cooling = false;
-            connection.emit_ability(ability); // Update server
+            if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
          }
       }
    } else { // If is shoot
@@ -677,7 +679,7 @@ function cooldown(abilitY) { // abilitY is ability.xxxxx, not (Game.games[i].)ab
             if (current - abilitY.end[i] >= abilitY.cooldown[i]) { // If cooldown has passed
                abilitY.can[i] = true; // Re-enable abilitY
                abilitY.cooling[i] = false;
-               connection.emit_ability(ability); // Update server
+               if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
             }
          }
       }

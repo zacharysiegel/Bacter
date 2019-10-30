@@ -19,7 +19,7 @@ function setup() { // p5 function runs on window.onload (I think)
    page.addEventListener('mouseup', mu); // "
 
    let socketInterval = setInterval(() => { // Create instance of Ability, but socket object must exist first, so loop until socket exists
-      ability = new Ability({ player: connection.socket.id }); // Create new instance of Ability
+      ability = new Ability(connection.socket.id); // Create new instance of Ability
       if (connection.socket.id) { // If connection.socket.id has loaded
          clearInterval(socketInterval); // End the loop
       }

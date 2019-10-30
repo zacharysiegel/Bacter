@@ -22,4 +22,4 @@
 > Suggestions and notifications of bugs are appreciated.
 
 #### License
-> View the [license](./docs/LICENSE) in the ./docs directory
+> View the [license](./docs/LICENSE) in the /docs directory

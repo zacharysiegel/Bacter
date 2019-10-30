@@ -23,7 +23,7 @@ class Button extends React.Component {
          case 'leave game':
             connection.emit('leave game');
             org.clearIntervals();
-            // ability = new Ability({ player: connection.socket.id }); // Ability reset occurs already in Title.render()
+            // ability = new Ability(connection.socket.id); // Ability reset occurs already in Title.render()
 
             if (Game.game.info.host !== connection.socket.id) { // Only edit and update the board if the player is not the host
                for (let i = 0; i < Game.game.board.list.length; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
@@ -41,7 +41,6 @@ class Button extends React.Component {
             title = Title.create();
             break;
          case 'leave tutorial':
-            connection.emit('leave game');
             org.clearIntervals();
             tutorial.clear(); // Clear tutorial intervals
             org = undefined; // Clear org variable

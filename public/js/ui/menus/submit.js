@@ -372,7 +372,7 @@ function submit(menuType) {
                   ability.spore.can = false;
                   ability.secrete.activated = false;
                   ability.secrete.can = false;
-                  for (let i = 0; i < ability.shoot.value.length; i++) {
+                  for (let i = 0; i < config.game.ability_count - 1; i++) { // Only loop through standard abilities (ability.shoot.values.length = config.game.ability_count - 1)
                      if (i === ability.tag.i) {
                         ability.shoot.can[i] = true;
                      } else {
@@ -401,7 +401,7 @@ function submit(menuType) {
                   for (let i = 0; i < config.colors.teams.length; i++) {
                      if (team === config.colors.teams[i]) {
                         Game.game.teams[i].push(connection.socket.id); // Add player to selected team
-                        // connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
+                        connection.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
                         break;
                      }
                   }
@@ -589,7 +589,7 @@ function submit(menuType) {
             }
          }
          if (ok) {
-            connection.socket.binary(false).emit('Spectator Spawned', Game.game);
+            connection.emit('Spectator Spawned', Game.game);
             // Abilities
             if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                if (first === 'extend') {
@@ -652,7 +652,7 @@ function submit(menuType) {
                if (org.team !== team) { // Only add player to team if not already on team
                   Game.game.teams[config.colors.teams.indexOf(team)].push(connection.socket.id); // Add player to selected team
                   Game.game.teams[config.colors.teams.indexOf(org.team)].splice(Game.game.teams[config.colors.teams.indexOf(org.team)].indexOf(connection.socket.id), 1);
-                  connection.socket.binary(false).emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
+                  connection.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
                }
             }
             // Color

@@ -79,10 +79,10 @@ function renderUI() {
 
    // Ability Cooldowns
    if (!src.stopped) {
-      for (let i in ability) { // Regular Cooldowns
-         if (typeof ability[i] == 'object' && i !== 'shoot') {
-            if (ability[i].cooling === true) {
-               cooldown(ability[i]);
+      for (let a in ability) { // Regular Cooldowns
+         if (typeof ability[a] == 'object' && a !== 'shoot') {
+            if (ability[a].cooling === true) {
+               cooldown(ability[a]);
             }
          }
       }
@@ -96,7 +96,7 @@ function renderUI() {
 
    // Ability Tooltips
    translate(org.off.x, org.off.y);
-   var currentTime;
+   let currentTime;
    if (src.stopped === true) {
       currentTime = src.stopdate;
    } else {
@@ -403,10 +403,13 @@ function roundBehaviors() {
          }
       }
       if (Game.game.info.mode === 'srv' && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count <= 1 && Game.game.players[0] === connection.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
-         for (let i = 0; i < Game.game.board.list.length; i++) {
-            if (Game.game.board.list[i].player === connection.socket.id) {
-               // connection.socket.binary(false).emit('End Round', Game.game.info);
-               Game.game.board.list[i].wins++;
+         for (let m = 0; m < Game.game.board.list.length; m++) {
+            if (Game.game.board.list[m].player === connection.socket.id) {
+               connection.emit('end round', Game.game.info);
+               Game.game.rounds.waiting = true; // Prevent the above emission from executing multiple times
+               Game.game.rounds.delayed = true; // Prevent the above emission from executing multiple times
+
+               Game.game.board.list[m].wins++;
                Board.order(Game.game.board);
                connection.emit_board(Game.game.board);
             }
@@ -439,5 +442,5 @@ function die(spectating) {
       ability.shoot.start[i] = undefined;
       ability.shoot.end[i] = undefined;
    }
-   connection.emit_ability(ability);
+   connection.emit('ability', ability);
 }

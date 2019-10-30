@@ -236,6 +236,5 @@
       Fixed text alignment in selection input type
       Fixed frequent disconnect and reconnection of client
       Fixed occasional client non-connection to socket
-      Fixed unnecessary client-to-server data emissions on title screen
-      Fixed unnecessary client-to-server permission checks in join menu
       Fixed rectangular world's north boarder collision detection
+      Fixed several instances of unnecessary communications with the server

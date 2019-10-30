@@ -70,7 +70,7 @@ class Title {
          });
          this.orgs[i].cells[0] = new Cell(this.orgs[i].cursor.x, this.orgs[i].cursor.y, this.orgs[i]); // Title must exist to create new Cell()
          this.orgs[i].count++;
-         this.abilities[i] = new Ability({ player: i });
+         this.abilities[i] = new Ability(i);
       }
 
       this.menu = new TitleMenu(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2); // Create the title screen menu
@@ -133,7 +133,7 @@ class Title {
       Game.state = 'title';
 
       if (org) org.clearIntervals(); // If global org variable exists (such as after exiting a game) clear its interval(s) so as to not interfere with title animations
-      ability = new Ability({ player: connection.socket.id }); // Reset the ability object
+      ability = new Ability(connection.socket.id); // Reset the ability object
 
       let a = ReactDOM.render( // Title rendering placed within ReactDOM.render() so Title() can be used for title and retain this. namespace
          <div id='title'>

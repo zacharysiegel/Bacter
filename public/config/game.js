@@ -15,6 +15,7 @@ config.game = {
    thirds:  [ 'Neutralize',  'Toxin'    ],
    fourths: [ 'Spore' ],   // There is only one 4th ability, but we use an array to remain consistant with other abilities
 
+   ability_count: 4,       // Number of abilities
    org_frequency: 70,      // Org update frequency
    render_frequency: 40,   // Rendering update frequency
    default_range: 50,      // Org default maximum size

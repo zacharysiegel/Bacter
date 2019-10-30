@@ -347,7 +347,7 @@ class SocketListener {
        * @param  {Object} data: game.info
        * @return {void}
        */
-      this.socket.on('End Round', (data) => { // data is game.info
+      this.socket.on('end round', (data) => { // data is game.info
          const g = games.getIndexByHost(data.host);
          if (g === -1) {
             console.error(`[ERROR] :: listen_end_round :: Game not found in {Games}.list with host ${data.host}`);
@@ -365,22 +365,22 @@ class SocketListener {
                return;
             }
 
-            games.list[g].rounds.waiting = true;
+            games.list[g].rounds.waiting = true; // When the 'end of round' delay finishes, the 'start of round' delay begins
             games.list[g].rounds.delayed = false;
 
             this.io.in(data.title).emit('Force Spawn');
          }, this.config.delay_time);
 
          if (data.mode === 'srv') {
-            for (let s = 0; s < games.shrinkIntervals.length; s++) {
-               if (games.shrinkIntervals[s].host === data.host) { // Identify shrink interval
-                  clearInterval(games.shrinkIntervals[s].interval); // Stop shrinking the world
-                  games.list[g].world.width = games.shrinkIntervals[s].width; // games.shrinkIntervals[s].world is preserved from 'Round Delay'
-                  games.list[g].world.height = games.shrinkIntervals[s].height; // Reset world width and height
-                  games.shrinkIntervals.splice(s, 1); // Remove shrink interval
-                  break;
-               }
+            const s = games.getShrinkIndex(data.host);
+            if (s === -1) { // This will occur if the 'end round' was emitted multiple times at the end of a single round, this will usually not occur
+               return; // This prevents crash from index out of bounds issue
             }
+
+            clearInterval(games.shrinkIntervals[s].interval); // Stop shrinking the world
+            games.list[g].world.width = games.shrinkIntervals[s].width; // games.shrinkIntervals[s].world is preserved from 'Round Delay'
+            games.list[g].world.height = games.shrinkIntervals[s].height; // Reset world width and height
+            games.shrinkIntervals.splice(s, 1); // Remove shrink interval
          }
       });
    }
@@ -530,19 +530,6 @@ class SocketListener {
          }
 
          games.list[indices.g].abilities[indices.p] = ability;
-
-
-         // const game_count = games.count; // Working code from before games.getIndexByHost()
-         // outer:
-         // for (let g = 0; g < game_count; g++) {
-         //    const player_count = games.list[g].info.count;
-         //    for (let p = 0; p < player_count; p++) {
-         //       if (games.list[g].abilities[p].player === this.socket.id) { // Find ability of this.socket
-         //          games.list[g].abilities[p] = ability;
-         //          break outer;
-         //       }
-         //    }
-         // }
       });
    }
 
