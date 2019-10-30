@@ -58,11 +58,11 @@ class Tutorial {
          rect(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.width, this.world.height);
 
          // Game
-         renderToxin(ability);
-         renderSecretions(ability);
-         renderNeutralize(ability);
+         Abilities.renderToxin(ability);
+         Abilities.renderSecretions(ability);
+         Abilities.renderNeutralize(ability);
          Org.renderAll();
-         renderSpores(ability);
+         Abilities.renderSpores(ability);
          if (this.task !== 'move' && this.task !== 'survive') {
             translate(-org.off.x, -org.off.y);
             renderUI();
@@ -86,7 +86,7 @@ class Tutorial {
                }
             }
             if (Game.state === 'tutorial') {
-               move();
+               org.move();
             }
          }
          this.detect();

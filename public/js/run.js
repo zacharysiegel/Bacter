@@ -82,13 +82,13 @@ function renderUI() {
       for (let a in ability) { // Regular Cooldowns
          if (typeof ability[a] == 'object' && a !== 'shoot') {
             if (ability[a].cooling === true) {
-               cooldown(ability[a]);
+               Abilities.cooldown(ability[a]);
             }
          }
       }
       for (let i = 0; i < ability.shoot.value.length; i++) { // Shoot Cooldown
          if (ability.shoot.cooling[i] === true) {
-            cooldown(ability.shoot);
+            Abilities.cooldown(ability.shoot);
             break;
          }
       }
@@ -295,81 +295,6 @@ function getSrc() {
 }
 
 /**
- * Check for user input and move the player's cursor appropriately
- * @return {void}
- */
-function move() {
-   let keys = '';
-   if (keyIsDown(config.settings.controls.left1.code) || keyIsDown(config.settings.controls.left2.code)) {
-      keys += 'l';
-   }
-   if (keyIsDown(config.settings.controls.up1.code) || keyIsDown(config.settings.controls.up2.code)) {
-      keys += 'u';
-   }
-   if (keyIsDown(config.settings.controls.right1.code) || keyIsDown(config.settings.controls.right2.code)) {
-      keys += 'r';
-   }
-   if (keyIsDown(config.settings.controls.down1.code) || keyIsDown(config.settings.controls.down2.code)) {
-      keys += 'd';
-   }
-   switch (keys) {
-      case 'l':
-         org.cursor.x -= org.speed;
-         break;
-      case 'u':
-         org.cursor.y -= org.speed;
-         break;
-      case 'r':
-         org.cursor.x += org.speed;
-         break;
-      case 'd':
-         org.cursor.y += org.speed;
-         break;
-      case 'lu':
-         org.cursor.x -= org.speed * Z.cos45;
-         org.cursor.y -= org.speed * Z.cos45;
-         break;
-      case 'lr':
-         // Net zero
-         break;
-      case 'ld':
-         org.cursor.x -= org.speed * Z.cos45;
-         org.cursor.y += org.speed * Z.cos45;
-         break;
-      case 'ur':
-         org.cursor.x += org.speed * Z.cos45;
-         org.cursor.y -= org.speed * Z.cos45;
-         break;
-      case 'ud':
-         // Net zero
-         break;
-      case 'rd':
-         org.cursor.x += org.speed * Z.cos45;
-         org.cursor.y += org.speed * Z.cos45;
-         break;
-      case 'lur':
-         org.cursor.y -= org.speed; // Net up
-         break;
-      case 'lud':
-         org.cursor.x -= org.speed; // Net left
-         break;
-      case 'lrd':
-         org.cursor.y += org.speed; // Net down
-         break;
-      case 'urd':
-         org.cursor.x += org.speed; // Net right
-         break;
-      case 'lurd':
-         // Net zero
-         break;
-   }
-   if (keys !== '') {
-      org.off.x = org.cursor.x - center.x;
-      org.off.y = org.cursor.y - center.y;
-   }
-}
-
-/**
  * Enter game by starting game interval (runLoop()) (with org growth)
  * @return void
  */
@@ -421,6 +346,7 @@ function roundBehaviors() {
 function die(spectating) {
    connection.socket.binary(false).emit('Dead', spectating);
    org.clearIntervals();
+
    for (let a in ability) { // Reset Ability Cooldowns
       if (ability[a].hasOwnProperty('activated')) { // Avoid reference error by checking if ability[a] is an activatable ability
          if (ability[a].activated !== undefined && ability[a].activated === true) { // If is a usable ability

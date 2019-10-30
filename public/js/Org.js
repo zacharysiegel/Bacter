@@ -710,6 +710,80 @@ class Org {
    }
 
    /**
+    * Check for user input and move the player's cursor appropriately
+    */
+   move() {
+      let keys = '';
+      if (keyIsDown(config.settings.controls.left1.code) || keyIsDown(config.settings.controls.left2.code)) {
+         keys += 'l';
+      }
+      if (keyIsDown(config.settings.controls.up1.code) || keyIsDown(config.settings.controls.up2.code)) {
+         keys += 'u';
+      }
+      if (keyIsDown(config.settings.controls.right1.code) || keyIsDown(config.settings.controls.right2.code)) {
+         keys += 'r';
+      }
+      if (keyIsDown(config.settings.controls.down1.code) || keyIsDown(config.settings.controls.down2.code)) {
+         keys += 'd';
+      }
+      switch (keys) {
+         case 'l':
+            this.cursor.x -= this.speed;
+            break;
+         case 'u':
+            this.cursor.y -= this.speed;
+            break;
+         case 'r':
+            this.cursor.x += this.speed;
+            break;
+         case 'd':
+            this.cursor.y += this.speed;
+            break;
+         case 'lu':
+            this.cursor.x -= this.speed * Z.cos45;
+            this.cursor.y -= this.speed * Z.cos45;
+            break;
+         case 'lr':
+            // Net zero
+            break;
+         case 'ld':
+            this.cursor.x -= this.speed * Z.cos45;
+            this.cursor.y += this.speed * Z.cos45;
+            break;
+         case 'ur':
+            this.cursor.x += this.speed * Z.cos45;
+            this.cursor.y -= this.speed * Z.cos45;
+            break;
+         case 'ud':
+            // Net zero
+            break;
+         case 'rd':
+            this.cursor.x += this.speed * Z.cos45;
+            this.cursor.y += this.speed * Z.cos45;
+            break;
+         case 'lur':
+            this.cursor.y -= this.speed; // Net up
+            break;
+         case 'lud':
+            this.cursor.x -= this.speed; // Net left
+            break;
+         case 'lrd':
+            this.cursor.y += this.speed; // Net down
+            break;
+         case 'urd':
+            this.cursor.x += this.speed; // Net right
+            break;
+         case 'lurd':
+            // Net zero
+            break;
+      }
+      if (keys !== '') {
+         this.off.x = this.cursor.x - center.x;
+         this.off.y = this.cursor.y - center.y;
+      }
+   }
+
+   /**
     * Render this org on the canavs
     * @param {org} org The org to render
     * @return {void}

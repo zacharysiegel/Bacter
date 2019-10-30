@@ -82,17 +82,17 @@ class Connection {
                translate(-org.off.x, -org.off.y);
                renderWorld();
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderToxin(Game.game.abilities[i]);
+                  Abilities.renderToxin(Game.game.abilities[i]);
                }
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderSecretions(Game.game.abilities[i]);
+                  Abilities.renderSecretions(Game.game.abilities[i]);
                }
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderNeutralize(Game.game.abilities[i]);
+                  Abilities.renderNeutralize(Game.game.abilities[i]);
                }
                Org.renderAll(); // Render orgs
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderSpores(Game.game.abilities[i]);
+                  Abilities.renderSpores(Game.game.abilities[i]);
                }
                renderUI();
                Board.render();
@@ -100,7 +100,7 @@ class Connection {
 
                (new Message()).render(); // Render messages outside translation
                if (Game.state === 'game') {
-                  move(); // Move goes at the end so player does not render his movements before others
+                  org.move(); // Move goes at the end so player does not render his movements before others
                }
                break;
             case 'spectate':
@@ -109,24 +109,24 @@ class Connection {
                translate(-org.off.x, -org.off.y);
                renderWorld();
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderToxin(Game.game.abilities[i]);
+                  Abilities.renderToxin(Game.game.abilities[i]);
                }
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderSecretions(Game.game.abilities[i]);
+                  Abilities.renderSecretions(Game.game.abilities[i]);
                }
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderNeutralize(Game.game.abilities[i]);
+                  Abilities.renderNeutralize(Game.game.abilities[i]);
                }
                Org.renderAll(); // Orgs render over neutralize and toxin but under other abilities
                for (let i = 0; i < Game.game.info.count; i++) {
-                  renderSpores(Game.game.abilities[i]);
+                  Abilities.renderSpores(Game.game.abilities[i]);
                }
                Board.render();
                translate(org.off.x, org.off.y);
 
                (new Message()).render();
                if (Game.state === 'spectate') {
-                  move(); // Move is after messages so everything has same offset
+                  org.move(); // Move is after messages so everything has same offset
                }
                break;
          }

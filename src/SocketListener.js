@@ -481,7 +481,10 @@ class SocketListener {
          const indices = games.getIndicesByMember(this.socket.id);
          if (indices.g === -1) {
             console.error(`[ERROR] :: listen_org :: Game not found in {Games}.list with member ${this.socket.id}`);
-            return; // Return here prevents an index out of bounds exception
+            return; // Return here prevents an index out of bounds issue
+         } else if (indices.p === -1) {
+            console.error(`[ERROR] :: listen_org :: Player not found in {Games}.list[].orgs with id ${this.socket.id}`);
+            return; // Return here prevents an index out of bounds issue
          }
 
          // games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary data rather than the entire org object
