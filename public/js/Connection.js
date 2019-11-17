@@ -80,7 +80,7 @@ class Connection {
             case 'game':
             case 'pauseGameMenu':
                translate(-org.off.x, -org.off.y);
-               renderWorld();
+               Game.game.world.render();
                for (let i = 0; i < Game.game.info.count; i++) {
                   Abilities.renderToxin(Game.game.abilities[i]);
                }
@@ -107,7 +107,7 @@ class Connection {
             case 'pauseSpectateMenu':
             case 'respawnMenu':
                translate(-org.off.x, -org.off.y);
-               renderWorld();
+               Game.game.world.render();
                for (let i = 0; i < Game.game.info.count; i++) {
                   Abilities.renderToxin(Game.game.abilities[i]);
                }
@@ -136,7 +136,7 @@ class Connection {
    // Control Flow Listeners
    listen_enter() {
       this.socket.on('enter', () => {
-         enter(); // "enter" is defined in run.js; enter starts the org life interval
+         Control.enter(); // "enter" is defined in run.js; enter starts the org life interval
       });
    }
    listen_force_spawn() {
@@ -153,7 +153,7 @@ class Connection {
             Menu.renderMenu('pauseGame', Game.game);
             config.menus.pauseGame.submit();
          }
-         spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
+         Control.spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
          org.spawn = false;
          org.ready = true; // org.ready ensures that org will only be forcibly respawned once
       });
@@ -169,7 +169,7 @@ class Connection {
    }
    listen_spectate() {
       this.socket.on('Spectate', () => {
-         spectate({ color: org.color, cursor: org.cursor, skin: org.skin, team: org.team });
+         Control.spectate({ color: org.color, cursor: org.cursor, skin: org.skin, team: org.team });
       });
    }
 
