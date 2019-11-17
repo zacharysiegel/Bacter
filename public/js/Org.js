@@ -5,7 +5,22 @@ class Org {
       this.color = data.color;
       this.skin = data.skin;
       this.team = data.team;
-      this.speed = data.spectating ? config.game.spectate_speed : config.game.move_speed;
+      this.spectating = data.spectating;
+
+      this.speed = this.spectating ? config.game.spectate_speed : config.game.move_speed;
+      this.cells = [];
+      this.count = 0;
+
+      this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
+      this.range = config.game.default_range;
+      this.hit = undefined;
+      this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
+      this.col = config.game.collision_radius; // Collision radius (square) for crosshair (used in collision detection with flag)
+      this.tracker = { // Used to ensure no double org growth intervals
+         start: undefined,
+         end: undefined,
+         elap: undefined
+      };
 
       let src = getSrc();
       if (src && src.src === 'game') {
@@ -21,9 +36,6 @@ class Org {
             }
          }
       }
-
-      this.cells = [];
-      this.count = 0;
 
       // Set Initial Position
       if (data.cursor) { // If cursor position is specified as a parameter
@@ -97,18 +109,7 @@ class Org {
          y: this.cursor.y - center.y
       };
 
-      this.coefficient = -27.5; // Used in calculating size (changes in response to extend and compress abilities)
-      this.range = config.game.default_range;
-
-      this.hit = undefined;
       this.count = this.cells.length;
-      this.intervals = []; // Store an array of intervals to be pushed; in case multiple intervals are created unintentionally, they can be cleared
-      this.col = 10; // Collision radius (square) for crosshair (used in collision detection with flag)
-      this.tracker = { // Used to ensure no double org growth intervals
-         start: undefined,
-         end: undefined,
-         elap: undefined
-      };
 
       // Clickbox (DO NOT DELETE)
       // this.target = undefined; // ID of player which this org is currently targeting
@@ -365,7 +366,7 @@ class Org {
                   }
                }
             }
-            die(true);
+            this.die(true);
          }
       }
 
@@ -781,6 +782,12 @@ class Org {
          this.off.x = this.cursor.x - center.x;
          this.off.y = this.cursor.y - center.y;
       }
+   }
+
+   die(spectating) {
+      connection.socket.binary(false).emit('Dead', spectating);
+      this.clearIntervals();
+      Abilities.reset(ability);
    }
 
    /**

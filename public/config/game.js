@@ -25,12 +25,14 @@ config.game = {
    round_delay: 10000,     // Delay time (in milliseconds) before survival round starts
    dummy_count: 10,        // Number of dummy orgs in title screen
    margin_width: 25,       // Title screen margin
+   collision_radius: 10,   // Collision radius (px) (square) for crosshair (used in collision detection with flag)
+   normal_coefficient: -27.5,
 
-   defaults: {
+   defaults: { // Default settings that are mutable by the user
       world_width:  800,
       world_height: 800,
       player_cap:   16,
-      player_min:   2, // TODO: Reset to 4
+      player_min:   2, // TODO: Reset to 4 after testing
       board_length: 10,
       team_count:   2
    }

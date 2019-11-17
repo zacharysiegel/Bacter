@@ -26,7 +26,7 @@ class Tutorial {
       this.org_interval = setInterval(() => {
          for (let i = 0; i < this.orgs.length; i++) {
             this.orgs[i].grow();
-            if (org.count === 0) {
+            if (!org.alive) {
                this.orgs[i].cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
                this.orgs[i].count++;
             }
@@ -271,7 +271,7 @@ class Tutorial {
                   this.org_interval = setInterval(() => { // Restart
                      for (let i = 0; i < this.orgs.length; i++) {
                         this.orgs[i].grow();
-                        if (org.count === 0) {
+                        if (!org.alive) {
                            this.orgs[i].cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
                            this.orgs[i].count++;
                         }

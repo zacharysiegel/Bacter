@@ -342,31 +342,3 @@ function roundBehaviors() {
       }
    }
 }
-
-function die(spectating) {
-   connection.socket.binary(false).emit('Dead', spectating);
-   org.clearIntervals();
-
-   for (let a in ability) { // Reset Ability Cooldowns
-      if (ability[a].hasOwnProperty('activated')) { // Avoid reference error by checking if ability[a] is an activatable ability
-         if (ability[a].activated !== undefined && ability[a].activated === true) { // If is a usable ability
-            clearTimeout(ability[a].timeout);
-            ability[a].value = false;
-            ability[a].can = true;
-            ability[a].cooling = false;
-            ability[a].start = undefined;
-            ability[a].end = undefined;
-         }
-      }
-   }
-   for (let i = 0; i < 3; i++) { // Reset shoots
-      clearTimeout(ability.shoot.timeout[i]);
-      ability.shoot.value[i] = false;
-      ability.shoot.can[i] = true;
-      ability.shoot.spore[i] = undefined;
-      ability.shoot.secrete[i] = {};
-      ability.shoot.start[i] = undefined;
-      ability.shoot.end[i] = undefined;
-   }
-   connection.emit('ability', ability);
-}

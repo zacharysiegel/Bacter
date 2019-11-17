@@ -141,7 +141,7 @@ class Connection {
    }
    listen_force_spawn() {
       this.socket.on('Force Spawn', () => {
-         die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
+         org.die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
          for (let i = 0; i < Game.game.spectators.length; i++) {
             if (Game.game.spectators[i] === this.socket.id) { // If player is spectator
                this.socket.binary(false).emit('Spectator Left', Game.game.info); // Remove spectator from spectators array

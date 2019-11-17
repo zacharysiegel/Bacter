@@ -1,7 +1,5 @@
-# Dependency directories
-node_modules/
-
 # NPM
+node_modules/
 package-lock.json
 
 # Sublime
