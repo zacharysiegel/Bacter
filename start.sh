@@ -36,7 +36,7 @@ fi
 # authbind (I believe) creates a file named 'localhost:80' which blocks express from listening on port 80
 test -e localhost:80 && rm localhost:80
 
-if cat ./config/config.json | grep -- project_state | grep -q -- production # If the "project_state" property in ./src/config.json is set to "production"
+if grep -- project_state ./src/config/config.json | grep -q -- production # If the "project_state" property in ./src/config.json is set to "production"
 then
    echo "Project state is set to production"
    echo "JavaScript is ES2015-compatible"
