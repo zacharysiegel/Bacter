@@ -65,7 +65,7 @@ class Tutorial {
          Abilities.renderSpores(ability);
          if (this.task !== 'move' && this.task !== 'survive') {
             translate(-org.off.x, -org.off.y);
-            renderUI();
+            HUD.render();
             translate(org.off.x, org.off.y);
          }
 

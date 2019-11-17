@@ -1,101 +1,101 @@
 class Game {
-   /**
-    * All static fields are listed below:
-    * (static) Game.game;
-    * (static) Game.games;
-    * (static) Game.state;
-    */
-    
-   /**
-    * Construct a Game object
-    * @param  {Map} data {
-    *                       title: gametitle,
-    *                       secured: secured,
-    *                       type: type,
-    *                       width: width,
-    *                       height: height,
-    *                       color: color,
-    *                       cap: cap,
-    *                       show: show,
-    *                       mode: mode,
-    *                       teamCount: teamCount,
-    *                       min: minimum
-    *                    }
-    */
-   constructor(data) {
-      this.src = 'game';
-      this.players = []; { // Info
-         this.info = {
-            host: connection.socket.id,
-            title: data.title,
-            secured: data.secured,
-            count: 0,
-            cap: data.cap,
-            mode: data.mode,
-            teamCount: data.teamCount
-         };
-      } { // Teams
-         this.teams = [];
-         if (this.info.mode === 'skm' || this.info.mode === 'ctf') {
-            for (let i = 0; i < this.info.teamCount; i++) {
-               this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+    /**
+     * All static fields are listed below:
+     * (static) Game.game;
+     * (static) Game.games;
+     * (static) Game.state;
+     */
+
+    /**
+     * Construct a Game object
+     * @param  {Map} data {
+     *                       title: gametitle,
+     *                       secured: secured,
+     *                       type: type,
+     *                       width: width,
+     *                       height: height,
+     *                       color: color,
+     *                       cap: cap,
+     *                       show: show,
+     *                       mode: mode,
+     *                       teamCount: teamCount,
+     *                       min: minimum
+     *                    }
+     */
+    constructor(data) {
+        this.src = 'game';
+        this.players = []; { // Info
+            this.info = {
+                host: connection.socket.id,
+                title: data.title,
+                secured: data.secured,
+                count: 0,
+                cap: data.cap,
+                mode: data.mode,
+                teamCount: data.teamCount
+            };
+        } { // Teams
+            this.teams = [];
+            if (this.info.mode === 'skm' || this.info.mode === 'ctf') {
+                for (let i = 0; i < this.info.teamCount; i++) {
+                    this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+                }
+            } else if (this.info.mode === 'inf') {
+                for (let i = 0; i < 2; i++) { // Only can be two teams in infection (healthy/infected)
+                    this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+                }
             }
-         } else if (this.info.mode === 'inf') {
-            for (let i = 0; i < 2; i++) { // Only can be two teams in infection (healthy/infected)
-               this.teams.push([]); // Outer array contains teams, inner arrays contain player ids
+        } { // Rounds
+            this.rounds = {
+                host: undefined, // Identification purposes
+                util: false, // If game utilizes rounds
+                waiting: true,
+                delayed: false,
+                delaystart: undefined,
+                rounddelay: config.game.round_delay,
+                start: undefined,
+                min: undefined, // Min players
+                winner: undefined
+            };
+            if (this.info.mode === 'srv' || this.info.mode === 'ctf' || this.info.mode === 'inf' || this.info.mode === 'kth') { // If game mode utilizes round system
+                this.rounds.util = true;
+                this.rounds.host = this.info.host;
+                this.rounds.min = data.min;
+                this.rounds.waiting = true;
             }
-         }
-      } { // Rounds
-         this.rounds = {
-            host: undefined, // Identification purposes
-            util: false, // If game utilizes rounds
-            waiting: true,
-            delayed: false,
-            delaystart: undefined,
-            rounddelay: config.game.round_delay,
-            start: undefined,
-            min: undefined, // Min players
-            winner: undefined
-         };
-         if (this.info.mode === 'srv' || this.info.mode === 'ctf' || this.info.mode === 'inf' || this.info.mode === 'kth') { // If game mode utilizes round system
-            this.rounds.util = true;
-            this.rounds.host = this.info.host;
-            this.rounds.min = data.min;
-            this.rounds.waiting = true;
-         }
-      }
-      this.board = new Board(data);
-      this.world = new World(data);
-      if (this.info.mode === 'ctf') {
-         this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
-      }
-      this.players = [];
-      this.spectators = [];
-      this.orgs = [];
-      this.abilities = [];
-   }
+        }
+        this.board = new Board(data);
+        this.world = new World(data);
+        if (this.info.mode === 'ctf') {
+            this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
+        }
+        this.players = [];
+        this.spectators = [];
+        this.orgs = [];
+        this.abilities = [];
+    }
 
-   /**
-    * Determine if the game corresponding to the specified host exists in the games array
-    * @param {String} host The host of the game in question (the identifier of a game)
-    * @return {Boolean} True if game was found in games array, else false
-    */
-   static exists(host) {
-      let exists = false;
+    /**
+     * Determine if the game corresponding to the specified host exists in the games array
+     * @param {String} host The host of the game in question (the identifier of a game)
+     * @return {Boolean} True if game was found in games array, else false
+     */
+    static exists(host) {
+        let exists = false;
 
-      Game.games.forEach(game => { // return statement in here does not return Game.exists, it returns the arrow function
-         if (game.info.host === host) {
-            exists = true;
-         }
-      });
+        Game.games.forEach(game => { // return statement in here does not return Game.exists, it returns the arrow function
+            if (game.info.host === host) {
+                exists = true;
+            }
+        });
 
-      return exists;
-   }
+        return exists;
+    }
 }
 
 // Static Initialization Block for class Game
 (function() {
-   
-   Game.games = [];
+
+    Game.games = [];
 
 })();

@@ -12,7 +12,7 @@ class Flag {
    /**
     * Checks if the player's org has collided with the flag
     */
-   detectPickup() {
+   detectedPickup() {
       if (!this.carried) { // If flag is unposessed
          if (org.cursor.x - org.col > this.x - this.width / 2
             && org.cursor.x + org.col < this.x + this.width / 2
