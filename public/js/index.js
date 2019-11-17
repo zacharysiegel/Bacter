@@ -171,7 +171,7 @@ function keyPressed() {
                     break;
                 case 'joinMenu':
                     if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                        connection.socket.binary(false).emit('game ended', Game.game);
+                        connection.emit('game ended', Game.game);
                         Title.render();
                     } else {
                         Browser.renderBrowser();
@@ -232,7 +232,7 @@ function keyPressed() {
                     break;
                 case 'joinMenu':
                     if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                        connection.socket.binary(false).emit('game ended', Game.game);
+                        connection.emit('game ended', Game.game);
                         Title.render();
                     } else {
                         Browser.renderBrowser();

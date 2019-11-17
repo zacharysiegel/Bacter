@@ -226,7 +226,7 @@
       Added gameplay guide
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
-      Changed cursor over radio buttons to pointer
+      Added pointer cursor over radio buttons
       Improved efficiency of organism generation
       Improved other documentation
       Fixed failure to apply compress and extend abilities in the tutorial

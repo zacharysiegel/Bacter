@@ -140,11 +140,11 @@ class Connection {
         });
     }
     listen_force_spawn() {
-        this.socket.on('Force Spawn', () => {
+        this.socket.on('force spawn', () => {
             org.die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
             for (let i = 0; i < Game.game.spectators.length; i++) {
                 if (Game.game.spectators[i] === this.socket.id) { // If player is spectator
-                    this.socket.binary(false).emit('Spectator Left', Game.game.info); // Remove spectator from spectators array
+                    this.emit('spectator left', Game.game.info); // Remove spectator from spectators array
                 }
             }
             if (Game.state === 'pauseSpectateMenu') {

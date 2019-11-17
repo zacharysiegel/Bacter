@@ -785,7 +785,7 @@ class Org {
     }
 
     die(spectating) {
-        connection.socket.binary(false).emit('Dead', spectating);
+        connection.socket.binary(false).emit('dead', spectating);
         this.clearIntervals();
         Abilities.reset(ability);
     }
