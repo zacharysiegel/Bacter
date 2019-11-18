@@ -89,34 +89,34 @@ function keyPressed() {
         case config.settings.controls.ability1.code: // X by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
                 if (ability.extend.activated === true && ability.extend.can) {
-                    extend(org.player); // Extend self
+                    ability.use_extend(org.player); // Extend self
                 } else if (ability.compress.activated && ability.compress.can) {
-                    shoot(0, 1);
+                    ability.use_shoot(0, 1);
                     // for (let i = 0; i < Game.game.info.count; i++) {
                     //    if (org.target == Game.game.players[i]) { // Find targeted org
-                    //       compress(org.target); // Compress targeted org
+                    //       ability.compress(org.target); // Compress targeted org
                     //       break;
                     //    }
                     // }
                 } else if (ability.tag.activated === true && ability.tag.can === true) {
-                    shoot(0, 1);
+                    ability.use_shoot(0, 1);
                 }
                 // if (ability.speed.activated == true) { // Speed/Slow; OLD
-                //    speed(org.player);
+                //    ability.speed(org.player);
                 // } else if (ability.slow.activated == true) {
-                //    slow(org.target);
+                //    ability.slow(org.target);
                 // }
             }
             break;
         case config.settings.controls.ability2.code: // C by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
                 if (ability.immortality.activated && ability.immortality.can) {
-                    immortality(org.player); // Immortalize self
+                    ability.use_immortality(org.player); // Immortalize self
                 } else if (ability.freeze.activated && ability.freeze.can) {
-                    shoot(1, 1);
+                    ability.use_shoot(1, 1);
                     // for (let i = 0; i < Game.game.info.count; i++) {
                     //    if (org.target == Game.game.players[i]) { // Find targeted org
-                    //       freeze(org.target); // Freeze targeted org
+                    //       ability.freeze(org.target); // Freeze targeted org
                     //       break;
                     //    }
                     // }
@@ -126,29 +126,29 @@ function keyPressed() {
         case config.settings.controls.ability3.code: // V by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
                 // if (ability.stimulate.activated == true && ability.stimulate.can == true) { // Stimulate/Poison OLD
-                //    stimulate(org.player); // Stimulate self
+                //    ability.stimulate(org.player); // Stimulate self
                 // } else if (ability.poison.activated == true && ability.poison.can == true) {
-                //    shoot(2, 1);
+                //    ability.shoot(2, 1);
                 //    // for (let i = 0; i < Game.game.info.count; i++) {
                 //    //    if (org.target == Game.game.players[i]) { // Find targeted org
-                //    //       poison(org.target); // Poison targeted org
+                //    //       ability.poison(org.target); // Poison targeted org
                 //    //       break;
                 //    //    }
                 //    // }
                 // }
                 if (ability.neutralize.activated && ability.neutralize.can) {
-                    neutralize(org.player);
+                    ability.use_neutralize(org.player);
                 } else if (ability.toxin.activated && ability.toxin.can) {
-                    toxin(org.player);
+                    ability.use_toxin(org.player);
                 }
             }
             break;
         case config.settings.controls.ability4.code: // SPACE by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
                 if (! ability.spore.value && ! ability.secrete.value) {
-                    spore();
+                    ability.use_spore();
                 } else if (ability.spore.value && ! ability.secrete.value) {
-                    secrete();
+                    ability.use_secrete();
                 }
             }
             break;

@@ -333,11 +333,11 @@ class Connection {
     }
 
     // Emissions
-    emit_test(data) {
-        this.socket.binary(false).emit('Test', data || 'Test Successful', result => {
-            console.log('Callback: ' + result);
-        });
-    }
+    // emit_test(data) {
+    //     this.socket.binary(false).emit('Test', data || 'Test Successful', result => {
+    //         console.log('Callback: ' + result);
+    //     });
+    // }
 
     /**
      * Emit a generic event to the server
@@ -385,5 +385,24 @@ class Connection {
      */
     emit_board(board) {
         this.socket.binary(false).emit('board', { list: board.list, host: board.host });
+    }
+
+    /**
+     * Emit the 'org' event to the server
+     *    Overwrite the server's copy of this user's org
+     * @param {Object} data {
+     *     cells: // Only the following attributes of org need to be updated
+     *     off: // Latency is decreased by only sending necessary data
+     *     cursor:
+     *     color:
+     *     skin:
+     *     team:
+     *     coefficient:
+     *     range:
+     * }
+     */
+    emit_org(data) {
+        // this.socket.volatile.binary(false).emit('org', data); // Volatile emits from client are not currently supported by socketio
+        this.socket.binary(false).emit('org', data);
     }
 }

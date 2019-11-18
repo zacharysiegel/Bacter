@@ -24,12 +24,37 @@ class Control {
 
     /**
      * Enter game by starting game interval (runLoop()) (with org growth)
-     * @return void
      */
     static enter() {
         if (!org.intervals.length) { // org.intervals array must be of length 0
             org.intervals.push(setInterval(Control.loop, config.game.org_frequency));
         }
+    }
+
+    /**
+     * Causes a player to leave the game
+     */
+    static leave() {
+        connection.emit('leave game');
+        org.clearIntervals();
+        org = undefined; // Clear org globalvariable
+        Abilities.reset(ability); // Ability reset occurs already in Title.render()
+
+        if (Game.game.info.host !== connection.socket.id) { // Only edit and update the board if the player is not the host
+            for (let i = 0; i < Game.game.board.list.length; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
+                if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
+                    Game.game.board.list.splice(i, 1); // Remove player from leaderboard
+                    Board.order(Game.game.board); // Sort the list before emitting to the server
+                    connection.emit_board(Game.game.board); // Send updated board to server
+                    break;
+                }
+            }
+        }
+
+
+
+        Title.render();
+        title = Title.create();
     }
 
     static loop() {

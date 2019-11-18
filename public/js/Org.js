@@ -337,7 +337,7 @@ class Org {
         this.checkAbilities();
 
         if (Game.state === 'game' || Game.state === 'pauseGameMenu') { // These are the only states in which the org is updating itself (same as switch at the start of grow())
-            connection.socket.binary(false).emit('Org Update', {
+            connection.emit_org({
                 cells: this.cells, // Only the following attributes of org need to be updated
                 off: this.off, // Latency is decreased by only sending necessary data
                 cursor: this.cursor,
@@ -347,6 +347,7 @@ class Org {
                 coefficient: this.coefficient,
                 range: this.range
             });
+
             if (this.count === 0) {
                 for (let i = 0; i < Game.game.board.list.length; i++) { // Find player in leaderboard
                     if (Game.game.board.list[i].player === connection.socket.id) { // Add death to leaderboard
@@ -494,6 +495,12 @@ class Org {
                 ability = src.abilities[i]; // Set local 'ability' variable to the    ability object
                 break;
             }
+        }
+
+        if (ability === undefined) {
+            console.error('Player\'s abilities not found');
+            connection.emit('leave game');
+            // alert('An error has caused you to be forcibly removed from the game');
         }
 
         if (ability.freeze.value) { // If this org is frozen, no natural birth occurs

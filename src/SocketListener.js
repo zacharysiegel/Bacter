@@ -39,7 +39,6 @@ class SocketListener {
         // Data Congruence
         this.listen_board(games);
         this.listen_org(games);
-        this.listen_game(games);
         this.listen_teams(games);
         this.listen_flag(games);
         this.listen_ability(games);
@@ -252,24 +251,6 @@ class SocketListener {
 
             this.socket.emit('enter');
             if (this.config.project_state === 'development') console.log('                                               Player Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-
-            // let len = games.count; // Working code from before games.getIndexByHost()
-            // for (let i = 0; i < len; i++) {
-            //    if (games.list[i].info.host === data.info.host) {
-            //       this.socket.leave('lobby'); // Leave 'lobby' Room
-            //       this.socket.join(data.info.title); // Join 'Game' Room
-            //       this.socket.inGame = true;
-            //
-            //       games.list[i].players.push(this.socket.id); // Add player to server's list of players in game
-            //       games.list[i].orgs.push(data.org); // Create server instance of compressed org (no functions)
-            //       games.list[i].abilities.push(data.ability); // Create server instance of ability
-            //       games.list[i].info.count = games.list[i].orgs.length;
-            //
-            //       this.socket.emit('enter');
-            //       if (this.config.project_state === 'development') console.log('                                               Player Spawned: ' + games.list[i].info.title + ' (' + this.socket.id + ')');
-            //       break;
-            //    }
-            // }
         });
     }
 
@@ -290,19 +271,6 @@ class SocketListener {
 
             games.list[g].spectators.push(this.socket.id);
             if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === game.info.host) {
-            //       this.socket.leave('lobby'); // Leave 'lobby' Room
-            //       this.socket.join(game.info.title); // Join 'Game' Room
-            //       this.socket.inGame = true;
-            //
-            //       games.list[g].spectators.push(this.socket.id);
-            //       if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
-            //       break;
-            //    }
-            // }
         });
     }
 
@@ -320,20 +288,6 @@ class SocketListener {
 
             const indices = games.getIndicesByMember(this.socket.id, g);
             games.list[g].spectators.splice(indices.s, 1);
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost() and games.getIndicesByMember()
-            // outer:
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === data.host) {
-            //       let spectator_count = games.list[g].spectators.length;
-            //       for (let s = 0; s < spectator_count; s++) {
-            //          if (games.list[g].spectators[s] === this.socket.id) {
-            //             games.list[g].spectators.splice(s, 1);
-            //             break outer;
-            //          }
-            //       }
-            //    }
-            // }
         });
     }
 
@@ -449,14 +403,6 @@ class SocketListener {
             }
 
             games.list[g].board.list = data.list;
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === data.host) { // Find board's game
-            //       games.list[g].board.list = data.list; // Update server leaderboard list
-            //       break;
-            //    }
-            // }
         });
     }
 
@@ -471,6 +417,7 @@ class SocketListener {
          *     cells: org.cells,
          *     off: org.off,
          *     pos: org.pos,
+         *     cursor: org.cursor,
          *     color: org.color,
          *     skin: org.skin,
          *     team: org.team,
@@ -478,7 +425,7 @@ class SocketListener {
          *     range: org.range
          *  }
          */
-        this.socket.on('Org Update', (data) => { // data is an array in order to decrease json data sent over web this.socket
+        this.socket.on('org', ({ cells, off, pos, cursor, color, skin, team, coefficient, range }) => {
             const indices = games.getIndicesByMember(this.socket.id);
             if (indices.g === -1) {
                 console.error(`[ERROR] :: listen_org :: Game not found in {Games}.list with member ${this.socket.id}`);
@@ -489,36 +436,15 @@ class SocketListener {
             }
 
             // games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary data rather than the entire org object
-            games.list[indices.g].orgs[indices.p].cells = data.cells; // Only the following attributes of org need to be updated and shared
-            games.list[indices.g].orgs[indices.p].count = data.cells.length;
-            games.list[indices.g].orgs[indices.p].off = data.off;
-            games.list[indices.g].orgs[indices.p].pos = data.cursor;
-            games.list[indices.g].orgs[indices.p].color = data.color;
-            games.list[indices.g].orgs[indices.p].skin = data.skin;
-            games.list[indices.g].orgs[indices.p].team = data.team;
-            games.list[indices.g].orgs[indices.p].coefficient = data.coefficient;
-            games.list[indices.g].orgs[indices.p].range = data.range;
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // outer:
-            // for (let i = 0; i < game_count; i++) {
-            //    const org_count = games.list[i].orgs.length;
-            //    for (let j = 0; j < org_count; j++) {
-            //       if (games.list[i].orgs[j].player === this.socket.id) {
-            //          // games.list[i].orgs[j] = org; // Latency is decreased by only sending necessary data rather than the entire org object
-            //          games.list[i].orgs[j].cells = data.cells; // Only the following attributes of org need to be updated and shared
-            //          games.list[i].orgs[j].count = data.cells.length;
-            //          games.list[i].orgs[j].off = data.off;
-            //          games.list[i].orgs[j].pos = data.cursor;
-            //          games.list[i].orgs[j].color = data.color;
-            //          games.list[i].orgs[j].skin = data.skin;
-            //          games.list[i].orgs[j].team = data.team;
-            //          games.list[i].orgs[j].coefficient = data.coefficient;
-            //          games.list[i].orgs[j].range = data.range;
-            //          break outer;
-            //       }
-            //    }
-            // }
+            games.list[indices.g].orgs[indices.p].cells = cells; // Only the following attributes of org need to be updated and shared
+            games.list[indices.g].orgs[indices.p].count = cells.length;
+            games.list[indices.g].orgs[indices.p].off = off;
+            games.list[indices.g].orgs[indices.p].pos = cursor;
+            games.list[indices.g].orgs[indices.p].color = color;
+            games.list[indices.g].orgs[indices.p].skin = skin;
+            games.list[indices.g].orgs[indices.p].team = team;
+            games.list[indices.g].orgs[indices.p].coefficient = coefficient;
+            games.list[indices.g].orgs[indices.p].range = range;
         });
     }
 
@@ -538,33 +464,6 @@ class SocketListener {
     }
 
     /**
-     * Listen for game event from client
-     */
-    listen_game(games) {
-        /**
-         * @param { game: {} } data Data object literal exists rather than just 'game' to allow for customization of input beyond 'game'
-         */
-        this.socket.on('game', (data) => { // TODO: find out if this is ever used
-            console.dir('game', data);
-            const g = games.getIndexByHost(data.game.info.host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_game :: Game not found in {Games}.list with host ${data.game.info.host}`);
-                return;
-            }
-
-            games.list[g] = data.game;
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === data.game.host) {
-            //       games.list[g] = data.game;
-            //       break;
-            //    }
-            // }
-        });
-    }
-
-    /**
      * Listen for team event from client
      */
     listen_teams(games) {
@@ -576,14 +475,6 @@ class SocketListener {
             }
 
             games.list[g].teams = data.teams;
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === data.host) { // Identify game
-            //       games.list[g].teams = data.teams; // All data in teams array must be updated
-            //       break;
-            //    }
-            // }
         });
     }
 
@@ -606,14 +497,6 @@ class SocketListener {
             }
 
             games.list[g].flag = data.flag;
-
-            // const game_count = games.count; // Working code from before games.getIndexByHost()
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].info.host === data.host) {
-            //       games.list[g].flag = data.flag;
-            //       break;
-            //    }
-            // }
         });
     }
 
@@ -635,26 +518,6 @@ class SocketListener {
             if (spectating) {
                 this.socket.emit('Spectate'); // Dead player becomes spectator
             }
-
-            // const game_count = games.count; // Working code from before games.getIndicesByMember()
-            // outer:
-            // for (let g = 0; g < game_count; g++) {
-            //    if (games.list[g].players.indexOf(this.socket.id) !== -1) {
-            //       const player_count = games.list[g].players.length;
-            //       for (let p = 0; p < player_count; p++) { // Do not use games.list[g].info.count server-side (orgs.length may change before count changes)
-            //          if (games.list[g].players[p] === this.socket.id) {
-            //             games.list[g].players.splice(p, 1); // User is no longer a player, but a spectator
-            //             games.list[g].abilities.splice(p, 1); // Abilities array should be indexed identically to players array
-            //             games.list[g].orgs.splice(p, 1); // Orgs array should be indexed identically to players array
-            //             games.list[g].info.count--; // One less player in the game
-            //             if (spectating) {
-            //                this.socket.emit('Spectate'); // Dead player becomes spectator
-            //             }
-            //             break outer;
-            //          }
-            //       }
-            //    }
-            // }
         });
     }
 
@@ -665,7 +528,6 @@ class SocketListener {
      *    Special: Tag
      *    Old: Speed, Slow, Stimulate, Poison
      */
-
     listen_abilities() {
         /**
          * Emit an ability to the specified player
