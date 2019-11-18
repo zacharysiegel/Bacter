@@ -229,6 +229,7 @@
       Added pointer cursor over radio buttons
       Improved efficiency of organism generation
       Improved other documentation
+      Improved fonts
       Fixed failure to apply compress and extend abilities in the tutorial
       Fixed blank background on forced exit of a game
       Fixed 'issue with skin detection' bug in the spawn and pause menus
