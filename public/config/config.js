@@ -1,6 +1,6 @@
 const config = {
-   colors: {},
-   game: {},
-   menus: {},
-   settings: {}
+    colors: {},
+    game: {},
+    menus: {},
+    settings: {}
 };

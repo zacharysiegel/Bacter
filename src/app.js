@@ -24,12 +24,12 @@ const port = argv.port || process.env.PORT || 80; // process.env.PORT is fed by 
 const express = require('express');
 let app = express();
 let server = app.listen(port, error => {
-   if (error) {
-      console.error(error);
-   } else {
-      console.log('Listening on port ' + port + '\n');
-      start();
-   }
+    if (error) {
+        console.error(error);
+    } else {
+        console.log('Listening on port ' + port + '\n');
+        start();
+    }
 });
 app.use(express.static('./public')); // Set path to static data
 
@@ -40,12 +40,12 @@ let io = socketio(server);
 // Import Configurations
 let config;
 try { // Production code in try
-   config = require('./config/config.json');
+    config = require('./config/config.json');
 } catch (ex) {
-   config = require('./../config/config.json');
+    config = require('./../config/config.json');
 }
 if (config.project_state !== 'production' && config.project_state !== 'development') {
-   console.error('Non-Enumerated Value -- config.project_state should be "production" or "development"');
+    console.error('Non-Enumerated Value -- config.project_state should be "production" or "development"');
 }
 
 // Bacter Modules
@@ -58,11 +58,11 @@ const SocketListener = require('./SocketListener.js');
  * @return {void}
  */
 function start() {
-   let games = new Games(config);
+    let games = new Games(config);
 
-   io.on('connection', socket => { // Listen for clients connecting to socket.io '/' namespace
-      let listener = new SocketListener(socket, io, config);
-      listener.listen(games); // Initialize all socket.io emit listeners
-      games.setGamesInterval(1000, io); // io is a reference to the io object, so the parameter in setGamesInterval will refer to the same object
-   });
+    io.on('connection', socket => { // Listen for clients connecting to socket.io '/' namespace
+        let listener = new SocketListener(socket, io, config);
+        listener.listen(games); // Initialize all socket.io emit listeners
+        games.setGamesInterval(1000, io); // io is a reference to the io object, so the parameter in setGamesInterval will refer to the same object
+    });
 }

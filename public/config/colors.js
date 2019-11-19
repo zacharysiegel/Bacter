@@ -36,11 +36,11 @@ config.colors = {
             hot:               { r: 232,   g: 2,    b: 216 }
         }
     },
-   teams: [ 'red', 'blue', 'green', 'pink' ],
-   teamsDef: {
-      red: 'fire',
-      blue: 'sky',
-      green: 'lime',
-      pink: 'petal'
-   }
+    teams: [ 'red', 'blue', 'green', 'pink' ],
+    teamsDef: {
+        red: 'fire',
+        blue: 'sky',
+        green: 'lime',
+        pink: 'petal'
+    }
 };

@@ -1,6 +1,6 @@
 {
-   "project_state": "development",
-   "delay_time": 10000,
-   "shrink_rate": 0.2,
-   "render_frequency": 40
+    "project_state": "development",
+    "delay_time": 10000,
+    "shrink_rate": 0.2,
+    "render_frequency": 40
 }
