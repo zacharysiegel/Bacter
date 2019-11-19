@@ -75,7 +75,7 @@
       Fixed cannot spawn over opponent org
       Fixed leaderboard cover end of long name
 
-## a2.2.0
+## a3.0.0
       Added game creation options menu
       Added join game options menu
       Added spectate game options menu
@@ -121,7 +121,7 @@
       Balanced compress time (3000ms --> 3500ms)
       Balanced immortality cooldown (4000ms --> 3500ms)
 
-## a3.0.0
+## a3.1.0
       Added skirmish game mode
       Added survival game mode
       Added game mode column to browser
@@ -163,7 +163,7 @@
       Balanced neutralize cooldown (6000ms --> 6500ms)
       Balanced spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)
 
-## a3.1.0
+## a3.2.0
       Added title screen and menu
       Added tutorial
       Added tutorial pause menu
@@ -174,7 +174,7 @@
       Fixed spawn on world edge issue
       Fixed crash on stationary mouse position use
 
-## a3.1.1
+## a3.2.1
       Added menu issue warnings
       Added leave game option to respawn menu
       Added fullscreen recommendation to tutorial
@@ -206,7 +206,7 @@
       Fixed minor ability bug
       Fixed minor player cap bug
 
-## a3.1.2
+## a3.2.2
       Changed neutralize/toxin center from center of mass to crosshair
       Changed text in respawn menu from 'Respawn' to 'Spawn'
       Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'
@@ -222,7 +222,7 @@
       Fixed spectator password denial
       Fixed spectate menu double issue indicators
 
-## a3.1.3
+## a3.2.3
       Added gameplay guide
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
