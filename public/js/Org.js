@@ -64,8 +64,9 @@ class Org {
                 }
                 let org_count = src.orgs.length;
                 for (let i = 0; i < org_count; i++) { // Org Overlap
-                    for (let j = 0; j < this.count; j++) {
-                        if (this.cells[j].x - this.cells[j].width <= this.cursor.x && this.cells[j].x + this.cells[j].width >= this.cursor.x && this.cells[j].y - this.cells[j].height <= this.cursor.y && this.cells[j].y + this.cells[j].height >= this.cursor.y) { // If position collides with enemy cell (Full width buffer is intended)
+                    let org = src.orgs[i];
+                    for (let j = 0; j < org.count; j++) {
+                        if (org.cells[j].x - org.cells[j].width <= this.cursor.x && org.cells[j].x + org.cells[j].width >= this.cursor.x && org.cells[j].y - org.cells[j].height <= this.cursor.y && org.cells[j].y + org.cells[j].height >= this.cursor.y) { // If position collides with enemy cell (Full width buffer is intended)
                             repos = true;
                             break;
                         }
@@ -73,28 +74,28 @@ class Org {
                     if (repos) {
                         break;
                     }
-                    let abilitY = src.abilities[i];
-                    if (abilitY.secrete.value === true) { // Spore Secretions Overlap
-                        for (let j = 0; j < abilitY.spore.count; j++) {
-                            let cell = abilitY.spore.spores[j];
-                            if (sqrt(sq(this.cursor.x - cell.x) + sq(this.cursor.y - cell.y)) <= abilitY.secrete.radius) {
+                    let _ability = src.abilities[i]; // _ prefix so as to not confuse with the global variable "ability"
+                    if (_ability.secrete.value === true) { // Spore Secretions Overlap
+                        for (let j = 0; j < _ability.spore.count; j++) {
+                            let cell = _ability.spore.spores[j];
+                            if (sqrt(sq(this.cursor.x - cell.x) + sq(this.cursor.y - cell.y)) <= _ability.secrete.radius) {
                                 repos = true;
                                 break;
                             }
                         }
                     }
                     for (let j = 0; j < 3; j++) { // Shoot Secretions Overlap
-                        if (abilitY.shoot.secrete[j].value === true) {
-                            let cell = abilitY.shoot.spore[j];
-                            let sec = abilitY.shoot.secrete[j];
+                        if (_ability.shoot.secrete[j].value === true) {
+                            let cell = _ability.shoot.spore[j];
+                            let sec = _ability.shoot.secrete[j];
                             if (sqrt(sq(this.cursor.x - cell.x) + sq(this.cursor.y - cell.y)) <= sec.radius) {
                                 repos = true;
                                 break;
                             }
                         }
                     }
-                    if (abilitY.toxin.value === true) { // Toxin Overlap
-                        if (sqrt(sq(this.cursor.x - abilitY.toxin.x) + sq(this.cursor.y - abilitY.toxin.y)) <= abilitY.toxin.radius) {
+                    if (_ability.toxin.value === true) { // Toxin Overlap
+                        if (sqrt(sq(this.cursor.x - _ability.toxin.x) + sq(this.cursor.y - _ability.toxin.y)) <= _ability.toxin.radius) {
                             repos = true;
                         }
                     }
@@ -109,7 +110,12 @@ class Org {
             y: this.cursor.y - center.y
         };
 
-        this.count = this.cells.length;
+        this.count = 0;
+
+        if (data.spectating) {
+            this.cells[0] = new Cell(this.cursor.x, this.cursor.y, this); // Create first cell in org
+            this.count++;
+        }
 
         // Clickbox (DO NOT DELETE)
         // this.target = undefined; // ID of player which this org is currently targeting
@@ -199,7 +205,7 @@ class Org {
     get isSpectator() {
         const len = Game.game.spectators.length;
         for (let i = 0; i < len; i++) {
-            if (Game.game.spectators[i] === this.socket.id) { // If player is spectator
+            if (Game.game.spectators[i] === this.player) { // If player is spectator
                 return true;
             }
         }

@@ -6,8 +6,7 @@ class Control {
     static spawn(data) { // data: { color: {}, skin: '', team: '' }
         Game.state = 'game';
         org = new Org({ player: connection.socket.id, color: data.color, skin: data.skin, team: data.team, spectating: false });
-        org.cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
-        org.count++;
+
         let compressedOrg = org.compressed;
         connection.emit('player joined', { info: Game.game.info, org: compressedOrg, ability: ability });
     }

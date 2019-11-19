@@ -124,7 +124,7 @@ class Connection {
                     Board.render(Game.game.board);
                     translate(org.off.x, org.off.y);
 
-                    (new Message()).render();
+                    (new Message()).render(); // TODO: constructing a new message each tick is unnecessarily slow
                     if (Game.state === 'spectate') {
                         org.move(); // Move is after messages so everything has same offset
                     }
