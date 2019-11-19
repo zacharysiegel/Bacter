@@ -6,7 +6,8 @@ class Tutorial {
         this.task = 'move';
         this.taskTimeout = undefined;
         this.margin = config.game.margin_width;
-        this.world = new World({ width: window.innerWidth - this.margin * 2, height: window.innerHeight - this.margin * 2, type: 'rectangle', color: 'black', x: this.margin, y: this.margin }); { // Org
+        this.world = new World(window.innerWidth - this.margin * 2, window.innerHeight - this.margin * 2, 'rectangle', 'black', this.margin, this.margin);
+        { // Org
             let colors = [];
             for (let j in config.colors.orgs.black) {
                 if (j !== 'sun' && j !== 'sky') { // No bright colors which would obscure the crosshair in tutorial to minimize confusion
@@ -314,7 +315,7 @@ class Tutorial {
             this.orgs[i].cells[0] = new Cell(this.orgs[i].cursor.x, this.orgs[i].cursor.y, this.orgs[i]);
             this.orgs[i].count = 1;
         }
-        this.world = new World({ width: w - this.margin * 2, height: h - this.margin * 2, type: 'rectangle', color: 'black', x: x + this.margin, y: y + this.margin });
+        this.world = new World(w - this.margin * 2, h - this.margin * 2, 'rectangle', 'black', x + this.margin, y + this.margin);
         if (Game.state === 'tutorial') this.render(); // Only render if Game.state is 'tutorial'; otherwise, will render over pause menu
     }
 

@@ -49,8 +49,8 @@ class Game {
             this.rounds = {
                 host: undefined, // Identification purposes
                 util: false, // If game utilizes rounds
-                waiting: true,
-                delayed: false,
+                waiting: true, // Waiting for players to join
+                delayed: false, // All players present, about to join
                 delaystart: undefined,
                 rounddelay: config.game.round_delay,
                 start: undefined,
@@ -64,8 +64,8 @@ class Game {
                 this.rounds.waiting = true;
             }
         }
-        this.board = new Board(data);
-        this.world = new World(data);
+        this.board = new Board(this.info.mode, data.show, this.info.teamCount);
+        this.world = new World(data.width, data.height, data.type, data.color);
         if (this.info.mode === 'ctf') {
             this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
         }

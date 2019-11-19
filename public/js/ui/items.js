@@ -23,7 +23,7 @@ function itemize(item, width, color, x, y) {
         } else if (item[i] === 2) {
             // noinspection JSSuspiciousNameCombination
             y += width; // Height = width
-        } else { // TODO: Make this an enumerated type
+        } else { // TODO: Enumify
             console.error(`Itemize(): Directional value out of bounds\n\t${item[i]} !== 0, 1, 2, or 3`);
         }
         rect(x, y, width, width);

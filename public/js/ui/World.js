@@ -1,20 +1,21 @@
 class World {
-    constructor(data) { // data: { width: , height: , type: , color: , x: , y: }
+    /**
+     * Construct a new World object
+     * @param {Number} width
+     * @param {Number} height
+     * @param {String} type
+     * @param {String} color
+     * @param {Number} x
+     * @param {Number} y
+     */
+    constructor(width, height, type, color, x=0, y=0) { // data: { width: , height: , type: , color: , x: , y: }
         this.host = connection.socket.id; // Cannot call Game.game.info.host since Game.game is not fully constructed yet; World() can only be called by host, so connection.socket.id is ok
-        this.width = data.width;
-        this.height = data.height;
-        if (data.x !== undefined) { // Coordinates are for top left corner
-            this.x = data.x;
-        } else {
-            this.x = 0;
-        }
-        if (data.y !== undefined) {
-            this.y = data.y;
-        } else {
-            this.y = 0;
-        }
-        this.type = data.type;
-        this.color = data.color;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.color = color;
         for (let i in config.colors.world) {
             if (i === this.color) {
                 this.background = config.colors.world[i];
@@ -35,18 +36,24 @@ class World {
         }
     }
 
-    static render() {
+    /**
+     * Render the given world
+     *    This function is static rather than an instance member because the
+     *      JSON.stringify used in the Socket.io transfer of the Game object
+     *      ignores functions and prototypes
+     */
+    static render(world) {
         // Background
-        background(Game.game.world.backdrop.r, Game.game.world.backdrop.g, Game.game.world.backdrop.b);
+        background(world.backdrop.r, world.backdrop.g, world.backdrop.b);
 
         // Shadows
-        fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
+        fill(world.backdrop.r - 20, world.backdrop.g - 20, world.backdrop.b - 20);
         noStroke();
         { // World
-            if (Game.game.world.type === 'rectangle') { // World
-                rect(Game.game.world.x + Game.game.world.width / 2 + 7, Game.game.world.y + Game.game.world.height / 2 + 6, Game.game.world.width, Game.game.world.height);
-            } else if (Game.game.world.type === 'ellipse') {
-                ellipse(Game.game.world.x + Game.game.world.width / 2 + 5, Game.game.world.y + Game.game.world.height / 2 + 4, Game.game.world.width / 2, Game.game.world.height / 2);
+            if (world.type === 'rectangle') { // World
+                rect(world.x + world.width / 2 + 7, world.y + world.height / 2 + 6, world.width, world.height);
+            } else if (world.type === 'ellipse') {
+                ellipse(world.x + world.width / 2 + 5, world.y + world.height / 2 + 4, world.width / 2, world.height / 2);
             }
         }
         { // Leaderboard
@@ -144,13 +151,13 @@ class World {
         }
 
         // World
-        fill(Game.game.world.background.r, Game.game.world.background.g, Game.game.world.background.b);
-        stroke(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
-        strokeWeight(Game.game.world.border.weight);
-        if (Game.game.world.type === 'rectangle') {
-            rect(Game.game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width, Game.game.world.height); // World border
-        } else if (Game.game.world.type === 'ellipse') {
-            ellipse(Game.game.world.x + Game.game.world.width / 2, Game.game.world.y + Game.game.world.height / 2, Game.game.world.width / 2, Game.game.world.height / 2); // World border
+        fill(world.background.r, world.background.g, world.background.b);
+        stroke(world.border.color.r, world.border.color.g, world.border.color.b);
+        strokeWeight(world.border.weight);
+        if (world.type === 'rectangle') {
+            rect(world.x + world.width / 2, world.y + world.height / 2, world.width, world.height); // World border
+        } else if (world.type === 'ellipse') {
+            ellipse(world.x + world.width / 2, world.y + world.height / 2, world.width / 2, world.height / 2); // World border
         }
 
         // CTF
@@ -158,14 +165,14 @@ class World {
             // Bases
             for (let i = 1; i < Game.game.teams.length + 1; i++) {
                 let color = config.colors.teamsDef[config.colors.teams[i - 1]];
-                stroke(config.colors.orgs[Game.game.world.color][color].r, config.colors.orgs[Game.game.world.color][color].g, config.colors.orgs[Game.game.world.color][color].b);
+                stroke(config.colors.orgs[world.color][color].r, config.colors.orgs[world.color][color].g, config.colors.orgs[world.color][color].b);
                 strokeWeight(3);
                 let bin = i.toString(2); // Convert i to binary string
                 if (bin.length < 2) {
                     bin = '0' + bin; // Add zero to front to form equivalent two-length binary number
                 }
-                let x = Game.game.world.x + (Game.game.world.width * parseInt(bin[bin.length - 1]));
-                let y = Game.game.world.y + (Game.game.world.height * parseInt(bin[bin.length - 2]));
+                let x = world.x + (world.width * parseInt(bin[bin.length - 1]));
+                let y = world.y + (world.height * parseInt(bin[bin.length - 2]));
                 let theta;
                 if (bin === '01') {
                     theta = 270;
@@ -177,14 +184,14 @@ class World {
                     theta = 0;
                 }
                 let l = 150;
-                if (Game.game.world.type === 'rectangle') {
+                if (world.type === 'rectangle') {
                     arc(x, y, l, l, -theta + 1, -theta + 89); // -1 to avoid world border overlap with a degree cushion either side
-                } else if (Game.game.world.type === 'ellipse') {
-                    let r = Game.game.world.width / 2;
+                } else if (world.type === 'ellipse') {
+                    let r = world.width / 2;
                     let h = x + cos(-theta + 45) * r * (Z.root2 - 1); // l = r(Z.root2 - 1); length from circle to square corner
                     let k = y + sin(-theta + 45) * r * (Z.root2 - 1); // yoff = l*sin(-theta + 45); -theta + 45 gives angle to center
-                    let a = Game.game.world.x + r; // a is world center x
-                    let b = Game.game.world.y + r; // b is world center y
+                    let a = world.x + r; // a is world center x
+                    let b = world.y + r; // b is world center y
                     let diffs = [];
                     let points = [ /*{ p: Number, q: Number }*/ ];
                     for (let j = 0; j < 720; j++) {
@@ -205,7 +212,7 @@ class World {
             }
             // Flag
             noFill();
-            stroke(Game.game.world.border.color.r, Game.game.world.border.color.g, Game.game.world.border.color.b);
+            stroke(world.border.color.r, world.border.color.g, world.border.color.b);
             strokeWeight(2);
             line(Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y - Game.game.flag.height / 2, Game.game.flag.x - Game.game.flag.width / 2, Game.game.flag.y + Game.game.flag.height / 2);
             fill(Game.game.flag.color.r, Game.game.flag.color.g, Game.game.flag.color.b);

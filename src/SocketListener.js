@@ -299,9 +299,10 @@ class SocketListener {
          * End Round
          *    Received upon round of survival ending after only one player stands (or zero if multiple die on same tick)
          * @param  {Object} data: game.info
-         * @return {void}
          */
         this.socket.on('end round', (data) => { // data is game.info
+            console.dir(data);
+
             const g = games.getIndexByHost(data.host);
             if (g === -1) {
                 console.error(`[ERROR] :: listen_end_round :: Game not found in {Games}.list with host ${data.host}`);
@@ -328,6 +329,7 @@ class SocketListener {
             if (data.mode === 'srv') {
                 const s = games.getShrinkIndex(data.host);
                 if (s === -1) { // This will occur if the 'end round' was emitted multiple times at the end of a single round, this will usually not occur
+                    console.error('[WARN] :: listen_end_round :: shrinkInterval not found');
                     return; // This prevents crash from index out of bounds issue
                 }
 
@@ -347,6 +349,11 @@ class SocketListener {
             const g = games.getIndexByHost(game.info.host);
             if (g === -1) {
                 console.error(`[ERROR] :: listen_round_delay :: Game not found in {Games}.list with host ${game.info.host}`);
+                return;
+            }
+
+            if (games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
+                console.error(`[WARN]  :: listen_round_delay :: Round delay has already begun`);
                 return;
             }
 
@@ -580,7 +587,7 @@ class SocketListener {
                 clients.forEach(id => {
                     let member = this.io.sockets.sockets[id];
                     member.leave(game.info.title); // Remove all players from Socket.io room
-                    member.inGame = false; // TODO: Make sure this fixed the "Game not found..." issue
+                    member.inGame = false;
                 });
             });
 

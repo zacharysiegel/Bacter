@@ -193,6 +193,20 @@ class Org {
     }
 
     /**
+     * Determine if this org is a spectator in the current game
+     * @returns {Boolean} True if spectator, else false
+     */
+    get isSpectator() {
+        const len = Game.game.spectators.length;
+        for (let i = 0; i < len; i++) {
+            if (Game.game.spectators[i] === this.socket.id) { // If player is spectator
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get a reduced version of the org object containing only information needing to be sent to the server
      *    Sending less data to the server allows for lower latency
      * @returns {{col: number, color: *, skin: *, count: (number|*), range: number, team: *, speed: (*|number), off: ({x: number, y: number}|*), hit: undefined, intervals: ([]|Array), spawn: (boolean|*), cells: ([]|Array), pos: *, ready: boolean, name: *, coefficient: number, tracker: ({start: *, elap: *, end: *}|*), player: *}}
@@ -330,6 +344,13 @@ class Org {
                 ability = src.abilities[i]; // Set local 'ability' variable to the correct ability object
                 break;
             }
+        }
+
+        if (ability === undefined) {
+            console.error('Player\'s abilities not found');
+            // alert('An error has caused you to be forcibly removed from the game');
+            // Control.leave();
+            return;
         }
 
         this.birth();
@@ -495,12 +516,6 @@ class Org {
                 ability = src.abilities[i]; // Set local 'ability' variable to the    ability object
                 break;
             }
-        }
-
-        if (ability === undefined) {
-            console.error('Player\'s abilities not found');
-            connection.emit('leave game');
-            // alert('An error has caused you to be forcibly removed from the game');
         }
 
         if (ability.freeze.value) { // If this org is frozen, no natural birth occurs
@@ -792,7 +807,7 @@ class Org {
     }
 
     die(spectating) {
-        connection.socket.binary(false).emit('dead', spectating);
+        connection.emit('dead', spectating);
         this.clearIntervals();
         Abilities.reset(ability);
     }

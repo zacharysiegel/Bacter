@@ -80,7 +80,7 @@ class Connection {
                 case 'game':
                 case 'pauseGameMenu':
                     translate(-org.off.x, -org.off.y);
-                    World.render();
+                    World.render(Game.game.world);
                     for (let i = 0; i < Game.game.info.count; i++) {
                         Abilities.renderToxin(Game.game.abilities[i]);
                     }
@@ -95,7 +95,7 @@ class Connection {
                         Abilities.renderSpores(Game.game.abilities[i]);
                     }
                     HUD.render();
-                    Board.render();
+                    Board.render(Game.game.board);
                     translate(org.off.x, org.off.y);
 
                     (new Message()).render(); // Render messages outside translation
@@ -107,7 +107,7 @@ class Connection {
                 case 'pauseSpectateMenu':
                 case 'respawnMenu':
                     translate(-org.off.x, -org.off.y);
-                    World.render();
+                    World.render(Game.game.world);
                     for (let i = 0; i < Game.game.info.count; i++) {
                         Abilities.renderToxin(Game.game.abilities[i]);
                     }
@@ -121,7 +121,7 @@ class Connection {
                     for (let i = 0; i < Game.game.info.count; i++) {
                         Abilities.renderSpores(Game.game.abilities[i]);
                     }
-                    Board.render();
+                    Board.render(Game.game.board);
                     translate(org.off.x, org.off.y);
 
                     (new Message()).render();
@@ -142,17 +142,17 @@ class Connection {
     listen_force_spawn() {
         this.socket.on('force spawn', () => {
             org.die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
-            for (let i = 0; i < Game.game.spectators.length; i++) {
-                if (Game.game.spectators[i] === this.socket.id) { // If player is spectator
-                    this.emit('spectator left', Game.game.info); // Remove spectator from spectators array
-                }
+            if (org.isSpectator) {
+                this.emit('spectator left', Game.game.info); // Remove spectator from spectators array
             }
+
             if (Game.state === 'pauseSpectateMenu') {
                 Menu.renderMenu('pauseGame', Game.game); // Move to correct menu if on spectate menu
             } else if (Game.state === 'respawnMenu') {
                 Menu.renderMenu('pauseGame', Game.game);
                 config.menus.pauseGame.submit();
             }
+
             Control.spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
             org.spawn = false;
             org.ready = true; // org.ready ensures that org will only be forcibly respawned once
@@ -163,6 +163,7 @@ class Connection {
             if (game.info.host !== this.socket.id) { // Don't alert host (he already knows)
                 alert('The game has ended');
             }
+
             Title.render();
             title = Title.create();
         });

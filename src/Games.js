@@ -31,7 +31,9 @@ class Games {
 
         this.intervals.push(setInterval(() => { // Send updated game to all players
             this.list[game_index].count = this.list[game_index].players.lenth; // Calculate and update player count
-            io.to(this.list[game_index].info.title).volatile.binary(false).emit('game', this.list[game_index]); // Send updated game info to clients in game room
+
+            let game = this.list[game_index];
+            io.to(this.list[game_index].info.title).volatile.binary(false).emit('game', game); // Send updated game info to clients in game room
         }, this.config.render_frequency));
     }
 

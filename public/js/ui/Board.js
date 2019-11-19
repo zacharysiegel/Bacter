@@ -1,5 +1,11 @@
 class Board {
-    constructor(data) { // TODO: Convert board.js into class Board
+    /**
+     * Construct a new Board object
+     * @param {String} mode The gamemode
+     * @param {Number} show The max rows on the leaterboard
+     * @param {Number} teamCount The number of teams in the game
+     */
+    constructor(mode, show, teamCount) {
         this.host = connection.socket.id; // Cannot call Game.game.info.host since game is not fully constructed yet; World() can only be called by host, so connection.socket.id is ok
         this.list = [
             // { TODO: Make a class out of this
@@ -13,10 +19,10 @@ class Board {
             // }
         ];
         this.count = undefined;
-        if (data.mode === 'skm' || data.mode === 'ctf') { // If is a team Game.game
-            this.show = data.teamCount; // Maximum number of players shown in leaderboard (Top __)
+        if (mode === 'skm' || mode === 'ctf') { // If is a team Game.game
+            this.show = teamCount; // Maximum number of players shown in leaderboard (Top __)
         } else {
-            this.show = data.show;
+            this.show = show;
         }
         this.x = undefined; // width - (nameWidth + oneWidth + twoWidth) / 2 - marginRight
         this.y = undefined; // marginTop
@@ -44,10 +50,31 @@ class Board {
     }
 
     /**
+     * Find a player's ID in the list
+     *    This function is static rather than an instance member because the
+     *      JSON.stringify used in the Socket.io transfer of the Game object
+     *      ignores functions and prototypes
+     * @param board The board object to search
+     * @param id The socket.id String of a player
+     * @returns {Number} Index of player in {Board}.list
+     */
+    static find(board, id) {
+        let len = Game.game.board.list.length;
+        for (let i = 0; i < len; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
+            if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Order the leaderboard
      *    Sort in descending order of K:D ratio
+     *    This function is static rather than an instance member because the
+     *      JSON.stringify used in the Socket.io transfer of the Game object
+     *      ignores functions and prototypes
      * @param {Board} board The board to be sorted (it is really the array board.list being sorted)
-     * @return The sorted leaderboard (Leaderboard is mutated, just returning a copy)
      */
     static order(board) {
         board.list.sort(function(a, b) { // Sorts in descending order of K:D ratio
@@ -72,17 +99,17 @@ class Board {
             }
             return N;
         });
-        return board;
     }
 
     /**
      * Render the leaderboard
      *    Leaderboard is stored in Game.game.board
+     *    This function is static rather than an instance member because the
+     *      JSON.stringify used in the Socket.io transfer of the Game object
+     *      ignores functions and prototypes
      * Function is static (rather than an instance member) so the transmission of board to/from server is lighter
      */
-    static render() {
-        let board = Game.game.board; // Alias Game.game.board to board for readability
-
+    static render(board) {
         translate(org.off.x, org.off.y); // Settings for entire board
         rectMode(CORNER);
         board.y = board.marginTop;

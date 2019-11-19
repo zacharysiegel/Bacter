@@ -41,17 +41,13 @@ class Control {
         Abilities.reset(ability); // Ability reset occurs already in Title.render()
 
         if (Game.game.info.host !== connection.socket.id) { // Only edit and update the board if the player is not the host
-            for (let i = 0; i < Game.game.board.list.length; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
-                if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
-                    Game.game.board.list.splice(i, 1); // Remove player from leaderboard
-                    Board.order(Game.game.board); // Sort the list before emitting to the server
-                    connection.emit_board(Game.game.board); // Send updated board to server
-                    break;
-                }
+            let index = Board.find(Game.game.board, connection.socket.id); // Remove member from the leaderboard, reorder it, and update server's board instance
+            if (index !== -1) {
+                Game.game.board.list.splice(index, 1); // Remove player from leaderboard
+                Board.order(Game.game.board); // Sort the list before emitting to the server
+                connection.emit_board(Game.game.board); // Send updated board to server
             }
         }
-
-
 
         Title.render();
         title = Title.create();
@@ -75,6 +71,7 @@ class Control {
         if (! Game.game.rounds.util) {
             return;
         }
+
         const currentTime = new Date();
         if (Game.game.info.host === connection.socket.id) { // Only if player is host
             if (Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count >= Game.game.rounds.min) { // If waiting, not delayed, and have minimum players
@@ -87,6 +84,7 @@ class Control {
                 connection.emit('force spawn', Game.game.info);
             }
         }
+
         if (Game.game.info.mode === 'srv' && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count <= 1 && Game.game.players[0] === connection.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
             for (let m = 0; m < Game.game.board.list.length; m++) {
                 if (Game.game.board.list[m].player === connection.socket.id) {
