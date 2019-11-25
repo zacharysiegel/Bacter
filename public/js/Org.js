@@ -1,11 +1,11 @@
 let org;
 class Org {
-    constructor(data) { // data: { player: , color: , skin: , team: , spectate: , pos: } (color and skin are required)
+    constructor(data) { // data: { player: , color: , skin: , team: , pos: } (color and skin are required)
         this.player = data.player;
         this.color = data.color;
         this.skin = data.skin;
         this.team = data.team;
-        this.spectating = data.spectating;
+        this.spectating = Game.state === 'spectate';
 
         this.speed = this.spectating ? config.game.spectate_speed : config.game.move_speed;
         this.cells = [];
@@ -24,17 +24,11 @@ class Org {
 
         let src = getSrc();
         if (src && src.src === 'game') {
-            if (Game.game.rounds.util === true) { // If the game mode utilizes the rounds system
-                this.ready = false; // org.ready ensures that org will only be forcibly respawned once
-            }
+            this.ready = !Game.game.rounds.util; // org.ready ensures that org will only be forcibly respawned once
+            this.spawn = !Game.game.rounds.util || Game.game.rounds.waiting; // org is only disallowed to spawn if game is no longer waiting for new spawns
 
-            this.spawn = ! (Game.game.info.mode === 'srv' && ! Game.game.rounds.waiting); // org is only disallowed to spawn if game mode is survival and game is no longer waiting for new spawns
-
-            for (let i = 0; i < Game.game.board.list.length; i++) {
-                if (Game.game.board.list[i].player === this.player) { // Find player name in leaderboard list
-                    this.name = Game.game.board.list[i].name;
-                }
-            }
+            let index = Board.find(Game.game.board, this.player);
+            this.name = Game.game.board.list[index].name;
         }
 
         // Set Initial Position
@@ -112,9 +106,9 @@ class Org {
 
         this.count = 0;
 
-        if (data.spectating) {
+        if (!this.spectating) {
             this.cells[0] = new Cell(this.cursor.x, this.cursor.y, this); // Create first cell in org
-            this.count++;
+            this.count = 1;
         }
 
         // Clickbox (DO NOT DELETE)
@@ -354,6 +348,7 @@ class Org {
 
         if (ability === undefined) {
             console.error('Player\'s abilities not found');
+            org.die(true);
             // alert('An error has caused you to be forcibly removed from the game');
             // Control.leave();
             return;
@@ -812,6 +807,10 @@ class Org {
         }
     }
 
+    /**
+     * Kill this org
+     * @param spectating Whether or not this player should become a spectator
+     */
     die(spectating) {
         connection.emit('dead', spectating);
         this.clearIntervals();

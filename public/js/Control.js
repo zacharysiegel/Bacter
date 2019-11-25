@@ -5,7 +5,7 @@ class Control {
      */
     static spawn(data) { // data: { color: {}, skin: '', team: '' }
         Game.state = 'game';
-        org = new Org({ player: connection.socket.id, color: data.color, skin: data.skin, team: data.team, spectating: false });
+        org = new Org({ player: connection.socket.id, color: data.color, skin: data.skin, team: data.team });
 
         let compressedOrg = org.compressed;
         connection.emit('player joined', { info: Game.game.info, org: compressedOrg, ability: ability });
@@ -18,7 +18,7 @@ class Control {
     static spectate(data) { // data: { color: {}, cursor: {}, skin: '', team: '' }
         Game.state = 'spectate';
         connection.emit('spectator joined', Game.game);
-        org = new Org( { player: connection.socket.id, color: data.color, skin: data.skin, team: data.team, cursor: data.cursor, spectating: true } );
+        org = new Org( { player: connection.socket.id, color: data.color, skin: data.skin, team: data.team, cursor: data.cursor } );
     }
 
     /**

@@ -67,9 +67,8 @@ class Title {
                 skin: skin,
                 team: null,
                 cursor: cursor,
+                spectating: false
             });
-            this.orgs[i].cells[0] = new Cell(this.orgs[i].cursor.x, this.orgs[i].cursor.y, this.orgs[i]); // Title must exist to create new Cell()
-            this.orgs[i].count++;
             this.abilities[i] = new Ability(i);
         }
 

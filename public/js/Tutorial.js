@@ -1,4 +1,4 @@
-let tutorial; // Initialize in global scope; TODO: Convert this into static field on class Tutorial
+let tutorial; // Initialize in global scope;
 
 class Tutorial {
     constructor() {
@@ -18,9 +18,7 @@ class Tutorial {
             if (connection.socket.id === undefined) {
                 console.error("Connection not made yet");
             }
-            org = new Org({ player: connection.socket.id, color: color, skin: 'none', spectating: false, cursor: { x: center.x, y: center.y } });
-            org.cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
-            org.count++;
+            org = new Org({ player: connection.socket.id, color: color, skin: 'none', cursor: { x: center.x, y: center.y } });
         }
         this.orgs = [ org ];
         this.abilities = [ ability ];
@@ -29,7 +27,7 @@ class Tutorial {
                 this.orgs[i].grow();
                 if (!org.alive) {
                     this.orgs[i].cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
-                    this.orgs[i].count++;
+                    this.orgs[i].count = 1;
                 }
             }
         }, config.game.org_frequency); // 70ms
@@ -44,7 +42,7 @@ class Tutorial {
             rect(this.world.x + this.world.width / 2 + 7, this.world.y + this.world.height / 2 + 6, this.world.width, this.world.height);
 
             const message = new Message();
-            if (config.settings.messages === true) { // Render Messages; TODO: Should users be allowed to turn these messages off?
+            if (config.settings.messages === true) { // Render Messages
                 textFont('Helvetica');
                 textStyle(NORMAL);
                 if (message.hasText) {
@@ -214,9 +212,7 @@ class Tutorial {
                     do {
                         cursor = { x: Math.random() * this.world.width, y: Math.random() * this.world.height };
                     } while (sqrt(sq(cursor.x - org.cursor.x) + sq(cursor.y - org.cursor.y)) < config.game.default_range + 30); // config.game.default_range + 20 is maximum extend range
-                    this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', spectating: false, cursor: cursor }));
-                    this.orgs[1].cells[0] = new Cell(this.orgs[1].cursor.x, this.orgs[1].cursor.y, this.orgs[1]); // Create first cell in org
-                    this.orgs[1].count++;
+                    this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', cursor: cursor }));
                     this.abilities[1] = new Ability( 'bot' + 1);
                 }
                 if (ability.compress.applied) {
@@ -274,7 +270,7 @@ class Tutorial {
                                 this.orgs[i].grow();
                                 if (!org.alive) {
                                     this.orgs[i].cells[0] = new Cell(org.cursor.x, org.cursor.y, org); // Create first cell in org
-                                    this.orgs[i].count++;
+                                    this.orgs[i].count = 1;
                                 }
                             }
                         }, config.game.org_frequency); // 70ms
