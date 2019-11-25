@@ -348,9 +348,10 @@ class Org {
 
         if (ability === undefined) {
             console.error('Player\'s abilities not found');
-            org.die(true);
+            // org.die(true);
             // alert('An error has caused you to be forcibly removed from the game');
             // Control.leave();
+            // debugger;
             return;
         }
 

@@ -301,8 +301,6 @@ class SocketListener {
          * @param  {Object} data: game.info
          */
         this.socket.on('end round', (data) => { // data is game.info
-            console.dir(data);
-
             const g = games.getIndexByHost(data.host);
             if (g === -1) {
                 console.error(`[ERROR] :: listen_end_round :: Game not found in {Games}.list with host ${data.host}`);
@@ -320,6 +318,11 @@ class SocketListener {
                     return;
                 }
 
+                const s = games.getShrinkIndex(data.host); // Must recalculate the shrink index in case of concurrent modification
+                games.list[g].world.width = games.shrinkIntervals[s].width; // games.shrinkIntervals[s].world is preserved from 'round delay'
+                games.list[g].world.height = games.shrinkIntervals[s].height; // Reset world width and height
+                games.shrinkIntervals.splice(s, 1); // Remove shrink interval
+
                 games.list[g].rounds.waiting = true; // When the 'end of round' delay finishes, the 'start of round' delay begins
                 games.list[g].rounds.delayed = false;
 
@@ -334,9 +337,6 @@ class SocketListener {
                 }
 
                 clearInterval(games.shrinkIntervals[s].interval); // Stop shrinking the world
-                games.list[g].world.width = games.shrinkIntervals[s].width; // games.shrinkIntervals[s].world is preserved from 'round delay'
-                games.list[g].world.height = games.shrinkIntervals[s].height; // Reset world width and height
-                games.shrinkIntervals.splice(s, 1); // Remove shrink interval
             }
         });
     }
@@ -351,7 +351,6 @@ class SocketListener {
                 console.error(`[ERROR] :: listen_round_delay :: Game not found in {Games}.list with host ${game.info.host}`);
                 return;
             }
-
             if (games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
                 console.error(`[WARN]  :: listen_round_delay :: Round delay has already begun`);
                 return;
@@ -522,6 +521,7 @@ class SocketListener {
             games.list[indices.g].abilities.splice(indices.p, 1); // Abilities array should be indexed identically to players array
             games.list[indices.g].orgs.splice(indices.p, 1); // Orgs array should be indexed identically to players array
             games.list[indices.g].info.count--; // One less player in the game
+
             if (spectating) {
                 this.socket.emit('Spectate'); // Dead player becomes spectator
             }
