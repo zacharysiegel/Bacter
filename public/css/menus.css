@@ -24,8 +24,13 @@ div.header {
     color: rgb(255, 255, 255);
     text-align: center;
     font-family: 'Verdana', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
+}
+@-moz-document url-prefix() {
+    .headertext {
+        font-size: 16px;
+    }
 }
 table.menutable {
     width: 100%;
@@ -37,7 +42,7 @@ table.menutable {
     border-style: none;
     border-collapse: collapse;
     color: rgb(0, 0, 0);
-    font-size: 15pt;
+    font-size: 16pt;
     font-family: Georgia, serif;
 }
 tr.menurow {
@@ -57,13 +62,19 @@ td.menucell {
     margin: 0px;
     padding: 5px;
     border: none;
+    font-size: 16px;
+}
+@-moz-document url-prefix() {
+    td.menucell {
+        font-size: 14px;
+    }
 }
 .menuinput {
     width: 100px;
     height: 29px;
     color: rgb(0, 0, 0);
     font-family: serif;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
 
     outline: none;
@@ -73,6 +84,11 @@ td.menucell {
     border-width: 0px 0px 2px 0px;
     border-radius: 3px;
     box-sizing: border-box;
+}
+@-moz-document url-prefix() {
+    .menuinput {
+        font-size: 12px;
+    }
 }
 .menuradio {
     width: 16px;
