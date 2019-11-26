@@ -17,12 +17,12 @@ config.game = {
 
     ability_count: 4,       // Number of abilities
     org_frequency: 70,      // Org update frequency
-    render_period: 40,   // Rendering update frequency
+    render_period: 40,      // Rendering update frequency
     default_range: 50,      // Org default maximum size
     cell_width: 6,          // Width of single cell (pixels)
     move_speed: 1.7,        // Crosshair movement speed
     spectate_speed: 2.5,    // Crosshair movement speed in spectate mode
-    round_delay: 10000,     // Delay time (in milliseconds) before survival round starts
+    delay_time: 2000,      // Delay time (in milliseconds) before survival round starts; Must be equal to delay_time in /src/config/config.json
     dummy_count: 10,        // Number of dummy orgs in title screen
     margin_width: 25,       // Title screen margin
     collision_radius: 10,   // Collision radius (px) (square) for crosshair (used in collision detection with flag)

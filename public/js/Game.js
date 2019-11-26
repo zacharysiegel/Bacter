@@ -52,7 +52,7 @@ class Game {
                 waiting: true, // Waiting for players to join
                 delayed: false, // All players present, about to join
                 delaystart: undefined,
-                rounddelay: config.game.round_delay,
+                rounddelay: config.game.delay_time,
                 start: undefined,
                 min: undefined, // Min players
                 winner: undefined
@@ -73,6 +73,24 @@ class Game {
         this.spectators = [];
         this.orgs = [];
         this.abilities = [];
+    }
+
+    /**
+     * Initialize game
+     * @param {Object} game game object holding all game-wide info
+     * @param {Boolean} spectating true: initialize as spectator, false: initialize as player
+     * @param { r, g, b } color (Optional) The RGB color object of the host's org
+     * @param {String} skin (Optional) The skin of the host's org
+     * @param {String} team (Optional) The host's team
+     */
+    static start(game, spectating, color=undefined, skin=undefined, team=undefined) {
+        ReactDOM.render(<CanvasCont />, Z.eid('root'));
+        Game.game = game;
+        if (spectating) { // Field can be left undefined
+            Control.spectate({ color: color, skin: skin, team: team });
+        } else if (!spectating) {
+            Control.spawn({ color: color, skin: skin, team: team });
+        }
     }
 
     /**

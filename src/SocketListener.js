@@ -33,7 +33,7 @@ class SocketListener {
         this.listen_spectator_joined(games);
         this.listen_spectator_left(games);
         this.listen_end_round(games);
-        this.listen_round_delay(games);
+        this.listen_preround_delay(games);
         this.listen_dead(games);
 
         // Data Congruence
@@ -298,6 +298,7 @@ class SocketListener {
         /**
          * End Round
          *    Received upon round of survival ending after only one player stands (or zero if multiple die on same tick)
+         *    Starts a new 'end round' delay which waits 'delay_time'-many milliseconds before resetting to the 'waiting-for-players' delay
          * @param  {Object} data: game.info
          */
         this.socket.on('end round', (data) => { // data is game.info
@@ -344,15 +345,15 @@ class SocketListener {
     /**
      * Listen for round delay event from client
      */
-    listen_round_delay(games) {
-        this.socket.on('round delay', (game) => {
+    listen_preround_delay(games) {
+        this.socket.on('preround delay', (game) => {
             const g = games.getIndexByHost(game.info.host);
             if (g === -1) {
-                console.error(`[ERROR] :: listen_round_delay :: Game not found in {Games}.list with host ${game.info.host}`);
+                console.error(`[ERROR] :: listen_preround_delay :: Game not found in {Games}.list with host ${game.info.host}`);
                 return;
             }
             if (games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
-                console.error(`[WARN]  :: listen_round_delay :: Round delay has already begun`);
+                console.error(`[WARN]  :: listen_preround_delay :: Round delay has already begun`);
                 return;
             }
 

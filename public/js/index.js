@@ -32,24 +32,6 @@ function setup() { // p5 function runs on window.onload (I think)
     title = Title.create();
 }
 
-/**
- * Initialize game
- * @param  {Object} game game object holding all game-wide info
- * @param  {Object} data: {
- *                           spectate: boolean true: initialize as spectator, false: initialize as player
- *                        }
- * @return void
- */
-function initialize(game, data) {
-    ReactDOM.render(<CanvasCont />, Z.eid('root'));
-    Game.game = game;
-    if (data.spectate !== true) { // Field can be left undefined
-        Control.spawn({ color: data.color, skin: data.skin, team: data.team });
-    } else if (data.spectate === true) {
-        Control.spectate({ color: data.color, skin: data.skin, team: data.team });
-    }
-}
-
 
 /**
  * Get the source object for the current state of the game

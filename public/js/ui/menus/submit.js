@@ -419,12 +419,12 @@ function submit(menuType) {
                 clearInterval(title.interval);
                 if (Game.game.rounds.util) {
                     if (Game.game.rounds.waiting) {
-                        initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
+                        Game.start(Game.game, false, config.colors.orgs[Game.game.world.color][color], skin, team);
                     } else {
-                        initialize(Game.game, { spectate: true, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
+                        Game.start(Game.game, true, config.colors.orgs[Game.game.world.color][color], skin, team);
                     }
                 } else {
-                    initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
+                    Game.start(Game.game, false, config.colors.orgs[Game.game.world.color][color], skin, team);
                 }
             };
 
@@ -497,7 +497,7 @@ function submit(menuType) {
                 connection.emit_board(Game.game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
                 // Initialize
                 clearInterval(title.interval);
-                initialize(Game.game, { spectate: true, color: undefined, skin: undefined });
+                Game.start(Game.game, true);
             };
 
             if (ok) {
@@ -664,7 +664,7 @@ function submit(menuType) {
                     color = config.colors.teamsDef[team]; // Color must be after Team
                 }
                 // Initialize
-                initialize(Game.game, { spectate: false, color: config.colors.orgs[Game.game.world.color][color], skin: skin, team: team });
+                Game.start(Game.game, false, config.colors.orgs[Game.game.world.color][color], skin, team);
             } else {
                 this.issue(issues); // this keyword refers to Menu (after binding denied/grantedJoin in submit and submit in MenuSubmit props)
             }
