@@ -89,7 +89,7 @@ class Tutorial {
                 }
             }
             this.detect();
-        }, config.game.render_frequency); // 40ms
+        }, config.game.render_period); // 40ms
         this.stopped = false;
         this.stopdate = undefined;
     }

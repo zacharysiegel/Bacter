@@ -1,4 +1,8 @@
 class HUD {
+    /*
+    Static fields:
+        static color = { r: 255, g: 255, b: 255 };
+     */
     /**
      * Render the entire Heads-Up-Display (i.e. the in-game user interface)
      */
@@ -21,9 +25,9 @@ class HUD {
             src = getSrc();
         }
 
-        if (src.src !== 'tutorial') {
+        if (src.src !== 'tutorial') { // TODO: render crosshair with correct color in tutorial
             noFill();
-            stroke(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b);
+            stroke(HUD.color.r, HUD.color.g, HUD.color.b);
             strokeWeight(1);
             line(org.cursor.x - 4, org.cursor.y, org.cursor.x + 4, org.cursor.y);
             line(org.cursor.x, org.cursor.y - 4, org.cursor.x, org.cursor.y + 4);
@@ -307,3 +311,7 @@ class HUD {
         translate(-org.off.x, -org.off.y);
     }
 }
+
+(() => {
+    HUD.color = { r: 255, g: 255, b: 255 };
+})();

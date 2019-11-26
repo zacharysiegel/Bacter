@@ -34,7 +34,7 @@ class Games {
 
             let game = this.list[game_index];
             io.to(this.list[game_index].info.title).volatile.binary(false).emit('game', game); // Send updated game info to clients in game room
-        }, this.config.render_frequency));
+        }, this.config.render_period));
     }
 
     setGamesInterval(delay=1000, io) {
@@ -59,10 +59,10 @@ class Games {
             }
 
             if (this.list[g].world.width > 200 && this.list[g].world.height > 200) { // If both dimensions are greater than minimum
-                this.list[g].world.width -= this.config.shrink_rate;
-                this.list[g].world.height -= this.config.shrink_rate;
-                this.list[g].world.x += this.config.shrink_rate / 2; // World shrinks to center
-                this.list[g].world.y += this.config.shrink_rate / 2;
+                this.list[g].world.width -= this.config.shrink_rate * 2;
+                this.list[g].world.height -= this.config.shrink_rate * 2;
+                this.list[g].world.x += this.config.shrink_rate; // World shrinks to center
+                this.list[g].world.y += this.config.shrink_rate;
             }
         };
 
@@ -70,7 +70,7 @@ class Games {
             host: game.info.host,
             width: game.world.width, // Preserve initial width of world
             height: game.world.height, // Preserve initial height of world
-            interval: setInterval(shrink, this.config.shrink_frequency)
+            interval: setInterval(shrink, this.config.shrink_period)
         });
     }
 

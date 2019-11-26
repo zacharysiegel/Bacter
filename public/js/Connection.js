@@ -150,7 +150,6 @@ class Connection {
                 Menu.renderMenu('pauseGame', Game.game); // Move to correct menu if on spectate menu
             } else if (Game.state === 'respawnMenu') {
                 Menu.renderMenu('pauseGame', Game.game);
-                config.menus.pauseGame.submit();
             }
 
             Control.spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
@@ -160,12 +159,12 @@ class Connection {
     }
     listen_game_ended() {
         this.socket.on('game ended', (game) => {
+            Title.render();
+            title = Title.create();
+
             if (game.info.host !== this.socket.id) { // Don't alert host (he already knows)
                 alert('The game has ended');
             }
-
-            Title.render();
-            title = Title.create();
         });
     }
     listen_spectate() {

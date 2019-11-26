@@ -1,4 +1,8 @@
 class Message {
+    /*
+    Static fields:
+        static color = { r: 255, g: 255, b: 255 };
+     */
     constructor() {
         this.text = ''; // this.text contains the message's text as a String
         if (Game.state === 'game' || Game.state === 'spectate') {
@@ -122,7 +126,7 @@ class Message {
                 let src = getSrc();
 
                 fill(src.world.background.r, src.world.background.g, src.world.background.b); // Message shadows are rendered in renderWorld()
-                stroke(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b);
+                stroke(Message.color.r, Message.color.g, Message.color.b);
                 strokeWeight(1);
                 textFont('Helvetica');
                 textSize(14);
@@ -133,7 +137,7 @@ class Message {
                 }
 
                 rect(25 + this.width / 2, 25 + 9 * this.breaks, 25 + this.width, 26 + 18 * this.breaks);
-                fill(src.world.border.color.r, src.world.border.color.g, src.world.border.color.b); // Same color as border to maintain contrast with background
+                fill(Message.color.r, Message.color.g, Message.color.b); // Same color as border to maintain contrast with background
                 noStroke();
 
                 text(this.text, 25, 30);
@@ -141,3 +145,7 @@ class Message {
         }
     }
 }
+
+(() => {
+    Message.color = { r: 255, g: 255, b: 255 };
+})();

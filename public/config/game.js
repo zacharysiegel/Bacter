@@ -17,7 +17,7 @@ config.game = {
 
     ability_count: 4,       // Number of abilities
     org_frequency: 70,      // Org update frequency
-    render_frequency: 40,   // Rendering update frequency
+    render_period: 40,   // Rendering update frequency
     default_range: 50,      // Org default maximum size
     cell_width: 6,          // Width of single cell (pixels)
     move_speed: 1.7,        // Crosshair movement speed

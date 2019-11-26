@@ -158,8 +158,8 @@ function keyPressed() {
                     // connection.socket.binary(false).emit('Spectator Left', Game.game.info);
                     Menu.renderMenu('respawn', Game.game); // Load respawn menu
                 } else {
-                    alert('Game is at maximum player capacity');
-                    // Return to spectate mode
+                    alert('Game is at maximum player capacity'); // TODO: Convert to message
+                    // Return to spectate mode after alert
                 }
             }
             break;
