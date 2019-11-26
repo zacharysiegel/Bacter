@@ -50,10 +50,34 @@ class Games {
         clearInterval(this.games_interval);
     }
 
+    setShrinkInterval(game) {
+        const shrink = () => { // function expressions are not hoisted, but prefer to not overwrite 'this' value
+            const g = this.getIndexByHost(game.info.host); // g is saved in Closure but its value may change over the lifetime of the interval, so it must be recalculated
+            if (g === -1) {
+                console.error(`[ERROR] :: {Games.setShrinkInterval} :: Game not found in {Games}.list with host ${game.info.host}`);
+                return;
+            }
+
+            if (this.list[g].world.width > 200 && this.list[g].world.height > 200) { // If both dimensions are greater than minimum
+                this.list[g].world.width -= this.config.shrink_rate;
+                this.list[g].world.height -= this.config.shrink_rate;
+                this.list[g].world.x += this.config.shrink_rate / 2; // World shrinks to center
+                this.list[g].world.y += this.config.shrink_rate / 2;
+            }
+        };
+
+        this.shrinkIntervals.push({ // Shrink the world
+            host: game.info.host,
+            width: game.world.width, // Preserve initial width of world
+            height: game.world.height, // Preserve initial height of world
+            interval: setInterval(shrink, this.config.shrink_frequency)
+        });
+    }
+
     /**
-     * Determine the location in {games}.list of the game with the given host or -1 if not found
+     * Determine the location in {Games}.list of the game with the given host or -1 if not found
      * @param {String} host
-     * @return {Number} The index of the game in {games}.list which is hosted by 'host' or -1 if not found
+     * @return {Number} The index of the game in {Games}.list which is hosted by 'host' or -1 if not found
      */
     getIndexByHost(host) {
         for (let g = 0; g < this.count; g++) {

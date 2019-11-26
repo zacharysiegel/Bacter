@@ -364,25 +364,7 @@ class SocketListener {
                 games.list[g].rounds.waiting = false; // Start Round
                 games.list[g].rounds.delayed = false;
                 if (game.info.mode === 'srv') { // If is survival mode
-                    games.shrinkIntervals.push({ // Shrink the world
-                        host: game.info.host,
-                        width: game.world.width, // Preserve initial width of world
-                        height: game.world.height, // Preserve initial height of world
-                        interval: setInterval(() => {
-                            const g = games.getIndexByHost(game.info.host); // g is saved in Closure but its value may change over the lifetime of the interval, so it must be recalculated
-                            if (g === -1) {
-                                console.error(`[ERROR] :: listen_round_delay|games.shrinkIntervals[] :: Game not found in {Games}.list with host ${game.info.host}`);
-                                return;
-                            }
-
-                            if (games.list[g].world.width > 200 && games.list[g].world.height > 200) { // If both dimensions are greater than minimum
-                                games.list[g].world.width -= this.config.shrink_rate;
-                                games.list[g].world.height -= this.config.shrink_rate;
-                                games.list[g].world.x += this.config.shrink_rate / 2; // World shrinks to center
-                                games.list[g].world.y += this.config.shrink_rate / 2;
-                            }
-                        }, this.config.render_frequency) // Same frequency as game interval
-                    });
+                    games.setShrinkInterval(game);
                 }
                 games.list[g].rounds.start = (new Date()).valueOf();
             }, this.config.delay_time);
