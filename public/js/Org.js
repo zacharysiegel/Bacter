@@ -313,11 +313,26 @@ class Org {
 
     /**
      * Remove a cell from the org's cells array
-     * @param index The index of the cell to remove
+     * @param {Number|Cell} index The index of the cell to remove
      * @return {Cell} The return value of splicing the cells array
      */
     removeCell(index) {
-        if (this.count !== this.cells.length) console.error('Invalid Value :: Org.removeCell :: org.count should always equal org.cells.length');
+        if (index instanceof Cell) {
+            for (let c = 0; c < this.count; c++) {
+                if (this.cells[c].equals(index)) {
+                    index = c;
+                    break;
+                } else if (c === this.count - 1) {
+                    console.error("Element Not Found :: {Org}.naturalDeath :: Could not find exposed cell in org's cells array");
+                }
+            }
+        } else if (typeof index === 'number') {
+            if (index < 0 || index >= this.count) console.error('Index out of bounds :: {Org}.removeCell :: given index is out of bounds for the cells array');
+        } else {
+            console.error('Invalid Type :: {Org}.removeCell :: index is an incompatible type')
+        }
+        if (this.count !== this.cells.length) console.error('Invalid Value :: {Org}.removeCell :: org.count should always equal org.cells.length');
+
         this.count--;
         return this.cells.splice(index, 1);
     }
@@ -588,24 +603,25 @@ class Org {
                     let a2 = sq(a);
                     let b = src.world.height / 2;
                     let b2 = sq(b);
-                    let x = (cell.x - config.game.cell_width / 2) - a;
-                    let y = (cell.y - config.game.cell_width / 2) - b;
+                    let x, y;
 
+                    x = (cell.x - config.game.cell_width) - a;
+                    y = (cell.y - config.game.cell_width) - b;
                     if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
                         return true;
                     }
-                    x = (cell.x + config.game.cell_width / 2) - a;
-                    y = (cell.y - config.game.cell_width / 2) - b;
+                    x = (cell.x + config.game.cell_width) - a;
+                    y = (cell.y - config.game.cell_width) - b;
                     if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
                         return true;
                     }
-                    x = (cell.x + config.game.cell_width / 2) - a;
-                    y = (cell.y + config.game.cell_width / 2) - b;
+                    x = (cell.x + config.game.cell_width) - a;
+                    y = (cell.y + config.game.cell_width) - b;
                     if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
                         return true;
                     }
-                    x = (cell.x - config.game.cell_width / 2) - a;
-                    y = (cell.y + config.game.cell_width / 2) - b;
+                    x = (cell.x - config.game.cell_width) - a;
+                    y = (cell.y + config.game.cell_width) - b;
                     if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
                         return true;
                     }
@@ -681,46 +697,31 @@ class Org {
             return;
         }
 
-        exposed:
-            for (let cell of this.regions.exposed.values()) { // Loop from tail to head of array because elements will be removed
-                let r = cell.r;
+        for (let cell of this.regions.exposed.values()) { // Loop from tail to head of array because elements will be removed
+            let r = cell.r;
 
-                // Remove cells if they are outside the org's range value
-                if (r > this.range) { // If exposed cell is outside maximum radius
-                    for (let j = 0; j < this.count; j++) { // Find exposed cell in org cells array
-                        if (cell.equals(this.cells[j])) {
-                            this.removeCell(j);
-                            this.regions.exposed.delete(cell);
-                            continue exposed; // Since cell is removed, if no continue, the program would continue to perform checks on the previous cell
-                        }
-                    }
-                    console.error("Element Not Found :: Org.naturalDeath :: Could not find exposed cell in org's cells array");
-                }
-
-                // Remove cells if they are outside the world
-                if (cell.isOutsideWorld) {
-                    for (let c = 0; c < this.count; c++) {
-                        if (cell.equals(this.cells[c])) {
-                            this.removeCell(c);
-                            this.regions.exposed.delete(cell);
-                            continue exposed; // Since cell is removed, if no continue, the program would continue to perform checks on the previous cell
-                        }
-                    }
-                }
-
-                // Kill normal cells based on their distance from the org's cursor
-                let chance = this.coefficient * Math.log(-r + (this.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100 (r is the distance from cell to cursor)
-                if (Math.random() * 100 <= chance) {
-                    for (let j = 0; j < this.count; j++) { // Find exposed cell in org cells array
-                        if (cell.equals(this.cells[j])) {
-                            this.removeCell(j);
-                            this.regions.exposed.delete(cell);
-                            continue exposed; // Could use a break instead since there are no more instructions in the 'exposed:' for loop
-                        }
-                    }
-                    console.error("Element Not Found :: Org.naturalDeath :: Could not find exposed cell in org's cells array");
-                }
+            // Remove cells if they are outside the org's range value
+            if (r > this.range) { // If exposed cell is outside maximum radius
+                this.removeCell(cell);
+                this.regions.exposed.delete(cell);
+                continue;
             }
+
+            // Remove cells if they are outside the world
+            if (cell.isOutsideWorld) {
+                this.removeCell(cell);
+                this.regions.exposed.delete(cell);
+                continue;
+            }
+
+            // Kill normal cells based on their distance from the org's cursor
+            let chance = this.coefficient * Math.log(-r + (this.range + 1)) + 100; // -27.5(ln(-(r - 51))) + 100 (r is the distance from cell to cursor)
+            if (Math.random() * 100 <= chance) {
+                this.removeCell(cell);
+                this.regions.exposed.delete(cell);
+                continue;
+            }
+        }
     }
 
     /**

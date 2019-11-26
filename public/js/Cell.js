@@ -14,8 +14,14 @@ class Cell {
      * @param rhs Cell to be checked against this one (this is lhs)
      * @param tol The tolerance to be used in x and y positional comparison
      *    Default value is .1
+     * @returns Boolean true if equal, else false
      */
     equals(rhs, tol) {
+        if (!(rhs instanceof Cell)) {
+            console.error('Illegal Argument :: {Cell}.equals :: Attempting to compare with an invalid type');
+            return false;
+        }
+
         if (!tol) tol = .001; // Default tolerance to be used in x/y position equality
         return (rhs instanceof Cell) && (this.player === rhs.player) && (this.x - tol < rhs.x && rhs.x < this.x + tol) && (this.y - tol < rhs.y && rhs.y < this.y + tol);
     }
@@ -38,6 +44,7 @@ class Cell {
 
     /**
      * Determine if the given cell is outside the world boundary
+     *     Includes a margin
      * @returns {Boolean} True if the location is out of the world bounds
      */
     get isOutsideWorld() {
@@ -45,10 +52,10 @@ class Cell {
 
         if (src.world) {
             if (src.world.type === 'rectangle') { // If new cell would be outside a rectangular world's boundary
-                if (this.x - this.width / 2 <= src.world.x || // West
-                    this.x + this.width / 2 >= src.world.x + src.world.width || // East
-                    this.y - this.height / 2 <= src.world.y || // North
-                    this.y + this.height / 2 >= src.world.y + src.world.height) { // South
+                if (this.x - this.width <= src.world.x || // West
+                    this.x + this.width >= src.world.x + src.world.width || // East
+                    this.y - this.height <= src.world.y || // North
+                    this.y + this.height >= src.world.y + src.world.height) { // South
                     return true;
                 }
             } else if (src.world.type === 'ellipse') { // If the new cell would be outside an elliptical world's boundary
@@ -56,24 +63,25 @@ class Cell {
                 let a2 = sq(a);
                 let b = src.world.height / 2;
                 let b2 = sq(b);
-                let x = (this.x - this.width / 2) - a;
-                let y = (this.y - this.height / 2) - b;
+                let x, y;
 
+                x = (this.x - this.width) - a;
+                y = (this.y - this.height) - b;
                 if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-left corner is outside ellipse
                     return true;
                 }
-                x = (this.x + this.width / 2) - a;
-                y = (this.y - this.height / 2) - b;
+                x = (this.x + this.width) - a;
+                y = (this.y - this.height) - b;
                 if (sq(x) / a2 + sq(y) / b2 >= 1) { // If top-right corner is outside ellipse
                     return true;
                 }
-                x = (this.x + this.width / 2) - a;
-                y = (this.y + this.height / 2) - b;
+                x = (this.x + this.width) - a;
+                y = (this.y + this.height) - b;
                 if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-right corner is outside ellipse
                     return true;
                 }
-                x = (this.x - this.width / 2) - a;
-                y = (this.y + this.height / 2) - b;
+                x = (this.x - this.width) - a;
+                y = (this.y + this.height) - b;
                 if (sq(x) / a2 + sq(y) / b2 >= 1) { // If bottom-left corner is outside ellipse
                     return true;
                 }
