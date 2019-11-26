@@ -1,7 +1,5 @@
 # Change Log
 
-      Note: Logs written before version a1.1.2 are incomplete
-
 ## a1.0.0
       Initial Alpha Release
 
@@ -227,6 +225,7 @@
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
       Added pointer cursor over radio buttons
+      Improved sharpness of ability tooltips and their rendering efficiency
       Improved efficiency of organism generation
       Improved other documentation
       Improved appearance and general user interface

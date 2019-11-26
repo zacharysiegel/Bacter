@@ -10,8 +10,15 @@
 function itemize(item, width, color, x, y) {
     let count = item.length; // Number of squares
     fill(color.r, color.g, color.b);
-    noStroke();
-    rect(x, y, width, width);
+    if (width === 1) {
+        stroke(color.r, color.g, color.b);
+        strokeWeight(1);
+        point(x - 1, y - 1);
+    } else {
+        noStroke();
+        rect(x, y, width, width);
+    }
+
     for (let i = 0; i < count; i++) {
         if (item[i] === 0) {
             x -= width;
@@ -26,7 +33,11 @@ function itemize(item, width, color, x, y) {
         } else { // TODO: Enumify
             console.error(`Itemize(): Directional value out of bounds\n\t${item[i]} !== 0, 1, 2, or 3`);
         }
-        rect(x, y, width, width);
+        if (width === 1) {
+            point(x - 1, y - 1);
+        } else {
+            rect(x, y, width, width);
+        }
     }
 }
 
