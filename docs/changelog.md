@@ -234,6 +234,7 @@
       Fixed shrink rate acceleration in survival mode
       Fixed world size reset in survival mode
       Fixed blank background on forced exit of a game
+      Fixed survival mode crash when spawn is forced while on respawn menu
       Fixed 'issue with skin detection' bug in the spawn and pause menus
       Fixed collision detection with world border
       Fixed text alignment in selection input type
