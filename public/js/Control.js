@@ -73,7 +73,7 @@ class Control {
 
         const currentTime = new Date();
         if (Game.game.info.host === connection.socket.id) { // Only if player is host
-            if (Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count >= Game.game.rounds.min) { // If waiting, not delayed, and have minimum players
+            if (Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.player_count >= Game.game.rounds.min) { // If waiting, not delayed, and have minimum players
 
                 connection.emit('preround delay', Game.game); // End waiting period
                 Game.game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
@@ -84,7 +84,7 @@ class Control {
             }
         }
 
-        if (Game.game.info.mode === 'srv' && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.count <= 1 && Game.game.players[0] === connection.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
+        if (Game.game.info.mode === 'srv' && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.player_count <= 1 && Game.game.players[0] === connection.socket.id) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
             for (let m = 0; m < Game.game.board.list.length; m++) {
                 if (Game.game.board.list[m].player === connection.socket.id) {
                     connection.emit('end round', Game.game.info);

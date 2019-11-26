@@ -131,7 +131,7 @@ class Games {
                 continue;
             }
 
-            for (let p = 0; p < game.info.count; p++) { // Search players array for id
+            for (let p = 0; p < game.info.player_count; p++) { // Search players array for id
                 if (game.players[p] === id) {
                     result.p = p;
                     return result; // Member cannot be both a player and a spectator

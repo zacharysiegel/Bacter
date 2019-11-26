@@ -198,7 +198,7 @@ function submit(menuType) {
                 issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                 // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < Game.game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
+            for (let i = 0; i < Game.game.info.player_count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
                 if (name === Game.game.board.list[i].name) { // Name cannot match another player's name
                     ok = false;
                     issues.push({ ['screen name']: 'Name matches that of another player' });
@@ -451,7 +451,7 @@ function submit(menuType) {
                 issues.push({ ['screen name']: 'Screen name cannot be left empty' });
                 // alert('Screen name cannot be left empty');
             }
-            for (let i = 0; i < Game.game.info.count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
+            for (let i = 0; i < Game.game.info.player_count; i++) { // Requires game to be updated (in Menu.renderMenu(datA))
                 if (name === Game.game.board.list[i].name) { // Name cannot match another player's name
                     ok = false;
                     issues.push({ ['screen name']: 'Name matches that of another player' });

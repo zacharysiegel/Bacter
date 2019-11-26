@@ -247,7 +247,7 @@ class SocketListener {
             games.list[g].players.push(this.socket.id); // Add player to server's list of players in game
             games.list[g].orgs.push(data.org); // Create server instance of compressed org (no functions)
             games.list[g].abilities.push(data.ability); // Create server instance of ability
-            games.list[g].info.count = games.list[g].orgs.length;
+            games.list[g].info.player_count = games.list[g].orgs.length;
 
             this.socket.emit('enter');
             if (this.config.project_state === 'development') console.log('                                               Player Spawned: ' + games.list[g].info.title + ' (' + this.socket.id + ')');
@@ -503,7 +503,7 @@ class SocketListener {
             games.list[indices.g].players.splice(indices.p, 1); // User is no longer a player, but a spectator
             games.list[indices.g].abilities.splice(indices.p, 1); // Abilities array should be indexed identically to players array
             games.list[indices.g].orgs.splice(indices.p, 1); // Orgs array should be indexed identically to players array
-            games.list[indices.g].info.count--; // One less player in the game
+            games.list[indices.g].info.player_count--; // One less player in the game
 
             if (spectating) {
                 this.socket.emit('Spectate'); // Dead player becomes spectator
@@ -611,7 +611,7 @@ class SocketListener {
                 game.players.splice(indices.p, 1); // Remove player from game's players list
                 game.orgs.splice(indices.p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
                 game.abilities.splice(indices.p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
-                game.info.count--; // Reduce the number of players in the game
+                game.info.player_count--; // Reduce the number of players in the game
                 if (game.teams.length > 0) { // If is a team game, remove player from team
                     let team = game.teams[this.config.colors.teams.indexOf(game.orgs[indices.p].team)]; // Identify player's team
                     team.splice(team.indexOf(this.socket.id), 1); // Remove player from team

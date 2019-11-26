@@ -81,17 +81,17 @@ class Connection {
                 case 'pauseGameMenu':
                     translate(-org.off.x, -org.off.y);
                     World.render(Game.game.world);
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderToxin(Game.game.abilities[i]);
                     }
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderSecretions(Game.game.abilities[i]);
                     }
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderNeutralize(Game.game.abilities[i]);
                     }
                     Org.renderAll(); // Render orgs
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderSpores(Game.game.abilities[i]);
                     }
                     HUD.render();
@@ -108,17 +108,17 @@ class Connection {
                 case 'respawnMenu':
                     translate(-org.off.x, -org.off.y);
                     World.render(Game.game.world);
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderToxin(Game.game.abilities[i]);
                     }
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderSecretions(Game.game.abilities[i]);
                     }
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderNeutralize(Game.game.abilities[i]);
                     }
                     Org.renderAll(); // Orgs render over neutralize and toxin but under other abilities
-                    for (let i = 0; i < Game.game.info.count; i++) {
+                    for (let i = 0; i < Game.game.info.player_count; i++) {
                         Abilities.renderSpores(Game.game.abilities[i]);
                     }
                     Board.render(Game.game.board);

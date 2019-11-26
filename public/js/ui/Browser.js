@@ -25,7 +25,7 @@ class Browser extends React.Component {
     render() {
         let gamerows = [];
         for (let i = 0; i < this.state.games.length; i++) {
-            if (this.state.games[i].players.length === 0 && this.state.games[i].spectators.length === 0 && this.state.games[i].info.count === 0) { // If host has not yet joined the game
+            if (this.state.games[i].players.length === 0 && this.state.games[i].spectators.length === 0 && this.state.games[i].info.player_count === 0) { // If host has not yet joined the game
                 continue;
             }
             gamerows.push( <GameRow key={i} game={this.state.games[i]} row={i} forceUp={!mouseDown} /> );

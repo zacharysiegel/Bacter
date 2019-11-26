@@ -104,7 +104,7 @@ class World {
                     }
                     if (spectator === true) {
                         if (i < Game.game.board.count) {
-                            if (Game.game.board.count < Game.game.info.count) {
+                            if (Game.game.board.count < Game.game.info.player_count) {
                                 Game.game.board.count++; // Extend leaderboard length to include the next player
                                 i++; // Do not render leaderboard status if player is a spectator
                             } else {

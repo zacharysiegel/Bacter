@@ -29,7 +29,7 @@ class Game {
                 host: connection.socket.id,
                 title: data.title,
                 secured: data.secured,
-                count: 0,
+                player_count: 0,
                 cap: data.cap,
                 mode: data.mode,
                 teamCount: data.teamCount

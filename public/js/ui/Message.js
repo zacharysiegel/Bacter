@@ -9,10 +9,10 @@ class Message {
             if (org.alive) {
                 if (Game.game.rounds.util) {
                     if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === false) {
-                        if (Game.game.rounds.min - Game.game.info.count === 1) {
-                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
+                        if (Game.game.rounds.min - Game.game.info.player_count === 1) {
+                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.player_count) + ' more player to join';
                         } else {
-                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
+                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.player_count) + ' more players to join';
                         }
                     } else if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === true) { // Delay at round start
                         this.text = 'Round begins in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
@@ -23,10 +23,10 @@ class Message {
             } else if (!org.alive) {
                 if (Game.game.rounds.util) {
                     if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === false) { // Waiting for more players to join, not counting down yet
-                        if (Game.game.rounds.min - Game.game.info.count === 1) {
-                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more player to join';
+                        if (Game.game.rounds.min - Game.game.info.player_count === 1) {
+                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.player_count) + ' more player to join';
                         } else {
-                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.count) + ' more players to join';
+                            this.text = 'Waiting for ' + (Game.game.rounds.min - Game.game.info.player_count) + ' more players to join';
                         }
                     } else if (Game.game.rounds.waiting === true && Game.game.rounds.delayed === true) { // Enough players have joined, counting down
                         this.text = 'Round begins in: ' + (1 + floor((Game.game.rounds.rounddelay - (new Date() - Game.game.rounds.delaystart)) / 1000)); // Add 1 to make ceiling function
