@@ -2,6 +2,8 @@ let mouseDown = false;
 
 function setup() { // p5 function runs on window.onload (I think)
     Game.state = 'setup';
+    Game.message = new Message();
+
     noCanvas(); // Canvas settings
     rectMode(CENTER); // "
     ellipseMode(RADIUS); // "

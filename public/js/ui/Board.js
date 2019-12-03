@@ -116,11 +116,12 @@ class Board {
         noFill();
         stroke(board.stroke.r, board.stroke.g, board.stroke.b);
         strokeWeight(board.tableWeight);
+        noSmooth(); // Disables p5 anti-aliasing while drawing the Board
         textSize(board.text.size);
         textFont(board.text.font);
         textStyle(BOLD);
         if (Game.game.info.mode === 'ffa') {
-            board.x = width - (board.nameWidth + board.oneWidth + board.twoWidth + board.threeWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth + board.twoWidth + board.threeWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -136,7 +137,7 @@ class Board {
             text('K:D', board.x + board.nameWidth + board.oneWidth + board.twoWidth + board.text.marginLeft, board.y + board.text.marginTop);
             board.count = min(board.show, board.list.length);
         } else if (Game.game.info.mode === 'skm') {
-            board.x = width - (board.nameWidth + board.oneWidth + board.twoWidth + board.threeWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth + board.twoWidth + board.threeWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -152,7 +153,7 @@ class Board {
             text('K:D', board.x + board.nameWidth + board.oneWidth + board.twoWidth + board.text.marginLeft, board.y + board.text.marginTop);
             board.count = Game.game.teams.length;
         } else if (Game.game.info.mode === 'srv') {
-            board.x = width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -166,7 +167,7 @@ class Board {
             text('Kills', board.x + board.nameWidth + board.oneWidth + board.text.marginLeft, board.y + board.text.marginTop);
             board.count = min(board.show, board.list.length);
         } else if (Game.game.info.mode === 'ctf') {
-            board.x = width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -180,7 +181,7 @@ class Board {
             text('Score', board.x + board.nameWidth + board.oneWidth + board.text.marginLeft, board.y + board.text.marginTop);
             board.count = Game.game.teams.length;
         } else if (Game.game.info.mode === 'inf') {
-            board.x = width - (board.nameWidth + board.oneWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -192,7 +193,7 @@ class Board {
             text('Wins', board.x + board.nameWidth + board.text.marginLeft, board.y + board.text.marginTop);
             board.count = min(board.show, board.list.length);
         } else if (Game.game.info.mode === 'kth') {
-            board.x = width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight;
+            board.x = Math.floor(width - (board.nameWidth + board.oneWidth + board.twoWidth) - board.marginRight);
             fill(board.headColor.r, board.headColor.g, board.headColor.b); // Header
             stroke(board.stroke.r, board.stroke.g, board.stroke.b);
             strokeWeight(board.headWeight);
@@ -233,6 +234,7 @@ class Board {
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Names Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (board.list[i].player === connection.socket.id) {
@@ -243,14 +245,15 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(board.list[i].name, board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Kills Body
                 rect(board.x + board.nameWidth + board.oneWidth, board.y + (a + 1) * board.rowHeight, board.twoWidth, board.rowHeight); // Deaths Body
                 rect(board.x + board.nameWidth + board.oneWidth + board.twoWidth, board.y + (a + 1) * board.rowHeight, board.threeWidth, board.rowHeight); // Ratios Body
-                // Text
-                fill(board.text.color.r, board.text.color.g, board.text.color.b);
+
+                fill(board.text.color.r, board.text.color.g, board.text.color.b);// Text
                 noStroke();
                 text(board.list[i].kills, board.x + board.nameWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
                 text(board.list[i].deaths, board.x + board.nameWidth + board.oneWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
@@ -266,10 +269,12 @@ class Board {
                 // fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
                 // noStroke();
                 // rect(board.x + 4, board.y + 3 + (a + 1) * board.rowHeight, board.nameWidth + board.oneWidth + board.twoWidth + board.threeWidth, board.rowHeight);
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b);
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Team Color Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (Game.game.teams[i].indexOf(org.player) !== -1) { // If player is on given team
@@ -280,14 +285,15 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Team Kills Body
                 rect(board.x + board.nameWidth + board.oneWidth, board.y + (a + 1) * board.rowHeight, board.twoWidth, board.rowHeight); // Team Deaths Body
                 rect(board.x + board.nameWidth + board.oneWidth + board.twoWidth, board.y + (a + 1) * board.rowHeight, board.threeWidth, board.rowHeight); // Team Ratios Body
-                // Text
-                fill(board.text.color.r, board.text.color.g, board.text.color.b);
+
+                fill(board.text.color.r, board.text.color.g, board.text.color.b); // Text
                 noStroke();
                 let teamKills = 0;
                 let teamDeaths = 0;
@@ -314,10 +320,12 @@ class Board {
                 // fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
                 // noStroke();
                 // rect(board.x + 4, board.y + 3 + (a + 1) * board.rowHeight, board.nameWidth + board.oneWidth + board.twoWidth, board.rowHeight);
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b);
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Names Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (board.list[i].player === connection.socket.id) {
@@ -328,13 +336,14 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(board.list[i].name, board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Kills Body
                 rect(board.x + board.nameWidth + board.oneWidth, board.y + (a + 1) * board.rowHeight, board.twoWidth, board.rowHeight); // Deaths Body
-                // Text
-                fill(board.text.color.r, board.text.color.g, board.text.color.b);
+
+                fill(board.text.color.r, board.text.color.g, board.text.color.b); // Text
                 noStroke();
                 text(board.list[i].wins, board.x + board.nameWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
                 text(board.list[i].kills, board.x + board.nameWidth + board.oneWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
@@ -342,10 +351,12 @@ class Board {
                 // fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
                 // noStroke();
                 // rect(board.x + 4, board.y + 3 + (a + 1) * board.rowHeight, board.nameWidth + board.oneWidth, board.rowHeight);
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b);
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Team Color Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (Game.game.teams[i].indexOf(org.player) !== -1) { // If player is on given team
@@ -356,13 +367,14 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1), board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name is above so it renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Team Kills
                 rect(board.x + board.nameWidth + board.oneWidth, board.y + (a + 1) * board.rowHeight, board.twoWidth, board.rowHeight); // Round Wins
-                // Text
-                let wins = 0;
+
+                let wins = 0; // Text
                 let done = false;
                 for (let j = 0; j < Game.game.teams[i].length; j++) {
                     for (let k = 0; k < board.list.length; k++) {
@@ -393,10 +405,12 @@ class Board {
                 // fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
                 // noStroke();
                 // rect(board.x + 4, board.y + 3 + (a + 1) * board.rowHeight, board.nameWidth + board.oneWidth, board.rowHeight);
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b);
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Names Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (board.list[i].player === connection.socket.id) {
@@ -407,22 +421,25 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(board.list[i].name, board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Kills Body
-                // Text
-                fill(board.text.color.r, board.text.color.g, board.text.color.b);
+
+                fill(board.text.color.r, board.text.color.g, board.text.color.b); // Text
                 noStroke();
                 text(board.list[i].wins, board.x + board.nameWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
             } else if (Game.game.info.mode === 'kth') {
                 // fill(Game.game.world.backdrop.r - 20, Game.game.world.backdrop.g - 20, Game.game.world.backdrop.b - 20);
                 // noStroke();
                 // rect(board.x + 4, board.y + 3 + (a + 1) * board.rowHeight, board.nameWidth + board.oneWidth, board.rowHeight);
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b);
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x, board.y + (a + 1) * board.rowHeight, board.nameWidth, board.rowHeight); // Names Body
+
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
                 if (board.list[i].player === connection.socket.id) {
@@ -433,13 +450,14 @@ class Board {
                     textStyle(NORMAL);
                 }
                 text(board.list[i].name, board.x + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop); // Screen name renders under kills box
+
                 fill(board.cellColor.r, board.cellColor.g, board.cellColor.b); // Body
                 stroke(board.stroke.r, board.stroke.g, board.stroke.b);
                 strokeWeight(board.cellWeight);
                 rect(board.x + board.nameWidth, board.y + (a + 1) * board.rowHeight, board.oneWidth, board.rowHeight); // Score
                 rect(board.x + board.nameWidth + board.oneWidth, board.y + (a + 1) * board.rowHeight, board.twoWidth, board.rowHeight); // Wins
-                // Text
-                fill(board.text.color.r, board.text.color.g, board.text.color.b);
+
+                fill(board.text.color.r, board.text.color.g, board.text.color.b); // Text
                 noStroke();
                 text(board.list[i].wins, board.x + board.nameWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
                 text(board.list[i].score, board.x + board.nameWidth + board.oneWidth + board.text.marginLeft, board.y + (a + 1) * board.rowHeight + board.text.marginTop);
@@ -448,5 +466,6 @@ class Board {
         }
         rectMode(CENTER); // Reset Mode
         translate(-org.off.x, -org.off.y);
+        smooth();
     }
 }

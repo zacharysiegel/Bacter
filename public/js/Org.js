@@ -348,7 +348,7 @@ class Org {
                 case 'game': // Only necessary in states where orgs are growing (game and game pause menu), others states may be added
                 case 'pauseGameMenu':
                     this.clearIntervals();
-                    this.intervals.push(setInterval(Control.loop, config.game.org_frequency));
+                    this.intervals.push(setInterval(Control.tick, config.game.org_frequency));
                     break;
             }
         }

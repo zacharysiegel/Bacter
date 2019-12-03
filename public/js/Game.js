@@ -1,9 +1,10 @@
 class Game {
     /**
      * All static fields are listed below:
-     * (static) Game.game;
-     * (static) Game.games;
-     * (static) Game.state;
+     * (static) Game.game;    // Value set in Game.start
+     * (static) Game.games;   // Initialized to [] in static initializer below Game class
+     * (static) Game.state;   // Value set in setup()
+     * (static) Game.message; // Value set in setup()
      */
 
     /**
@@ -87,9 +88,9 @@ class Game {
         ReactDOM.render(<CanvasCont />, Z.eid('root'));
         Game.game = game;
         if (spectating) { // Field can be left undefined
-            Control.spectate({ color: color, skin: skin, team: team });
+            Control.spectate(color, skin, team);
         } else if (!spectating) {
-            Control.spawn({ color: color, skin: skin, team: team });
+            Control.spawn(color, skin, team);
         }
     }
 

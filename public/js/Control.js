@@ -1,19 +1,23 @@
 class Control {
     /**
      * Spaen a new org into the game
-     * @param data Information about the org to be constructed
+     * @param {Object} color The color of the Org to be spawned
+     *                      { r: g: b: }
+     * @param {String} skin The skin of the Org to be spawned
+     * @param {String} team The team to which the new Org belongs
+     * @param {Boolean} force (Optional) Whether or not this spawn is being forced by the server
      */
-    static spawn(data) { // data: { color: {}, skin: '', team: '', force: boolean } TODO: convert to declarative parameters
+    static spawn(color, skin, team, force=false) {
         let prev_state = Game.state;
         Game.state = 'game'; // State must be set to 'game' for Org.constructor to function correctly
         if (org) org.clearIntervals(); // Must clear intervals before creating new Org because the intervals will be overwritten after which it will not be possible to clear them
 
-        org = new Org({ player: connection.socket.id, color: data.color, skin: data.skin, team: data.team });
+        org = new Org({ player: connection.socket.id, color: color, skin: skin, team: team });
         let compressedOrg = org.compressed;
 
         Game.game.info.player_count = Game.game.players.length;
 
-        if (prev_state === 'respawnMenu' || data.force) {
+        if (prev_state === 'respawnMenu' || force) {
             connection.emit_respawn(Game.game.info.host, compressedOrg, ability); // emit event 'respawn'
         } else if (prev_state === 'joinMenu') {
             connection.emit_join_player(Game.game.info, compressedOrg, ability); // emit event 'join player'
@@ -24,12 +28,17 @@ class Control {
 
     /**
      * Create a new spectator org in the game
-     * @param data Information about the org to be constructed
+     * @param {Object} color The color of the Org to be spawned
+     *                       { r: g: b: }
+     * @param {String} skin The skin of the Org to be spawned
+     * @param {String} team The team to which the new Org belongs
+     * @param {Object} cursor (Optional) The initial position at which the spectator's cursor will be placed
+     *                        { x: y: }
      */
-    static spectate(data) { // data: { color: {}, cursor: {}, skin: '', team: '' } TODO: convert to declarative parameters
+    static spectate(color, skin, team, cursor=undefined) {
         Game.state = 'spectate';
         connection.emit('join spectator', Game.game);
-        org = new Org( { player: connection.socket.id, color: data.color, skin: data.skin, team: data.team, cursor: data.cursor } );
+        org = new Org( { player: connection.socket.id, color: color, skin: skin, team: team, cursor: cursor } );
     }
 
     /**
@@ -37,7 +46,7 @@ class Control {
      */
     static enter() {
         org.clearIntervals();
-        org.intervals.push(setInterval(Control.loop, config.game.org_frequency));
+        org.intervals.push(setInterval(Control.tick, config.game.org_frequency));
     }
 
     /**
@@ -61,7 +70,12 @@ class Control {
         title = Title.create();
     }
 
-    static loop() {
+    /**
+     * The fundamental control tick which performs all of a player's recurring computations
+     *      Runs inside {Org}.interval
+     *      Rendering is performed after receiving the 'game' event from a server-side loop
+     */
+    static tick() {
         if (Game.game.rounds.util) {
             Control.roundBehaviors();
         }

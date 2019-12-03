@@ -98,7 +98,8 @@ class Connection {
                     Board.render(Game.game.board);
                     translate(org.off.x, org.off.y);
 
-                    (new Message()).render(); // Render messages outside translation
+                    Game.message.update();
+                    Game.message.render(); // Render messages outside translation
                     if (Game.state === 'game') {
                         org.move(); // Move goes at the end so player does not render his movements before others
                     }
@@ -124,7 +125,8 @@ class Connection {
                     Board.render(Game.game.board);
                     translate(org.off.x, org.off.y);
 
-                    (new Message()).render(); // TODO: constructing a new message each tick is unnecessarily slow
+                    Game.message.update();
+                    Game.message.render(); // Render messages outside translation
                     if (Game.state === 'spectate') {
                         org.move(); // Move is after messages so everything has same offset
                     }
@@ -141,7 +143,7 @@ class Connection {
                 return;
             }
 
-            Control.spawn({ color: org.color, skin: org.skin, team: org.team, force: true }); // Respawn all players on round start
+            Control.spawn(org.color, org.skin, org.team, true); // Respawn all players on round start
             org.spawn = false;
             org.ready = true; // org.ready ensures that org will only be forcibly respawned once
 
@@ -164,7 +166,7 @@ class Connection {
 
     listen_spectate() {
         this.socket.on('spectate', () => {
-            Control.spectate({ color: org.color, cursor: org.cursor, skin: org.skin, team: org.team });
+            Control.spectate(org.color, org.skin, org.team, org.cursor);
         });
     }
 
