@@ -401,7 +401,7 @@ function submit(menuType) {
                     for (let i = 0; i < config.colors.teams.length; i++) {
                         if (team === config.colors.teams[i]) {
                             Game.game.teams[i].push(connection.socket.id); // Add player to selected team
-                            connection.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
+                            connection.emit('teams', { teams: Game.game.teams, host: Game.game.info.host }); // Update server teams; host is for identification
                             break;
                         }
                     }
@@ -589,7 +589,6 @@ function submit(menuType) {
             }
         }
             if (ok) {
-                connection.emit('Spectator Spawned', Game.game);
                 // Abilities
                 if (Game.game.info.mode === 'ffa' || Game.game.info.mode === 'skm' || Game.game.info.mode === 'srv' || Game.game.info.mode === 'ctf' || Game.game.info.mode === 'kth') { // FFA, SKM, SRV, CTF, and KTH all use standard ability set
                     if (first === 'extend') {
@@ -652,7 +651,7 @@ function submit(menuType) {
                     if (org.team !== team) { // Only add player to team if not already on team
                         Game.game.teams[config.colors.teams.indexOf(team)].push(connection.socket.id); // Add player to selected team
                         Game.game.teams[config.colors.teams.indexOf(org.team)].splice(Game.game.teams[config.colors.teams.indexOf(org.team)].indexOf(connection.socket.id), 1);
-                        connection.emit('Teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
+                        connection.emit('teams', { teams: Game.game.teams, host: Game.game.info.host }); // Host is for identification
                     }
                 }
                 // Color

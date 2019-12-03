@@ -3,6 +3,7 @@
 # Prepares files for program execution
 #    Builds public JavaScript files using Babel into a backwards-compatible bundle in public/build
 #    Builds server-side JavaScript files into src/build (not a bundle)
+#    TODO: JS-Obfuscator
 
 # If the folders containing built files do not exist, create them
 println="false"

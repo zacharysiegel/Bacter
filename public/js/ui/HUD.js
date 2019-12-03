@@ -263,11 +263,7 @@ class HUD {
             } else if (ability.tag.i === 2) {
                 letter = config.settings.controls.ability3.key;
             } else if (ability.tag.i === 3) {
-                if (config.settings.controls.ability4.key === ' ') {
-                    letter = '_';
-                } else {
-                    letter = config.settings.controls.ability4.key;
-                }
+                letter = config.settings.controls.ability4.key === ' ' ? '␣' : config.settings.controls.ability4.key;
             }
             fill(0);
             noStroke();

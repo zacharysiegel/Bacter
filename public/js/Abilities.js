@@ -133,6 +133,7 @@ class Abilities {
     /**
      * Reset the given ability to its values at spawn
      * @param {Ability} _ability The ability object to be reset
+     *                  I use a prefixing underscore to differentiate the parameter from the global 'ability' object
      */
     static reset(_ability) {
         for (let a in _ability) { // Reset Ability Cooldowns

@@ -28,30 +28,30 @@ class Num extends React.Component {
         switch (this.instance) {
             case 'world width':
                 this.placeholder = config.game.defaults.world_width;
-                this.min = 300;
-                this.max = 100000;
+                this.min = config.game.world_width_min;
+                this.max = config.game.world_width_max;
                 break;
             case 'world height':
                 this.placeholder = config.game.defaults.world_height;
-                this.min = 300;
-                this.max = 100000;
+                this.min = config.game.world_height_min;
+                this.max = config.game.world_height_max;
                 break;
             case 'player minimum':
                 this.placeholder = config.game.defaults.player_min;
-                this.min = 2;
+                this.min = config.game.player_minimum_min;
                 break;
             case 'player cap':
                 this.placeholder = config.game.defaults.player_cap;
-                this.min = 2;
+                this.min = config.game.player_cap_min;
                 break;
             case 'leaderboard length':
                 this.placeholder = config.game.defaults.board_length;
-                this.min = 1;
-                this.max = 20;
+                this.min = config.game.board_length_min;
+                this.max = config.game.board_length_max;
                 break;
             case 'team count':
                 this.placeholder = config.game.defaults.team_count;
-                this.min = 2;
+                this.min = config.game.team_count_min;
                 this.max = config.colors.teams.length;
                 break;
         }

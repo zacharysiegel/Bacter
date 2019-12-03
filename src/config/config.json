@@ -1,6 +1,6 @@
 {
     "project_state": "development",
-    "delay_time": 2000,
+    "delay_time": 8000,
     "shrink_rate": 0.1,
     "render_period": 40,
     "shrink_period": 50

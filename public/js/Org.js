@@ -57,10 +57,10 @@ class Org {
                     }
                 }
                 let org_count = src.orgs.length;
-                for (let i = 0; i < org_count; i++) { // Org Overlap
-                    let org = src.orgs[i];
-                    for (let j = 0; j < org.count; j++) {
-                        if (org.cells[j].x - org.cells[j].width <= this.cursor.x && org.cells[j].x + org.cells[j].width >= this.cursor.x && org.cells[j].y - org.cells[j].height <= this.cursor.y && org.cells[j].y + org.cells[j].height >= this.cursor.y) { // If position collides with enemy cell (Full width buffer is intended)
+                for (let o = 0; o < org_count; o++) { // Org Overlap
+                    let org = src.orgs[o];
+                    for (let c = 0; c < org.count; c++) {
+                        if (org.cells[c].x - org.cells[c].width <= this.cursor.x && org.cells[c].x + org.cells[c].width >= this.cursor.x && org.cells[c].y - org.cells[c].height <= this.cursor.y && org.cells[c].y + org.cells[c].height >= this.cursor.y) { // If position collides with enemy cell (Full width buffer is intended)
                             repos = true;
                             break;
                         }
@@ -68,7 +68,7 @@ class Org {
                     if (repos) {
                         break;
                     }
-                    let _ability = src.abilities[i]; // _ prefix so as to not confuse with the global variable "ability"
+                    let _ability = src.abilities[o]; // _ prefix so as to not confuse with the global variable "ability"
                     if (_ability.secrete.value === true) { // Spore Secretions Overlap
                         for (let j = 0; j < _ability.spore.count; j++) {
                             let cell = _ability.spore.spores[j];
@@ -729,9 +729,9 @@ class Org {
      * @return void
      */
     clearIntervals() {
-        for (let i = 0; i < this.intervals.length; i++) {
-            clearInterval(this.intervals[i]);
-        }
+        this.intervals.forEach(interval => {
+            clearInterval(interval);
+        });
         this.intervals = [];
     }
 
@@ -814,15 +814,13 @@ class Org {
      * @param spectating Whether or not this player should become a spectator
      */
     die(spectating) {
-        connection.emit('dead', spectating);
+        connection.emit('die', {spectating: spectating, host: Game.game.info.host});
         this.clearIntervals();
         Abilities.reset(ability);
     }
 
     /**
-     * Render this org on the canavs
-     * @param {org} org The org to render
-     * @return {void}
+     * Render all orgs in src.orgs
      */
     static renderAll() {
         let src = getSrc();

@@ -1,5 +1,5 @@
 config.settings = {
-    labels: true,    // Declare settings and set to default values
+    labels: true,
     messages: true,
     controls: {
         left1:    { key: 'A',   code: 65 },

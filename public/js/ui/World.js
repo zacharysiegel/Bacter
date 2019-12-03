@@ -28,7 +28,6 @@ class World {
             weight: 1
         };
         this.backdrop = config.colors.backdrop;
-        this.border.weight = 1;
         if (this.color === 'black') {
             this.border.color = { r: 210, g: 210, b: 210 };
         } else if (this.color === 'white') {

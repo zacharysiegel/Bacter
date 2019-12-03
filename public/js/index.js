@@ -74,7 +74,7 @@ function keyPressed() {
                     ability.use_extend(org.player); // Extend self
                 } else if (ability.compress.activated && ability.compress.can) {
                     ability.use_shoot(0, 1);
-                    // for (let i = 0; i < Game.game.info.count; i++) {
+                    // for (let i = 0; i < Game.game.info.player_count; i++) {
                     //    if (org.target == Game.game.players[i]) { // Find targeted org
                     //       ability.compress(org.target); // Compress targeted org
                     //       break;
@@ -96,7 +96,7 @@ function keyPressed() {
                     ability.use_immortality(org.player); // Immortalize self
                 } else if (ability.freeze.activated && ability.freeze.can) {
                     ability.use_shoot(1, 1);
-                    // for (let i = 0; i < Game.game.info.count; i++) {
+                    // for (let i = 0; i < Game.game.info.player_count; i++) {
                     //    if (org.target == Game.game.players[i]) { // Find targeted org
                     //       ability.freeze(org.target); // Freeze targeted org
                     //       break;
@@ -111,7 +111,7 @@ function keyPressed() {
                 //    ability.stimulate(org.player); // Stimulate self
                 // } else if (ability.poison.activated == true && ability.poison.can == true) {
                 //    ability.shoot(2, 1);
-                //    // for (let i = 0; i < Game.game.info.count; i++) {
+                //    // for (let i = 0; i < Game.game.info.player_count; i++) {
                 //    //    if (org.target == Game.game.players[i]) { // Find targeted org
                 //    //       ability.poison(org.target); // Poison targeted org
                 //    //       break;
@@ -268,7 +268,7 @@ function keyPressed() {
 //       if (Game.state == 'game') { // DO NOT DELETE
 //          { // Targeting
 //             org.target = undefined; // Clear target if click not on opponent org
-//             for (let i = 0; i < Game.game.info.count; i++) {
+//             for (let i = 0; i < Game.game.info.player_count; i++) {
 //                if (Game.game.orgs[i].player == org.player) { // If org is player's org
 //                   continue; // Cannot target oneself
 //                }

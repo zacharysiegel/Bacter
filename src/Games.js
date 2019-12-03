@@ -37,19 +37,31 @@ class Games {
         }, this.config.render_period));
     }
 
-    setGamesInterval(delay=1000, io) {
+    /**
+     * Set the Interval which emits the 'games' data-congruity event to all clients
+     * @param delay The period of the interval
+     * @param io The io object from the socket.io library
+     */
+    setGamesInterval(delay, io) {
         this.games_interval = setInterval(() => {
-            io.sockets.volatile.emit('Games', {
-                games: this.list,
+            io.sockets.volatile.emit('games', {
+                list: this.list,
                 connections: this.connections
             });
         }, delay); // Every delay, send a copy of the games array to all clients
     }
 
+    /**
+     * Clear the Interval which emits the 'games' data-congruity event to tall clients
+     */
     clearGamesInterval() {
         clearInterval(this.games_interval);
     }
 
+    /**
+     * Set a new interval to shrink the world for a survival game
+     * @param game The Game object for the game to be mutated
+     */
     setShrinkInterval(game) {
         const shrink = () => { // function expressions are not hoisted, but prefer to not overwrite 'this' value
             const g = this.getIndexByHost(game.info.host); // g is saved in Closure but its value may change over the lifetime of the interval, so it must be recalculated
@@ -97,7 +109,7 @@ class Games {
      *            {Number} g: The index in {Games}.list[] of the game which contains the given user in its players array
      *            {Number} p: The index in {Games}.list[].players of the given player (or -1 if spectator)
      *            {Number} s: The index in {Games}.list[].spectators of the given player (or -1 if player)
-     *            {Number} l; The index in {Games}.list[].board.list of the given membeA
+     *            {Number} l: The index in {Games}.list[].board.list of the given membeA
      *         }
      */
     getIndicesByMember(id, start_index=0) {
@@ -107,6 +119,8 @@ class Games {
             s: -1,
             l: -1
         };
+
+        if (start_index === -1) return result;
 
         for (let g = start_index; g < this.count; g++) {
             let game = this.list[g];

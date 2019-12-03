@@ -7,7 +7,7 @@ class Connection {
      */
 
     constructor() {
-        this.socket = this.connect(); // this.connect returns the same value as io()
+        this.socket = this.connect(); // this.connect forewards the return value of io()
         this.listen();
     }
 
@@ -35,7 +35,6 @@ class Connection {
             // Control Flow
             this.listen_game_ended();
             this.listen_spectate();
-            this.listen_enter();
             this.listen_force_spawn();
 
             // Abilities
@@ -59,12 +58,13 @@ class Connection {
 
     // Data Congruence Listeners
     listen_games() {
-        this.socket.on('Games', data => {
-            Game.games = data.games;
-            Connection.connections = data.connections;
+        this.socket.on('games', ({ list, connections }) => {
+            Game.games = list;
+            Connection.connections = connections;
             if (Game.state === 'browser') Browser.renderBrowser();
         });
     }
+
     listen_game() {
         this.socket.on('game', (game) => {
             Game.game = game;
@@ -134,29 +134,23 @@ class Connection {
     }
 
     // Control Flow Listeners
-    listen_enter() {
-        this.socket.on('enter', () => {
-            Control.enter(); // "enter" is defined in run.js; enter starts the org life interval
-        });
-    }
     listen_force_spawn() {
         this.socket.on('force spawn', () => {
-            org.die(false); // 'false' parameter tells server not to emit 'Spectate' back to client
-            if (org.isSpectator) {
-                this.emit('spectator left', Game.game.info); // Remove spectator from spectators array
+            if (!Game.game.rounds.util) { // assert Game.game.rounds.util
+                console.error('Invalid State :: {Connection}.listen_force_spawn :: Game is not utilizing the rounds system but is forcing spawns');
+                return;
             }
 
-            if (Game.state === 'pauseSpectateMenu') {
-                Menu.renderMenu('pauseGame', Game.game); // Move to correct menu if on spectate menu
-            } else if (Game.state === 'respawnMenu') {
-                Menu.renderMenu('pauseGame', Game.game);
-            }
-
-            Control.spawn({ color: org.color, skin: org.skin, team: org.team }); // Respawn all players on round start
+            Control.spawn({ color: org.color, skin: org.skin, team: org.team, force: true }); // Respawn all players on round start
             org.spawn = false;
             org.ready = true; // org.ready ensures that org will only be forcibly respawned once
+
+            if (Game.state === 'pauseSpectateMenu' || Game.state === 'respawnMenu') { // If the pause spectate or respawn menus are rendered
+                Menu.renderMenu('pauseGame', Game.game); // Move to the pause game menu
+            }
         });
     }
+
     listen_game_ended() {
         this.socket.on('game ended', (game) => {
             Title.render();
@@ -167,8 +161,9 @@ class Connection {
             }
         });
     }
+
     listen_spectate() {
-        this.socket.on('Spectate', () => {
+        this.socket.on('spectate', () => {
             Control.spectate({ color: org.color, cursor: org.cursor, skin: org.skin, team: org.team });
         });
     }
@@ -187,6 +182,7 @@ class Connection {
             }
         });
     }
+
     listen_extend() {
         this.socket.on('Extend', () => {
             ability.extend.value = true;
@@ -201,6 +197,7 @@ class Connection {
             }, ability.extend.time);
         });
     }
+
     listen_compress() {
         this.socket.on('Compress', () => {
             ability.compress.value = true;
@@ -212,6 +209,7 @@ class Connection {
             }, ability.compress.time);
         });
     }
+
     listen_immortality() {
         this.socket.on('Immortality', () => {
             ability.immortality.value = true;
@@ -222,9 +220,11 @@ class Connection {
                 ability.immortality.value = false;
                 ability.immortality.end = new Date();
                 ability.immortality.cooling = true;
+                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
             }, ability.immortality.time);
         });
     }
+
     listen_freeze() {
         this.socket.on('Freeze', () => {
             ability.freeze.value = true;
@@ -236,6 +236,7 @@ class Connection {
             }, ability.freeze.time);
         });
     }
+
     listen_neutralize() {
         this.socket.on('Neutralize', () => {
             ability.neutralize.value = true;
@@ -252,6 +253,7 @@ class Connection {
             }, ability.neutralize.time);
         });
     }
+
     listen_toxin() {
         this.socket.on('Toxin', () => {
             ability.toxin.value = true;
@@ -268,6 +270,7 @@ class Connection {
             }, ability.toxin.time);
         });
     }
+
     // listen_speed() {
     //    this.socket.on('Speed', () => { // Not updated
     //       ability.speed.value = true;
@@ -326,6 +329,7 @@ class Connection {
             console.error('An error occurred in the web socket connection', error);
         });
     }
+
     listen_timeout() {
         this.socket.on('connect_timeout', error => {
             console.error('Connection to the web socket timed out', error);
@@ -356,18 +360,20 @@ class Connection {
     emit_create_game() {
         this.socket.binary(false).emit('create game', Game.game);
     }
+
     emit_create_password(password) {
         if (Game.game.info.secured) { // If game is secured by a password
             this.socket.binary(false).emit('create password', { pass: password, info: Game.game.info }); // Encrypt this in the future
         }
     }
+
     /**
-     * Emit the 'Check Permission' event to the server
+     * Emit the 'check permission' event to the server
      * @param  {Function} granted The callback function to be called if the client is granted access
      * @param  {Function} denied  The callback function to be called if the client is denied access
      */
     emit_check_permission(granted, denied) {
-        this.socket.binary(false).emit('Check Permission', { title: Game.game.info.title }, result => {
+        this.socket.binary(false).emit('check permission', Game.game.info.title, result => {
             if (result === 'permission granted') {
                 granted();
             } else if (result === 'permission denied') {
@@ -376,6 +382,26 @@ class Connection {
                 console.error('Non-Enumerated Value :: Connection.emit_check_permission :: Result must be "permission granted" or "permission denied"');
             }
         });
+    }
+
+    /**
+     * Emit the 'respawn' event to the server
+     * @param {String} host The host of the current player's game
+     * @param {Object} compressedOrg The compressed version of the player's org
+     * @param {Ability} ability The current player's {Ability}
+     */
+    emit_respawn(host, compressedOrg, ability) {
+        connection.socket.binary(false).emit('respawn', { host: host, org: compressedOrg, ability: ability }, Control.enter);
+    }
+
+    /**
+     * Emit the 'join player' event to the server
+     * @param {Object} info The game's .info object
+     * @param {Object} compressedOrg The compressed version of the player's org
+     * @param {Ability} ability The current player's {Ability}
+     */
+    emit_join_player(info, compressedOrg, ability) {
+        connection.socket.binary(false).emit('join player', { info: info, org: compressedOrg, ability: ability }, Control.enter);
     }
 
     /**
