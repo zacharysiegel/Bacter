@@ -814,9 +814,8 @@ class Org {
      * @param spectating Whether or not this player should become a spectator
      */
     die(spectating) {
-        connection.emit('die', {spectating: spectating, host: Game.game.info.host});
+        connection.emit('die', { spectating: spectating, host: Game.game.info.host });
         this.clearIntervals();
-        Abilities.reset(ability);
     }
 
     /**

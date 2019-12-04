@@ -142,14 +142,17 @@ class Connection {
                 console.error('Invalid State :: {Connection}.listen_force_spawn :: Game is not utilizing the rounds system but is forcing spawns');
                 return;
             }
+            const former_state = Game.state; // Cache the current state because Control.spawn will change Game.state to 'game', and the following if condition will break
 
             Control.spawn(org.color, org.skin, org.team, true); // Respawn all players on round start
             org.spawn = false;
             org.ready = true; // org.ready ensures that org will only be forcibly respawned once
 
-            if (Game.state === 'pauseSpectateMenu' || Game.state === 'respawnMenu') { // If the pause spectate or respawn menus are rendered
+            if (former_state === 'pauseSpectateMenu' || former_state === 'respawnMenu') { // If the pause spectate or respawn menus are rendered
+                Game.state = former_state;
                 Menu.renderMenu('pauseGame', Game.game); // Move to the pause game menu
             }
+
         });
     }
 
