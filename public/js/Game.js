@@ -110,6 +110,15 @@ class Game {
 
         return exists;
     }
+
+    /**
+     * Determine the number of members in the given game
+     * @param {Game} game The game to query
+     * @returns {Number} The number of members (players + spectators) in this {Game}
+     */
+    static member_count(game) {
+        return game.board.list.length;
+    }
 }
 
 // Static Initialization Block for class Game

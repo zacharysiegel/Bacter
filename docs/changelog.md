@@ -232,6 +232,7 @@
       Fixed failure to apply compress and extend abilities in the tutorial
       Fixed shrink rate acceleration in survival mode
       Fixed occasional crashing bug in survival mode
+      Fixed game continuation after player leaves a survival game during the pre-round delay
       Fixed world size reset in survival mode
       Fixed blank background on forced exit of a game
       Fixed survival mode crash when spawn is forced while on respawn menu

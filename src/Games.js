@@ -10,6 +10,8 @@ class Games {
         this.securities = []; // Contains PermissedList objects; Will convert securities array into a hash table in the future
         this.intervals = [];
         this.shrinkIntervals = [];
+        this.preRoundTimeouts = {};   // { {String}: {Number} } , { host: pre-round delay timeout }
+        this.forceSpawnTimeouts = {}; // { {String}: {Number} } , { host: pre-round force-spawn timeout }
         this.connections = 0;
         this.games_interval;
     }

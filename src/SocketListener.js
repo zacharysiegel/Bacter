@@ -36,6 +36,7 @@ class SocketListener {
         this.listen_spectator_left();
         this.listen_end_round();
         this.listen_preround_delay();
+        this.listen_cancel_preround_delay();
         this.listen_die();
 
         // Data Congruence
@@ -160,8 +161,8 @@ class SocketListener {
      * @param {Games} games Game instance
      */
     listen_create_password() {
-        this.socket.on('create password', (data) => {
-            let permissions = new Permissions(data.info.title, data.pass);
+        this.socket.on('create password', ({ pass, info }) => {
+            let permissions = new Permissions(info.title, pass);
             permissions.permiss(this.socket.id);
             this.games.securities.push(permissions);
         });
@@ -362,7 +363,7 @@ class SocketListener {
     }
 
     /**
-     * Listen for round delay event from client
+     * Listen for the 'preround delay' event from the client
      */
     listen_preround_delay() {
         this.socket.on('preround delay', (game) => {
@@ -370,8 +371,7 @@ class SocketListener {
             if (g === -1) {
                 console.error(`[ERROR] :: listen_preround_delay :: Game not found in {Games}.list with host ${game.info.host}`);
                 return;
-            }
-            if (this.games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
+            } else if (this.games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
                 console.error(`[WARN]  :: listen_preround_delay :: Round delay has already begun`);
                 return;
             }
@@ -380,7 +380,7 @@ class SocketListener {
             this.games.list[g].rounds.delayed = true;
             this.games.list[g].rounds.delaystart = (new Date()).valueOf();
 
-            let delay = setTimeout(() => {
+            let preround_delay = setTimeout(() => {
                 const g = this.games.getIndexByHost(game.info.host);
                 if (g === -1) { // Game could have been deleted concurrently while the timeout was waiting
                     return;
@@ -394,9 +394,34 @@ class SocketListener {
                 this.games.list[g].rounds.start = (new Date()).valueOf();
             }, this.config.delay_time);
 
-            let spawndelay = setTimeout(() => { // Force spawns 1 second before round starts so one player does not join before the others and automatically win game
+            let spawn_delay = setTimeout(() => { // Force spawns 1 second before round starts so one player does not join before the others and automatically win game
                 this.forceSpawn(this.games.list[g]);
             }, this.config.delay_time - 1000);
+
+            this.games.preRoundTimeouts[game.info.host] = preround_delay;
+            this.games.forceSpawnTimeouts[game.info.host] = spawn_delay;
+        });
+    }
+
+    /**
+     * Listen for the 'cancel preround delay' event from the client
+     */
+    listen_cancel_preround_delay() {
+        this.socket.on('cancel preround delay', (host) => {
+            const g = this.games.getIndexByHost(host);
+            if (g === -1) {
+                console.error(`[ERROR] :: listen_cancel_preround_delay :: Game not found in {Games}.list with host ${host}`);
+                return;
+            } else if (!this.games.list[g].rounds.delayed) {
+                console.error(`[ERROR] :: listen_cancel_preround_delay :: Not during the pre-round delay`);
+                return;
+            }
+
+            this.games.list[g].rounds.waiting = true;
+            this.games.list[g].rounds.delayed = false;
+            this.games.list[g].rounds.delaystart = null;
+            clearTimeout(this.games.preRoundTimeouts[host]);
+            clearTimeout(this.games.forceSpawnTimeouts[host]);
         });
     }
 
@@ -592,7 +617,6 @@ class SocketListener {
                 clearInterval(this.games.shrinkIntervals[shrink_index].interval);
                 this.games.shrinkIntervals.splice(shrink_index, 1);
             }
-
 
             if (this.config.project_state === 'development') console.log('                                               Game Removed: ' + game.info.title + ' (' + game.info.host + ')');
         } else { // If current socket is not the host of his game

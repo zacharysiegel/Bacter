@@ -97,13 +97,23 @@ class Control {
      */
     static roundBehaviors() {
         const currentTime = new Date();
-        if (Game.game.info.host === connection.socket.id) { // Only if player is host
-            if (Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.player_count >= Game.game.rounds.min) { // If waiting, not delayed, and have minimum players
 
-                connection.emit('preround delay', Game.game); // End waiting period; Start the pre-round delay period
+        if (Game.game.rounds.waiting && !Game.game.rounds.delayed) { // If waiting for player min to be reached
+            if (Game.game.info.player_count >= Game.game.rounds.min) { // If player min is reached
+                if (connection.socket.id === Game.game.info.host) { // Only host must emit
+                    connection.emit('preround delay', Game.game); // End waiting period; Start the pre-round delay period
+                }
                 Game.game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
-            } // Clients are told to force spawn by the server at the end of the pre-round delay and the end-round delay
-        }
+            }
+        } else if (Game.game.rounds.waiting && Game.game.rounds.delayed) { // If in the pre-round delay
+            if (Game.member_count(Game.game) < Game.game.rounds.min) { // If a member left, voiding the delay
+                if (connection.socket.id === Game.game.info.host) {
+                    connection.emit('cancel preround delay', Game.game.info.host);
+                }
+                Game.game.rounds.delayed = false; // {Game} will be overwritten, but this will stop the game from starting
+                Game.game.rounds.delaystart = new Date().valueOf(); // ^ This is why non-host members do this
+            }
+        } // Clients are told to force spawn by the server at the end of the pre-round delay and the end-round delay
 
         if (Game.game.info.mode === 'srv' && Game.game.players[0] === connection.socket.id && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.player_count <= 1) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
             for (let m = 0; m < Game.game.board.list.length; m++) {
