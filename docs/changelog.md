@@ -7,7 +7,7 @@
       Added spectate mode
       Added password protection option to games
       Added denial of movement over world border
-      Added server browser information
+      Added browser information
       Changed frame rate to increased frequency
       Fixed ability selection translation issue
       Fixed spawn over opponent org
@@ -23,7 +23,7 @@
       Added heroku support
       Changed world border width to lesser width
       Fixed package management
-      Fixed server browser row coloration
+      Fixed browser row coloration
 
 ## a2.0.0
       Added neutralize
@@ -73,7 +73,7 @@
       Fixed cannot spawn over opponent org
       Fixed leaderboard cover end of long name
 
-## a3.0.0
+## a3.0.0 - Menus and Customization
       Added game creation options menu
       Added join game options menu
       Added spectate game options menu
@@ -119,7 +119,7 @@
       Balanced compress time (3000ms --> 3500ms)
       Balanced immortality cooldown (4000ms --> 3500ms)
 
-## a3.1.0
+## a3.1.0 - Game Modes
       Added skirmish game mode
       Added survival game mode
       Added game mode column to browser
@@ -161,7 +161,7 @@
       Balanced neutralize cooldown (6000ms --> 6500ms)
       Balanced spores shoot from center of mass rather than crosshair (balance to immortality/spore combo)
 
-## a3.2.0
+## a3.2.0 - Title and Tutorial
       Added title screen and menu
       Added tutorial
       Added tutorial pause menu
@@ -172,7 +172,7 @@
       Fixed spawn on world edge issue
       Fixed crash on stationary mouse position use
 
-## a3.2.1
+## a3.2.1 - UI Improvement and Optimization
       Added menu issue warnings
       Added leave game option to respawn menu
       Added fullscreen recommendation to tutorial
@@ -204,7 +204,7 @@
       Fixed minor ability bug
       Fixed minor player cap bug
 
-## a3.2.2
+## a3.2.2 - Lag Reduction and Fixes
       Changed neutralize/toxin center from center of mass to crosshair
       Changed text in respawn menu from 'Respawn' to 'Spawn'
       Changed text in tutorial pause menu from 'Leave Game' to 'Leave Tutorial'
@@ -220,7 +220,7 @@
       Fixed spectator password denial
       Fixed spectate menu double issue indicators
 
-## a3.2.3
+## a3.2.3 - Organization
       Added gameplay guide
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
