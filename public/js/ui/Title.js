@@ -61,14 +61,8 @@ class Title {
                 x: min_x + Math.random() * (max_x - min_x),
                 y: min_y + Math.random() * (max_y - min_y)
             };
-            this.orgs[i] = new Org({
-                player: i,
-                color: color,
-                skin: skin,
-                team: null,
-                cursor: cursor,
-                spectating: false
-            });
+
+            this.orgs[i] = new Org(i, color, skin, undefined, cursor);
             this.abilities[i] = new Ability(i);
         }
 

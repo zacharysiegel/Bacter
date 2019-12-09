@@ -82,7 +82,7 @@ class SocketListener {
             if (this.config.project_state === 'development') console.log('Client disconnected:  ' + this.socket.id + ' (' + this.games.connections + ')'); // Server Message
 
             if (this.socket.inGame) { // If client is in a game
-                this.removeMember(); // Remove the client from the game and update the game's data
+                this.removeMember(); // Remove the client from the game and update the game's information
             } // Nothing else is necessary because client is disconnecting from the server entirely
         });
     }
@@ -144,7 +144,7 @@ class SocketListener {
     listen_create_game() {
         /**
          * Create a game instance on the server and emit it to all clients
-         * @param data {Map} game object
+         * @param {Game} The new Game object
          */
         this.socket.on('create game', (game) => {
             this.games.createGame(game, this.socket.id, this.io);
@@ -173,12 +173,11 @@ class SocketListener {
      *    Callback with argument 'true' if client is permissed, else callback 'false'
      */
     listen_ask_permission() {
-        this.socket.on('ask permission', (data, callback) => {
+        this.socket.on('ask permission', ({ pass, info }, callback) => {
             let len = this.games.securities.length;
             for (let i = 0; i < len; i++) {
                 let permissions = this.games.securities[i];
-                if (data.info.title === permissions.title &&
-                    data.pass === permissions.password) {
+                if (info.title === permissions.title && pass === permissions.password) {
                     permissions.permiss(this.socket.id);
                     callback(true);
                 }
@@ -427,31 +426,31 @@ class SocketListener {
 
     /**
      * Listen for board event from client
-     *    Update server-side board data
+     *    Update server-side board information
      */
     listen_board() {
         /**
-         * @param {Object} data { list: board.list, host: game.board.host }
+         * @param {Object} { list: board.list, host: game.board.host }
          */
-        this.socket.on('board', (data) => {
-            const g = this.games.getIndexByHost(data.host);
+        this.socket.on('board', ({ list, host }) => {
+            const g = this.games.getIndexByHost(host);
             if (g === -1) {
-                console.error(`[ERROR] :: listen_board :: Game not found in {Games}.list with host ${data.host}`);
+                console.error(`[ERROR] :: listen_board :: Game not found in {Games}.list with host ${host}`);
                 return; // Return here prevents an index out of bounds exception
             }
 
-            this.games.list[g].board.list = data.list;
+            this.games.list[g].board.list = list;
         });
     }
 
     /**
      * Listen for org event from client
-     *    Update server-side org data
+     *    Update server-side org information
      */
     listen_org() {
         /*
          * Update Server Org
-         * @param data: {
+         * @param {
          *     cells: org.cells,
          *     off: org.off,
          *     pos: org.pos,
@@ -473,7 +472,7 @@ class SocketListener {
                 return; // Return here prevents an index out of bounds issue
             }
 
-            // this.games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary data rather than the entire org object
+            // this.games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary information rather than the entire org object
             this.games.list[indices.g].orgs[indices.p].cells = cells; // Only the following attributes of org need to be updated and shared
             this.games.list[indices.g].orgs[indices.p].count = cells.length;
             this.games.list[indices.g].orgs[indices.p].off = off;
@@ -522,19 +521,19 @@ class SocketListener {
     listen_flag() {
         /**
          * Update the server's instance of game's flag
-         * @param {Object} data {
+         * @param {Object} {
          *       flag: game.flag,
          *       host: game.info.host
          *    }
          */
-        this.socket.on('flag', (data) => { // Be careful
-            const g = this.games.getIndexByHost(data.host);
+        this.socket.on('flag', ({ flag, host }) => { // Be careful
+            const g = this.games.getIndexByHost(host);
             if (g === -1) {
-                console.error(`[ERROR] :: listen_flag :: Game not found in {Games}.list with host ${data.host}`);
+                console.error(`[ERROR] :: listen_flag :: Game not found in {Games}.list with host ${host}`);
                 return;
             }
 
-            this.games.list[g].flag = data.flag;
+            this.games.list[g].flag = flag;
         });
     }
 

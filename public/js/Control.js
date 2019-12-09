@@ -13,7 +13,7 @@ class Control {
         if (org) org.clearIntervals(); // Must clear intervals before creating new Org because the intervals will be overwritten after which it will not be possible to clear them
         if (ability) Abilities.reset(ability); // Freshen the ability object
 
-        org = new Org({ player: connection.socket.id, color: color, skin: skin, team: team });
+        org = new Org(connection.socket.id, color, skin, team);
         let compressedOrg = org.compressed;
 
         Game.game.info.player_count = Game.game.players.length;
@@ -39,7 +39,7 @@ class Control {
     static spectate(color, skin, team, cursor=undefined) {
         Game.state = 'spectate';
         connection.emit('join spectator', Game.game);
-        org = new Org( { player: connection.socket.id, color: color, skin: skin, team: team, cursor: cursor } );
+        org = new Org(connection.socket.id, color, skin, team, cursor);
     }
 
     /**

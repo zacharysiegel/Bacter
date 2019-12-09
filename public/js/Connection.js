@@ -421,9 +421,8 @@ class Connection {
     /**
      * Emit the 'org' event to the server
      *    Overwrite the server's copy of this user's org
-     * @param {Object} data {
-     *     cells: // Only the following attributes of org need to be updated
-     *     off: // Latency is decreased by only sending necessary data
+     *     cells: //
+     *     off: //
      *     cursor:
      *     color:
      *     skin:
@@ -431,8 +430,18 @@ class Connection {
      *     coefficient:
      *     range:
      * }
+     * @param {Array} cells The Org's cells collection
+     *                Only the following attributes of org need to be updated
+     * @param { x, y } offset The offset of the Org's position to the screen
+     *                 Latency is decreased by only sending necessary data
+     * @param { x, y } cursor The location of the player's cursor in the screen
+     * @param { r, g, b} color The Org's color
+     * @param {String} skin The Org's skin
+     * @param {String} team The Org's team
+     * @param {Number} coefficient The Org's growth coefficient (changes with compress/extend)
+     * @param {Number} range The Org's living range (changes with compress/extend)
      */
-    emit_org(data) {
+    emit_org(cells, offset, cursor, color, skin, team, coefficient, range) {
         // this.socket.volatile.binary(false).emit('org', data); // Volatile emits from client are not currently supported by socketio
         this.socket.binary(false).emit('org', data);
     }

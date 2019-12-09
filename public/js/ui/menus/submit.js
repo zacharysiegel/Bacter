@@ -3,7 +3,7 @@ function submit(menuType) {
     let ok = true; // Check for inputs' validities
     let tInput = Z.eid('game title input');
     let pInput = Z.eid('password input');
-    let typeInput = Z.eid('world type input');
+    let shapeInput = Z.eid('world type input');
     let widthInput = Z.eid('world width input');
     let heightInput = Z.eid('world height input');
     let pcInput = Z.eid('player cap input');
@@ -17,7 +17,7 @@ function submit(menuType) {
     let gametitle = tInput ? tInput.value : null; // Reading values is ok, but do not edit direct to the DOM
     let password = pInput ? pInput.value : null;
     let secured = !!password; // If password is non-null, secured is true
-    let type = typeInput ? typeInput.value.toLowerCase() : null;
+    let shape = shapeInput ? shapeInput.value.toLowerCase() : null;
     let width = widthInput ? parseFloat(widthInput.value) : null;
     let height = heightInput ? parseFloat(heightInput.value) : null;
     let cap = pcInput ? parseFloat(pcInput.value) : null;
@@ -170,19 +170,19 @@ function submit(menuType) {
             if (ok) {
                 let color = 'black'; // Z.eid('World color input').value.toLowerCase(); // Only black world is enabled
 
-                Game.game = new Game({
-                    title: gametitle,
-                    type: type,
-                    width: width,
-                    height: height,
-                    color: color,
-                    cap: cap,
-                    show: show,
-                    mode: mode,
-                    teamCount: teamCount,
-                    min: minimum,
-                    secured: !!password, // convert existance of password to Boolean
-                });
+                Game.game = new Game(
+                    gametitle,
+                    shape,
+                    width,
+                    height,
+                    color,
+                    cap,
+                    show,
+                    mode,
+                    teamCount,
+                    minimum,
+                    !!password, // convert existance of password to Boolean
+                );
                 connection.emit_create_game();
                 connection.emit_create_password(password);
 

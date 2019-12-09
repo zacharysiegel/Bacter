@@ -28,23 +28,23 @@ class Text extends React.Component { // Each input-type component renders a tabl
     }
 
     // Event Handlers
-    handleFocus(e) {
-        if (e.type === 'focus') {
+    handleFocus(event) {
+        if (event.type === 'focus') {
             this.setState({ focused: true, backgroundColor: 'rgb(230, 230, 230)' });
-        } else if (e.type === 'blur') {
+        } else if (event.type === 'blur') {
             this.setState({ focused: false, backgroundColor: 'rgb(255, 255, 255)' });
         }
     }
 
-    handleChange(e) { // e.target is dom element of target
-        this.props.update(this.instance, e.target.value);
+    handleChange(event) { // event.target is dom element of target
+        this.props.update(this.instance, event.target.value);
         if (this.instance === 'password' && (this.menuType === 'join' || this.menuType === 'spectate')) {
-            connection.emit('ask permission', { pass: e.target.value, info: Game.game.info }); // Add player to permissed list on server (if correct password)
+            connection.emit('ask permission', { pass: event.target.value, info: Game.game.info }); // Add player to permissed list on server (if correct password)
         }
     }
 
-    handleKeyDown(e) {
-        if (e.keyCode === 13) // If ENTER key is down
+    handleKeyDown(event) {
+        if (event.keyCode === 13) // If ENTER key is down
             this.props.submit(this.menuType);
     }
 

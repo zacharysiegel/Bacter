@@ -1,10 +1,18 @@
 let org;
 class Org {
-    constructor(data) { // data: { player: , color: , skin: , team: , pos: } (color and skin are required)
-        this.player = data.player;
-        this.color = data.color;
-        this.skin = data.skin;
-        this.team = data.team;
+    /**
+     * Construct a new Org instance
+     * @param {String} id The unique identifier for the user controlling this Org (Usually equals socket.id)
+     * @param { r, g, b } color The color of this Org
+     * @param {String} skin The skin of this Org
+     * @param {String} team (Optional) The team this Org is playing on
+     * @param { x, y } position (Optional) The initial spawn position of this Org
+     */
+    constructor(id, color, skin, team=undefined, position=undefined) {
+        this.player = id;
+        this.color = color;
+        this.skin = skin;
+        this.team = team;
         this.spectating = Game.state === 'spectate';
 
         this.speed = this.spectating ? config.game.spectate_speed : config.game.move_speed;
@@ -32,8 +40,8 @@ class Org {
         }
 
         // Set Initial Position
-        if (data.cursor) { // If cursor position is specified as a parameter
-            this.cursor = data.cursor; // this.cursor refers to the cursor positon
+        if (position) { // If cursor position is specified as a parameter
+            this.cursor = position; // this.cursor refers to the cursor positon
         } else {
             let repos;
             do {
@@ -375,16 +383,16 @@ class Org {
         this.checkAbilities();
 
         if (Game.state === 'game' || Game.state === 'pauseGameMenu') { // These are the only states in which the org is updating itself (same as switch at the start of grow())
-            connection.emit_org({
-                cells: this.cells, // Only the following attributes of org need to be updated
-                off: this.off, // Latency is decreased by only sending necessary data
-                cursor: this.cursor,
-                color: this.color,
-                skin: this.skin,
-                team: this.team,
-                coefficient: this.coefficient,
-                range: this.range
-            });
+            connection.emit_org(
+                this.cells, // Only the following attributes of org need to be updated
+                this.off, // Latency is decreased by only sending necessary data
+                this.cursor,
+                this.color,
+                this.skin,
+                this.team,
+                this.coefficient,
+                this.range
+            );
 
             if (this.count === 0) {
                 for (let i = 0; i < Game.game.board.list.length; i++) { // Find player in leaderboard

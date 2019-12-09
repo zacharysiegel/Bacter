@@ -9,31 +9,29 @@ class Game {
 
     /**
      * Construct a Game object
-     * @param  {Map} data {
-     *                       title: gametitle,
-     *                       secured: secured,
-     *                       type: type,
-     *                       width: width,
-     *                       height: height,
-     *                       color: color,
-     *                       cap: cap,
-     *                       show: show,
-     *                       mode: mode,
-     *                       teamCount: teamCount,
-     *                       min: minimum
-     *                    }
+     * @param {String} title The title of the game
+     * @param {String} shape The shape of the world (rectangle or ellipse)
+     * @param {Number} width The width (in pixels) of the world
+     * @param {Number} height The height (in pixels) of the world
+     * @param { r, g, b } color The background color of the world
+     * @param {Number} cap The maximum number of players allowed
+     * @param {Number} show The number of players to show in the leaderboard
+     * @param {String} mode The game mode
+     * @param {Number} team_count The number of teams in the game
+     * @param {Number} player_min The minimum number of players to start a round
+     * @param {Boolean} secured True if this game is secured by a password
      */
-    constructor(data) {
+    constructor(title, shape, width, height, color, cap, show, mode, team_count, player_min, secured) {
         this.src = 'game'; // Info
         this.players = [];
         this.info = {
             host: connection.socket.id,
-            title: data.title,
-            secured: data.secured,
+            title: title,
+            secured: secured,
             player_count: 0,
-            cap: data.cap,
-            mode: data.mode,
-            teamCount: data.teamCount
+            cap: cap,
+            mode: mode,
+            teamCount: team_count
         };
 
         this.teams = []; // Teams
@@ -61,12 +59,12 @@ class Game {
         if (this.info.mode === 'srv' || this.info.mode === 'ctf' || this.info.mode === 'inf' || this.info.mode === 'kth') { // If game mode utilizes round system
             this.rounds.util = true;
             this.rounds.host = this.info.host;
-            this.rounds.min = data.min;
+            this.rounds.min = player_min;
             this.rounds.waiting = true;
         }
 
-        this.board = new Board(this.info.mode, data.show, this.info.teamCount);
-        this.world = new World(data.width, data.height, data.type, data.color);
+        this.board = new Board(this.info.mode, show, this.info.teamCount);
+        this.world = new World(width, height, shape, color);
         if (this.info.mode === 'ctf') {
             this.flag = new Flag(this.world.x + this.world.width / 2, this.world.y + this.world.height / 2, this.world.border.color);
         }

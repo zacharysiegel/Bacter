@@ -18,7 +18,7 @@ class Tutorial {
             if (connection.socket.id === undefined) {
                 console.error("Connection not made yet");
             }
-            org = new Org({ player: connection.socket.id, color: color, skin: 'none', cursor: { x: center.x, y: center.y } });
+            org = new Org(connection.socket.id, color, 'none', undefined, { x: center.x, y: center.y });
         }
         this.orgs = [ org ];
         this.abilities = [ ability ];
@@ -212,7 +212,9 @@ class Tutorial {
                     do {
                         cursor = { x: Math.random() * this.world.width, y: Math.random() * this.world.height };
                     } while (sqrt(sq(cursor.x - org.cursor.x) + sq(cursor.y - org.cursor.y)) < config.game.default_range + 30); // config.game.default_range + 20 is maximum extend range
-                    this.orgs.push(new Org({ player: 'bot' + 1, color: color, skin: 'none', cursor: cursor }));
+
+                    let bot = new Org('bot' + 1, color, 'none', cursor);
+                    this.orgs.push(bot);
                     this.abilities[1] = new Ability( 'bot' + 1);
                 }
                 if (ability.compress.applied) {
