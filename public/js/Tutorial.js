@@ -117,6 +117,9 @@ class Tutorial {
     nextTask(current) {
         switch(this.task) {
             case 'move':
+                if (Z.isFullscreen()) {
+                    return 'survive';
+                }
                 return 'fullscreen';
             case 'fullscreen':
                 return 'survive';
@@ -155,6 +158,7 @@ class Tutorial {
                     keyIsDown(config.settings.controls.right2.code) ||
                     keyIsDown(config.settings.controls.down1.code) ||
                     keyIsDown(config.settings.controls.down2.code)) { // If a directional key is pressed
+
                     this.task = this.nextTask(this.task);
                 }
                 break;
@@ -171,7 +175,7 @@ class Tutorial {
                     this.task = this.nextTask(this.task);
                 }
                 break;
-            case 'survive': {
+            case 'survive':
                 if (this.taskTimeout === undefined) {
                     this.taskTimeout = setTimeout(() => {
                         this.taskTimeout = undefined; // Set task to 'extend'
@@ -181,8 +185,7 @@ class Tutorial {
                     }, 4500);
                 }
                 break;
-            }
-            case 'extend': {
+            case 'extend':
                 if (keyIsDown(config.settings.controls.ability1.code)) {
                     if (this.taskTimeout === undefined) {
                         this.taskTimeout = setTimeout(() => {
@@ -196,8 +199,7 @@ class Tutorial {
                     }
                 }
                 break;
-            }
-            case 'immortality': {
+            case 'immortality':
                 if (keyIsDown(config.settings.controls.ability2.code)) {
                     if (this.taskTimeout === undefined) {
                         this.taskTimeout = setTimeout(() => {
@@ -211,8 +213,7 @@ class Tutorial {
                     }
                 }
                 break;
-            }
-            case 'neutralize': {
+            case 'neutralize':
                 if (keyIsDown(config.settings.controls.ability3.code)) {
                     if (this.taskTimeout === undefined) {
                         this.taskTimeout = setTimeout(() => {
@@ -228,8 +229,7 @@ class Tutorial {
                     }
                 }
                 break;
-            }
-            case 'shoot': {
+            case 'shoot':
                 if (this.taskTimeout === undefined) {
                     this.taskTimeout = setTimeout(() => {
                         this.taskTimeout = undefined;
@@ -241,8 +241,7 @@ class Tutorial {
                     }, 10000);
                 }
                 break;
-            }
-            case 'compress': {
+            case 'compress':
                 if (this.orgs.length === 1) {
                     let colors = [];
                     for (let j in config.colors.orgs.black) {
@@ -267,13 +266,13 @@ class Tutorial {
                             ability.compress.can = false;
                             ability.freeze.activated = true;
                             ability.freeze.can = true;
+                            this.orgs[1].hit = undefined;
                             this.task = this.nextTask(this.task);
                         }, ability.compress.time);
                     }
                 }
                 break;
-            }
-            case 'freeze': {
+            case 'freeze':
                 if (ability.freeze.applied) {
                     if (this.taskTimeout === undefined) {
                         this.taskTimeout = setTimeout(() => {
@@ -282,29 +281,29 @@ class Tutorial {
                             ability.freeze.can = false;
                             ability.toxin.activated = true;
                             ability.toxin.can = true;
+                            this.orgs[1].hit = undefined;
                             this.task = this.nextTask(this.task);
                         }, ability.freeze.time);
                     }
                 }
                 break;
-            }
-            case 'toxin': { // TODO: Add 'Damage the bot to progress
-                if (keyIsDown(config.settings.controls.ability3.code)) {
+            case 'toxin':
+                if (this.orgs[1].hit === connection.socket.id) { // hit value is reset before switching to the 'toxin' task
                     if (this.taskTimeout === undefined) {
                         this.taskTimeout = setTimeout(() => {
                             this.taskTimeout = undefined;
                             ability.toxin.activated = false;
                             ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
-                            this.task = this.nextTask(this.task);
                             ability.spore.activated = true;
                             ability.spore.can = true;
                             ability.secrete.activated = true; // .can = false
+                            this.orgs[1].hit = undefined;
+                            this.task = this.nextTask(this.task);
                         }, ability.toxin.time);
                     }
                 }
                 break;
-            }
-            case 'spore': {
+            case 'spore':
                 let current = new Date();
                 if (ability.secrete.value === true) {
                     if (this.stopped === true) {
@@ -339,7 +338,6 @@ class Tutorial {
                     }
                 }
                 break;
-            }
         }
     }
 

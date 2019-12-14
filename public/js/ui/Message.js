@@ -68,16 +68,20 @@ class Message {
                     text = 'NEUTRALIZE will create a bubble of safety from enemy attacks';
                     break;
                 case 'shoot':
-                    text = 'To COMPRESS or FREEZE an enemy, press the ability key to launch a spore in the direction of the cursor\nThen press it again to activate the ability';
+                    text = 'To COMPRESS or FREEZE an enemy, press the ability key to launch a spore in the direction of the cursor\n' +
+                           'Then press it again to activate the ability';
                     break;
                 case 'compress':
-                    text = 'On hit, COMPRESS shrinks the size of the targeted enemy\nCOMPRESS the bot to progress';
+                    text = 'On hit, COMPRESS shrinks the size of the targeted enemy\n' +
+                           'COMPRESS the bot to progress';
                     break;
                 case 'freeze':
-                    text = 'On hit, FREEZE halts all natural processes within the enemy organism\nFREEZE the bot to progress';
+                    text = 'On hit, FREEZE halts all natural processes within the enemy organism\n' +
+                           'FREEZE the bot to progress';
                     break;
                 case 'toxin':
-                    text = 'TOXIN creates a localized bubble in which only you can survive';
+                    text = 'TOXIN creates a localized bubble in which only you can survive\n' +
+                           'Damage the bot to progress';
                     break;
                 case 'spore':
                     if (tutorial.stopped) {

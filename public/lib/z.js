@@ -147,15 +147,7 @@ class Z {
      *                         If a browser's fullscreen api is not supported, returns undefined
      */
     static isFullscreen() {
-        if (!document.fullscreenElement &&
-            !document.webkitFullscreenElement &&
-            !document.mozFullScreenElement &&
-            !document.msFullscreenElement) {
-            console.error('Error: z.js: getFullscreenElement() does not support your browser\'s fullscreen api');
-            return undefined;
-        }
-        let fullElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
-        return fullElement !== null;
+        return 1 > outerHeight - innerHeight;
     }
 }
 
