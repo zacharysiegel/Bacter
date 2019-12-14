@@ -34,6 +34,8 @@ try { // Production code in try
 }
 if (config.project_state !== 'production' && config.project_state !== 'development') {
     console.error('Non-Enumerated Value -- config.project_state should be "production" or "development"');
+    console.error('Setting default project state to \'development\'');
+    config.project_state = 'development';
 }
 
 // Bacter Modules
@@ -43,7 +45,6 @@ const SocketListener = require('./SocketListener.js');
 /**
  * Start the server processes
  *    start() is called after Express succeeds in listening to the specified port
- * @return {void}
  */
 function start() {
     let games = new Games(config);

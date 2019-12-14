@@ -25,7 +25,7 @@ class HUD {
             src = getSrc();
         }
 
-        if (src.src !== 'tutorial') { // TODO: render crosshair with correct color in tutorial
+        if (src.src !== 'tutorial') {
             noFill();
             stroke(HUD.color.r, HUD.color.g, HUD.color.b);
             strokeWeight(1);

@@ -225,10 +225,12 @@
       Added usage guide
       Added '4th Ability' line to 'Join Game Options' menu
       Added pointer cursor over radio buttons
+      Changed survival wait delay from ten seconds to eight seconds
+      Improved tutorial user interface
       Improved sharpness of ability tooltips and their rendering efficiency
       Improved efficiency of organism generation
       Improved other documentation
-      Improved appearance and general user interface
+      Improved appearance
       Fixed failure to apply compress and extend abilities in the tutorial
       Fixed shrink rate acceleration in survival mode
       Fixed occasional crashing bug in survival mode

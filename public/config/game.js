@@ -22,7 +22,7 @@ config.game = {
     cell_width: 6,               // Width of single cell (pixels)
     move_speed: 1.7,             // Crosshair movement speed
     spectate_speed: 2.5,         // Crosshair movement speed in spectate mode
-    delay_time: 8000,            // Delay time (in milliseconds) before survival round starts; Must be equal to delay_time in /src/config/config.json TODO: Revert to 10000 after testing
+    delay_time: 8000,            // Delay time (in milliseconds) before survival round starts; Must be equal to delay_time in /src/config/config.json
     dummy_count: 10,             // Number of dummy orgs in title screen
     margin_width: 25,            // Title screen margin
     collision_radius: 10,        // Collision radius (px) (square) for crosshair (used in collision detection with flag)
@@ -42,7 +42,7 @@ config.game = {
         world_width:  800,
         world_height: 800,
         player_cap:   16,
-        player_min:   2, // TODO: Reset to 4 after testing
+        player_min:   4,
         board_length: 10,
         team_count:   2
     }

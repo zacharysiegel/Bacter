@@ -108,9 +108,45 @@ class Tutorial {
         clearInterval(this.render_interval);
     }
 
+    /**
+     * Set the task to the next one in line
+     * Mostly an organization technique
+     * @param {String} current The current task
+     * @return {String} The following task
+     */
+    nextTask(current) {
+        switch(this.task) {
+            case 'move':
+                return 'fullscreen';
+            case 'fullscreen':
+                return 'survive';
+            case 'survive':
+                return 'extend';
+            case 'extend':
+                return 'immortality';
+            case 'immortality':
+                return 'neutralize';
+            case 'neutralize':
+                return 'shoot';
+            case 'shoot':
+                return 'compress';
+            case 'compress':
+                return 'freeze';
+            case 'freeze':
+                return 'toxin';
+            case 'toxin':
+                return 'spore';
+            case 'spore':
+                return 'done';
+        }
+    }
+
+    /**
+     * Detect the current task and apply functionality based on the detected task
+     */
     detect() {
         switch (this.task) {
-            case 'move': {
+            case 'move':
                 if (keyIsDown(config.settings.controls.left1.code) ||
                     keyIsDown(config.settings.controls.left2.code) ||
                     keyIsDown(config.settings.controls.up1.code) ||
@@ -119,21 +155,27 @@ class Tutorial {
                     keyIsDown(config.settings.controls.right2.code) ||
                     keyIsDown(config.settings.controls.down1.code) ||
                     keyIsDown(config.settings.controls.down2.code)) { // If a directional key is pressed
-                    this.task = 'fullscreen';
-                    if (this.taskTimeout === undefined) {
-                        this.taskTimeout = setTimeout(() => {
-                            this.taskTimeout = undefined;
-                            this.task = 'survive';
-                        }, 3500);
-                    }
+                    this.task = this.nextTask(this.task);
                 }
                 break;
-            } // TODO: Skip fullscreen task once F11 is pressed
+            case 'fullscreen':
+                if (this.taskTimeout === undefined) {
+                    this.taskTimeout = setTimeout(() => {
+                        this.taskTimeout = undefined;
+                        this.task = this.nextTask(this.task);
+                    }, 3500);
+                }
+                if (keyIsDown(config.settings.controls.fullscreen.code) || keyIsDown(122)) {
+                    clearTimeout(this.taskTimeout);
+                    this.taskTimeout = undefined;
+                    this.task = this.nextTask(this.task);
+                }
+                break;
             case 'survive': {
                 if (this.taskTimeout === undefined) {
                     this.taskTimeout = setTimeout(() => {
                         this.taskTimeout = undefined; // Set task to 'extend'
-                        this.task = 'extend';
+                        this.task = this.nextTask(this.task);
                         ability.extend.activated = true;
                         ability.extend.can = true;
                     }, 4500);
@@ -147,7 +189,7 @@ class Tutorial {
                             this.taskTimeout = undefined; // Set task to 'immortality'
                             ability.extend.activated = false;
                             ability.extend.can = false;
-                            this.task = 'immortality';
+                            this.task = this.nextTask(this.task);
                             ability.immortality.activated = true;
                             ability.immortality.can = true;
                         }, ability.extend.time);
@@ -162,7 +204,7 @@ class Tutorial {
                             this.taskTimeout = undefined; // Set task to 'neutralize'
                             ability.immortality.activated = false;
                             ability.immortality.can = false;
-                            this.task = 'neutralize';
+                            this.task = this.nextTask(this.task);
                             ability.neutralize.activated = true;
                             ability.neutralize.can = true;
                         }, ability.immortality.time);
@@ -177,7 +219,7 @@ class Tutorial {
                             this.taskTimeout = undefined;
                             ability.neutralize.activated = false;
                             ability.neutralize.can = false;
-                            this.task = 'shoot';
+                            this.task = this.nextTask(this.task);
                             ability.compress.activated = true;
                             ability.compress.can = true;
                             ability.freeze.activated = true;
@@ -193,7 +235,7 @@ class Tutorial {
                         this.taskTimeout = undefined;
                         ability.freeze.activated = false;
                         ability.freeze.can = false;
-                        this.task = 'compress';
+                        this.task = this.nextTask(this.task);
                         ability.compress.activated = true; // Redundancy
                         ability.compress.can = true; // Redundancy
                     }, 10000);
@@ -225,7 +267,7 @@ class Tutorial {
                             ability.compress.can = false;
                             ability.freeze.activated = true;
                             ability.freeze.can = true;
-                            this.task = 'freeze';
+                            this.task = this.nextTask(this.task);
                         }, ability.compress.time);
                     }
                 }
@@ -240,7 +282,7 @@ class Tutorial {
                             ability.freeze.can = false;
                             ability.toxin.activated = true;
                             ability.toxin.can = true;
-                            this.task = 'toxin';
+                            this.task = this.nextTask(this.task);
                         }, ability.freeze.time);
                     }
                 }
@@ -253,7 +295,7 @@ class Tutorial {
                             this.taskTimeout = undefined;
                             ability.toxin.activated = false;
                             ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
-                            this.task = 'spore';
+                            this.task = this.nextTask(this.task);
                             ability.spore.activated = true;
                             ability.spore.can = true;
                             ability.secrete.activated = true; // .can = false
@@ -286,7 +328,7 @@ class Tutorial {
                             ability.spore.can = false;
                             ability.secrete.activated = false;
                             ability.secrete.can = false;
-                            this.task = 'done';
+                            this.task = this.nextTask(this.task);
                         }, ability.secrete.time);
                     }
                 } else if (ability.spore.value === true && current - ability.spore.start >= ability.spore.time / 2) {

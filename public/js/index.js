@@ -69,6 +69,8 @@ function getSrc() {
  * @return boolean false: disables default behaviors
  */
 function keyPressed() {
+    let src = getSrc();
+
     switch (keyCode) {
         case config.settings.controls.ability1.code: // X by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
@@ -147,7 +149,7 @@ function keyPressed() {
                 }
             }
             break;
-        case config.settings.controls.pause.code: { // ESC by default
+        case config.settings.controls.pause.code: // ESC by default
             switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
                 case 'createMenu':
                 case 'browser':
@@ -204,11 +206,12 @@ function keyPressed() {
                     break;
             }
             break;
-        }
+        case config.settings.controls.fullscreen.code:
+            break;
     }
     // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
     switch (keyCode) {
-        case 27 !== config.settings.controls.pause.code ? 27 : '': { // ESCAPE only if variable pause key is not ESCAPE (keyCode cannot be a string)
+        case (27 !== config.settings.controls.pause.code) ? 27 : '': // ESCAPE only if escape code is not default (keyCode cannot be -1)
             switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
                 case 'createMenu':
                 case 'browser':
@@ -255,7 +258,8 @@ function keyPressed() {
                     ReactDOM.render(<CanvasCont/>, Z.eid('root'));
                     break;
             }
-        }
+            break;
+        case (122 !== config.settings.controls.fullscreen.code) ? 122 : -1: // FULLSCREEN only if fullscreen code is not default (keyCode cannot be -1)
             break;
     }
 }
