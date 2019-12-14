@@ -2,7 +2,7 @@ config.menus = {
     create: {
         header: 'Game Creation Options',
         button: 'Create',
-        options: [ 'Game Title', 'Password', 'World Type', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode' ],
+        options: [ 'Game Title', 'Password', 'World Shape', 'World Width', 'World Height', 'Player Minimum', 'Player Cap', 'Team Count', 'Leaderboard Length', 'Game Mode' ],
         values:  [ 'text',       'text',     'list',       'number',      'number',       'number',         'number',     'number',     'number',             'list'      ]
     },
     join: {

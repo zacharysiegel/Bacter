@@ -452,7 +452,7 @@ class SocketListener {
          * Update Server Org
          * @param {
          *     cells: org.cells,
-         *     off: org.off,
+         *     offset: org.off,
          *     pos: org.pos,
          *     cursor: org.cursor,
          *     color: org.color,
@@ -462,7 +462,7 @@ class SocketListener {
          *     range: org.range
          *  }
          */
-        this.socket.on('org', ({ cells, off, pos, cursor, color, skin, team, coefficient, range }) => {
+        this.socket.on('org', ({ cells, offset, pos, cursor, color, skin, team, coefficient, range }) => {
             const indices = this.games.getIndicesByMember(this.socket.id);
             if (indices.g === -1) {
                 console.error(`[ERROR] :: listen_org :: Game not found in {Games}.list with member ${this.socket.id}`);
@@ -475,7 +475,7 @@ class SocketListener {
             // this.games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary information rather than the entire org object
             this.games.list[indices.g].orgs[indices.p].cells = cells; // Only the following attributes of org need to be updated and shared
             this.games.list[indices.g].orgs[indices.p].count = cells.length;
-            this.games.list[indices.g].orgs[indices.p].off = off;
+            this.games.list[indices.g].orgs[indices.p].off = offset;
             this.games.list[indices.g].orgs[indices.p].pos = cursor;
             this.games.list[indices.g].orgs[indices.p].color = color;
             this.games.list[indices.g].orgs[indices.p].skin = skin;

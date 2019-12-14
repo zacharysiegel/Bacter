@@ -383,16 +383,16 @@ class Org {
         this.checkAbilities();
 
         if (Game.state === 'game' || Game.state === 'pauseGameMenu') { // These are the only states in which the org is updating itself (same as switch at the start of grow())
-            connection.emit_org(
-                this.cells, // Only the following attributes of org need to be updated
-                this.off, // Latency is decreased by only sending necessary data
-                this.cursor,
-                this.color,
-                this.skin,
-                this.team,
-                this.coefficient,
-                this.range
-            );
+            connection.emit_org({
+                cells: this.cells, // Only the following attributes of org need to be updated
+                off: this.off, // Latency is decreased by only sending necessary data
+                cursor: this.cursor,
+                color: this.color,
+                skin: this.skin,
+                team: this.team,
+                coefficient: this.coefficient,
+                range: this.range
+            });
 
             if (this.count === 0) {
                 for (let i = 0; i < Game.game.board.list.length; i++) { // Find player in leaderboard

@@ -22,7 +22,7 @@ class List extends React.Component {
         let info = []; // Info array holds config data for option elements to be created later
         let unset = true; // If value is unset initially, will set value to first in list
         switch (this.instance) {
-            case 'world type':
+            case 'world shape':
                 info = [
                     { value: 'rectangle', inner: 'Square' },
                     { value: 'ellipse',   inner: 'Circle' }

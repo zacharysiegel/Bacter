@@ -3,7 +3,7 @@ function submit(menuType) {
     let ok = true; // Check for inputs' validities
     let tInput = Z.eid('game title input');
     let pInput = Z.eid('password input');
-    let shapeInput = Z.eid('world type input');
+    let shapeInput = Z.eid('world shape input');
     let widthInput = Z.eid('world width input');
     let heightInput = Z.eid('world height input');
     let pcInput = Z.eid('player cap input');
