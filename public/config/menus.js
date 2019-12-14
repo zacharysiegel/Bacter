@@ -20,8 +20,8 @@ config.menus = {
     respawn: {
         header: 'Spawn Options',
         button: 'Spawn',
-        options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', 'Team', 'Auto Assign', 'Leave Game' ],
-        values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     'list', '1 radio'    , 'button'     ]
+        options: [ 'Color', 'Skin',    '1st Ability', '2nd Ability', '3rd Ability', '4th Ability', 'Team', 'Auto Assign', 'Leave Game' ],
+        values:  [ 'list',  '3 radio', '2 radio',     '2 radio',     '2 radio',     '1 radio',     'list', '1 radio'    , 'button'     ]
     },
     pauseGame: {
         header: 'Pause Options',
