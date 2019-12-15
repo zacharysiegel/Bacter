@@ -87,7 +87,8 @@ class Message {
                     if (tutorial.stopped) {
                         text = 'Reactivate the ability to cause all spores to secrete an acid, killing enemy cells';
                     } else {
-                        text = 'Use SPORE to jettison outer cells in all directions (Space Bar)';
+                        text = 'Use SPORE to jettison outer cells in all directions (Space Bar)\n' +
+                               'Damage the bot to progress';
                     }
                     break;
                 case 'secrete':

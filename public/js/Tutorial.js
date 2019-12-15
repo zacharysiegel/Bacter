@@ -288,24 +288,33 @@ class Tutorial {
                 }
                 break;
             case 'toxin':
-                if (this.orgs[1].hit === connection.socket.id) { // hit value is reset before switching to the 'toxin' task
-                    if (this.taskTimeout === undefined) {
-                        this.taskTimeout = setTimeout(() => {
-                            this.taskTimeout = undefined;
-                            ability.toxin.activated = false;
-                            ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
-                            ability.spore.activated = true;
-                            ability.spore.can = true;
-                            ability.secrete.activated = true; // .can = false
-                            this.orgs[1].hit = undefined;
-                            this.task = this.nextTask(this.task);
-                        }, ability.toxin.time);
-                    }
+                if (this.orgs[1].hit === connection.socket.id && this.taskTimeout === undefined) { // hit value is reset before switching to the 'toxin' task
+                    this.taskTimeout = setTimeout(() => {
+                        this.taskTimeout = undefined;
+                        ability.toxin.activated = false;
+                        ability.toxin.can = false; // All ability can values are reset to true after task change by cooldown; not a problem at the moment; can = false is useless at the moment
+                        ability.spore.activated = true;
+                        ability.spore.can = true;
+                        ability.secrete.activated = true; // .can = false
+                        this.orgs[1].hit = undefined;
+                        this.task = this.nextTask(this.task);
+                    }, ability.toxin.time);
                 }
                 break;
             case 'spore':
                 let current = new Date();
                 if (ability.secrete.value === true) {
+                    if (this.orgs[1].hit === connection.socket.id && this.taskTimeout === undefined) { // hit value is reset before switching to the 'toxin' task
+                        this.taskTimeout = setTimeout(() => {
+                            this.taskTimeout = undefined;
+                            ability.spore.activated = false;
+                            ability.spore.can = false;
+                            ability.secrete.activated = false;
+                            ability.secrete.can = false;
+                            this.task = this.nextTask(this.task);
+                        }, ability.secrete.time);
+                    }
+
                     if (this.stopped === true) {
                         this.stopped = false;
                         this.org_interval = setInterval(() => { // Restart
@@ -319,16 +328,6 @@ class Tutorial {
                         }, config.game.org_frequency); // 70ms
                         ability.spore.end = new Date();
                         ability.secrete.start = new Date();
-                    }
-                    if (this.taskTimeout === undefined) {
-                        this.taskTimeout = setTimeout(() => {
-                            this.taskTimeout = undefined;
-                            ability.spore.activated = false;
-                            ability.spore.can = false;
-                            ability.secrete.activated = false;
-                            ability.secrete.can = false;
-                            this.task = this.nextTask(this.task);
-                        }, ability.secrete.time);
                     }
                 } else if (ability.spore.value === true && current - ability.spore.start >= ability.spore.time / 2) {
                     if (this.stopped === false) {
