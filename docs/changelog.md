@@ -248,3 +248,5 @@
       Fixed occasional client non-connection to socket
       Fixed rectangular world's north boarder collision detection
       Fixed several instances of unnecessary communications with the server
+
+## a3.2.4 - Optimization
