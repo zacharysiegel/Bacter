@@ -7,17 +7,7 @@ class Board {
      */
     constructor(mode, show, teamCount) {
         this.host = connection.socket.id; // Cannot call Game.game.info.host since game is not fully constructed yet; World() can only be called by host, so connection.socket.id is ok
-        this.list = [
-            // { TODO: Make a class out of this
-            //    player: undefined, // ID of player
-            //    name: undefined, // Screen name of player
-            //    kills: undefined, // Kills as defined by number of enemy cells killed
-            //    deaths: undefined, // Deaths as defined by number of org deaths
-            //    ratio: undefined, // Ratio of kills to deaths
-            //    score: undefined, // Flag captures (ctf), time score (kth)
-            //    wins: undefined // Round wins (srv, ctf, inf, kth)
-            // }
-        ];
+        this.list = []; // Stores BoardEntry objects
         this.count = undefined;
         if (mode === 'skm' || mode === 'ctf') { // If is a team Game.game
             this.show = teamCount; // Maximum number of players shown in leaderboard (Top __)
@@ -61,7 +51,7 @@ class Board {
     static find(board, id) {
         let len = Game.game.board.list.length;
         for (let i = 0; i < len; i++) { // Remove member from the leaderboard, reorder it, and update server's board instance
-            if (Game.game.board.list[i].player === connection.socket.id) { // Find player in leaderboard
+            if (Game.game.board.list[i].id === connection.socket.id) { // Find player in leaderboard
                 return i;
             }
         }
@@ -212,7 +202,7 @@ class Board {
             if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If not a team mode
                 let spectator = false;
                 for (let j = 0; j < Game.game.spectators.length; j++) {
-                    if (board.list[i].player === Game.game.spectators[j]) {
+                    if (board.list[i].id === Game.game.spectators[j]) {
                         spectator = true;
                         break;
                     }
@@ -237,7 +227,7 @@ class Board {
 
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
-                if (board.list[i].player === connection.socket.id) {
+                if (board.list[i].id === connection.socket.id) {
                     textFont(board.text.boldFont);
                     textStyle(BOLD);
                 } else {
@@ -299,7 +289,7 @@ class Board {
                 let teamDeaths = 0;
                 for (let j = 0; j < Game.game.teams[i].length; j++) {
                     for (let k = 0; k < board.list.length; k++) {
-                        if (Game.game.teams[i][j] === board.list[k].player) {
+                        if (Game.game.teams[i][j] === board.list[k].id) {
                             teamKills += board.list[k].kills;
                             teamDeaths += board.list[k].deaths;
                             break;
@@ -328,7 +318,7 @@ class Board {
 
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
-                if (board.list[i].player === connection.socket.id) {
+                if (board.list[i].id === connection.socket.id) {
                     textFont(board.text.boldFont);
                     textStyle(BOLD);
                 } else {
@@ -378,7 +368,7 @@ class Board {
                 let done = false;
                 for (let j = 0; j < Game.game.teams[i].length; j++) {
                     for (let k = 0; k < board.list.length; k++) {
-                        if (Game.game.teams[i][j] === board.list[k].player) { // Find player in board list
+                        if (Game.game.teams[i][j] === board.list[k].id) { // Find player in board list
                             wins = board.list[k].wins; // Team wins saved to each player; Copy wins from one player to represent the team
                             done = true;
                             break;
@@ -391,7 +381,7 @@ class Board {
                 let captures = 0;
                 for (let j = 0; j < Game.game.teams[i].length; j++) {
                     for (let k = 0; k < board.list.length; k++) {
-                        if (Game.game.teams[i][j] === board.list[k].player) {
+                        if (Game.game.teams[i][j] === board.list[k].id) {
                             captures += board.list[k].score;
                             break;
                         }
@@ -413,7 +403,7 @@ class Board {
 
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
-                if (board.list[i].player === connection.socket.id) {
+                if (board.list[i].id === connection.socket.id) {
                     textFont(board.text.boldFont);
                     textStyle(BOLD);
                 } else {
@@ -442,7 +432,7 @@ class Board {
 
                 fill(board.text.color.r, board.text.color.g, board.text.color.b);
                 noStroke();
-                if (board.list[i].player === connection.socket.id) {
+                if (board.list[i].id === connection.socket.id) {
                     textFont(board.text.boldFont);
                     textStyle(BOLD);
                 } else {

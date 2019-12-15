@@ -3,8 +3,8 @@ class Game {
      * All static fields are listed below:
      * (static) Game.game;    // Value set in Game.start
      * (static) Game.games;   // Initialized to [] in static initializer below Game class
-     * (static) Game.state;   // Value set in setup()
-     * (static) Game.message; // Value set in setup()
+     * (static) Game.state;   // Value set in setup() (./index.js)
+     * (static) Game.message; // Value set in setup() (./index.js)
      */
 
     /**

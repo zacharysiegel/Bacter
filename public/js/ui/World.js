@@ -96,7 +96,7 @@ class World {
                 if (Game.game.info.mode !== 'skm' && Game.game.info.mode !== 'ctf') { // If not a team mode
                     let spectator = false;
                     for (let j = 0; j < Game.game.spectators.length; j++) {
-                        if (Game.game.board.list[i].player === Game.game.spectators[j]) {
+                        if (Game.game.board.list[i].id === Game.game.spectators[j]) {
                             spectator = true;
                             break;
                         }

@@ -32,7 +32,7 @@ class Games {
         if (this.config.project_state === 'development') console.log('                                               Game Created: ' + this.list[this.count - 1].info.title + ' (' + this.list[this.count - 1].info.host + ')');
 
         this.intervals.push(setInterval(() => { // Send updated game to all players
-            this.list[game_index].count = this.list[game_index].players.lenth; // Calculate and update player count
+            this.list[game_index].count = this.list[game_index].players.length; // Calculate and update player count
 
             let game = this.list[game_index];
             io.to(this.list[game_index].info.title).volatile.binary(false).emit('game', game); // Send updated game info to clients in game room
@@ -136,7 +136,7 @@ class Games {
             }
 
             for (let l = 0; l < member_count; l++) { // Search leaderboard array for id
-                if (game.board.list[l].player === id) {
+                if (game.board.list[l].id === id) {
                     result.g = g;
                     result.l = l;
                     member_found = true;

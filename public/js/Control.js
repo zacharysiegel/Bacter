@@ -72,6 +72,67 @@ class Control {
     }
 
     /**
+     * Pause the game
+     */
+    static pause() {
+        switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
+            case 'createMenu':
+            case 'browser':
+                Title.render(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
+                break;
+            case 'joinMenu':
+                if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
+                    connection.emit('game ended', Game.game);
+                    Title.render();
+                } else {
+                    Browser.renderBrowser();
+                }
+                break;
+            case 'spectateMenu':
+                Browser.renderBrowser();
+                break;
+            case 'game':
+                Menu.renderMenu('pauseGame', Game.game);
+                break;
+            case 'spectate':
+                Menu.renderMenu('pauseSpectate', Game.game);
+                break;
+            case 'tutorial':
+                Menu.renderMenu('pauseTutorial', tutorial);
+                break;
+            case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
+            case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
+                Game.state = 'spectate';
+                ReactDOM.render(<CanvasCont />, Z.eid('root'));
+                break;
+            case 'pauseGameMenu': {
+                let skip = false;
+                for (let i = 0; i < Game.game.players.length; i++) {
+                    if (Game.game.players[i] === connection.socket.id) { // If still is a player
+                        Game.state = 'game';
+                        skip = true;
+                        break;
+                    }
+                }
+                if (!skip) {
+                    for (let i = 0; i < Game.game.spectators.length; i++) {
+                        if (Game.game.spectators[i] === connection.socket.id) {
+                            Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
+                            break;
+                        }
+                    }
+                }
+                ReactDOM.render(<CanvasCont/>, Z.eid('root'));
+                break;
+            }
+            case 'pauseTutorialMenu':
+                Game.state = 'tutorial';
+                ReactDOM.render(<CanvasCont />, Z.eid('root'));
+                break;
+        }
+    }
+
+    /**
      * The fundamental control tick which performs all of a player's recurring computations
      *      Runs inside {Org}.interval
      *      Rendering is performed after receiving the 'game' event from a server-side loop
@@ -118,7 +179,7 @@ class Control {
 
         if (Game.game.info.mode === 'srv' && Game.game.players[0] === connection.socket.id && !Game.game.rounds.waiting && !Game.game.rounds.delayed && Game.game.info.player_count <= 1) { // Survival end-game: if during game and player is winner; count <= 1 (rather than === 1) in case multiple players die on last tick, setting count to 0
             for (let m = 0; m < Game.game.board.list.length; m++) {
-                if (Game.game.board.list[m].player === connection.socket.id) {
+                if (Game.game.board.list[m].id === connection.socket.id) {
                     connection.emit('end round', Game.game.info);
                     Game.game.rounds.delayed = true; // Prevent the above emission from executing multiple times
 

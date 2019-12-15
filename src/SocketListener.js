@@ -103,7 +103,7 @@ class SocketListener {
      * Listen for game ended event from client
      */
     listen_game_ended() {
-        this.socket.on('game ended', () => {
+        this.socket.on('game ended', (game) => {
             if (game.info.host === this.socket.id) { // 'game ended' event can only fire when it is sent by the game's host
                 this.io.to(game.info.title).emit('game ended', game);
                 this.io.of('/').in(game.info.title).clients((error, ids) => { // Get each client in room
@@ -442,6 +442,8 @@ class SocketListener {
             this.games.list[g].board.list = list;
         });
     }
+
+
 
     /**
      * Listen for org event from client

@@ -69,8 +69,6 @@ function getSrc() {
  * @return boolean false: disables default behaviors
  */
 function keyPressed() {
-    let src = getSrc();
-
     switch (keyCode) {
         case config.settings.controls.ability1.code: // X by default
             if ((Game.state === 'game' || Game.state === 'tutorial') && org.alive) {
@@ -141,7 +139,6 @@ function keyPressed() {
         case config.settings.controls.respawn.code: // R by default
             if (Game.state === 'spectate' && ! org.alive && org.spawn) {
                 if (Game.game.players.length < Game.game.info.cap) {
-                    // connection.socket.binary(false).emit('Spectator Left', Game.game.info);
                     Menu.renderMenu('respawn', Game.game); // Load respawn menu
                 } else {
                     alert('Game is at maximum player capacity'); // TODO: Convert to message
@@ -150,117 +147,18 @@ function keyPressed() {
             }
             break;
         case config.settings.controls.pause.code: // ESC by default
-            switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
-                case 'createMenu':
-                case 'browser':
-                    Title.render(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
-                    break;
-                case 'joinMenu':
-                    if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                        connection.emit('game ended', Game.game);
-                        Title.render();
-                    } else {
-                        Browser.renderBrowser();
-                    }
-                    break;
-                case 'spectateMenu':
-                    Browser.renderBrowser();
-                    break;
-                case 'game':
-                    Menu.renderMenu('pauseGame', Game.game);
-                    break;
-                case 'spectate':
-                    Menu.renderMenu('pauseSpectate', Game.game);
-                    break;
-                case 'tutorial':
-                    Menu.renderMenu('pauseTutorial', tutorial);
-                    break;
-                case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
-                case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
-                    Game.state = 'spectate';
-                    ReactDOM.render(<CanvasCont />, Z.eid('root'));
-                    break;
-                case 'pauseGameMenu': {
-                    let skip = false;
-                    for (let i = 0; i < Game.game.players.length; i++) {
-                        if (Game.game.players[i] === connection.socket.id) { // If still is a player
-                            Game.state = 'game';
-                            skip = true;
-                            break;
-                        }
-                    }
-                    if (!skip) {
-                        for (let i = 0; i < Game.game.spectators.length; i++) {
-                            if (Game.game.spectators[i] === connection.socket.id) {
-                                Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
-                                break;
-                            }
-                        }
-                    }
-                    ReactDOM.render(<CanvasCont/>, Z.eid('root'));
-                    break;
-                }
-                case 'pauseTutorialMenu':
-                    Game.state = 'tutorial';
-                    ReactDOM.render(<CanvasCont />, Z.eid('root'));
-                    break;
-            }
+            Control.pause();
             break;
-        case config.settings.controls.fullscreen.code:
-            break;
+        // case config.settings.controls.fullscreen.code:
+        //     break;
     }
     // Hard key codes are separate from variable codes, so in the case of overlap, hard codes will always run
     switch (keyCode) {
         case (27 !== config.settings.controls.pause.code) ? 27 : '': // ESCAPE only if escape code is not default (keyCode cannot be -1)
-            switch (Game.state) { // Used as the back key for menus (variable pause key may be used as well)
-                case 'createMenu':
-                case 'browser':
-                    Title.render(); // unmountComponentAtNode() is unnecessary since ReactDOM.render() clears container before rendering
-                    break;
-                case 'joinMenu':
-                    if (Game.game.info.host === connection.socket.id) { // If player is host (If player is joining directly after creating the game)
-                        connection.emit('game ended', Game.game);
-                        Title.render();
-                    } else {
-                        Browser.renderBrowser();
-                    }
-                    break;
-                case 'spectate':
-                    Browser.renderBrowser();
-                    break;
-                case 'pauseSpectateMenu': // Cannot access instance of <Menu> component class to bind as this keyword in submit()
-                case 'respawnMenu': // Respawn is included because 'back' for respawn should return to spectate
-                    Game.state = 'spectate';
-                    ReactDOM.render(<CanvasCont/>, Z.eid('root'));
-                    break;
-                case 'pauseGameMenu': {
-                    let skip = false;
-                    for (let i = 0; i < Game.game.players.length; i++) {
-                        if (Game.game.players[i] === connection.socket.id) { // If still is a player
-                            Game.state = 'game';
-                            skip = true;
-                            break;
-                        }
-                    }
-                    if (!skip) {
-                        for (let i = 0; i < Game.game.spectators.length; i++) {
-                            if (Game.game.spectators[i] === connection.socket.id) {
-                                Game.state = 'spectate'; // Must include spectate possibility in pause game; even though a spectator could never open pause game menu, he could be killed while in menu
-                                break;
-                            }
-                        }
-                    }
-                    ReactDOM.render(<CanvasCont/>, Z.eid('root'));
-                    break;
-                }
-                case 'pauseTutorialMenu':
-                    Game.state = 'tutorial';
-                    ReactDOM.render(<CanvasCont/>, Z.eid('root'));
-                    break;
-            }
+            Control.pause();
             break;
-        case (122 !== config.settings.controls.fullscreen.code) ? 122 : -1: // FULLSCREEN only if fullscreen code is not default (keyCode cannot be -1)
-            break;
+        // case (122 !== config.settings.controls.fullscreen.code) ? 122 : -1: // FULLSCREEN only if fullscreen code is not default (keyCode cannot be -1)
+        //     break;
     }
 }
 

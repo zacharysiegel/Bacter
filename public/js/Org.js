@@ -396,7 +396,7 @@ class Org {
 
             if (this.count === 0) {
                 for (let i = 0; i < Game.game.board.list.length; i++) { // Find player in leaderboard
-                    if (Game.game.board.list[i].player === connection.socket.id) { // Add death to leaderboard
+                    if (Game.game.board.list[i].id === connection.socket.id) { // Add death to leaderboard
                         Game.game.board.list[i].deaths++; // Add 1 to deaths counter
                         Board.order(Game.game.board); // Sort the list by kills then deaths
                         connection.emit_board(Game.game.board); // Send updated board to server
@@ -405,7 +405,7 @@ class Org {
                 }
                 if (this.hit !== this.player) { // Cannot gain kill for suicide
                     for (let i = 0; i < Game.game.board.list.length; i++) {
-                        if (Game.game.board.list[i].player === this.hit) { // Find killer in leaderboard list
+                        if (Game.game.board.list[i].id === this.hit) { // Find killer in leaderboard list
                             Game.game.board.list[i].kills++;
                             Board.order(Game.game.board);
                             connection.emit_board(Game.game.board);

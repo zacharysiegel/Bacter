@@ -97,6 +97,8 @@ class Message {
                     text = 'Now that you\'re ready, press ESC to return to the menu';
                     break;
             }
+        } else if (Game.state === 'title') {
+
         }
 
         this.text = text;

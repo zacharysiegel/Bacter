@@ -77,7 +77,7 @@ class HUD {
             textSize(10);
             for (let i = 0; i < Game.game.info.player_count; i++) {
                 for (let j = 0; j < Game.game.board.list.length; j++) {
-                    if (Game.game.orgs[i].player === Game.game.board.list[j].player) {
+                    if (Game.game.orgs[i].player === Game.game.board.list[j].id) {
                         let x = function() { // x() and y() cannot be accessed through orgs array, so code is copied and edited from org file
                             let sum = 0;
                             for (let k = 0; k < Game.game.orgs[i].count; k++) {

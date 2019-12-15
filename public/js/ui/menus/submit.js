@@ -291,20 +291,14 @@ function submit(menuType) {
                 // Leaderboard
                 let already_in_game = false;
                 for (let i = 0; i < Game.game.board.list.length; i++) { // Search for player id in game
-                    if (Game.game.board.list[i].player === connection.socket.id) {
+                    if (Game.game.board.list[i].id === connection.socket.id) {
                         already_in_game = true;
                         break;
                     }
                 }
                 if (!already_in_game) {
-                    Game.game.board.list.push({
-                        player: connection.socket.id,
-                        name: name,
-                        kills: 0,
-                        deaths: 0,
-                        score: 0,
-                        wins: 0
-                    });
+                    let entry = new BoardEntry(connection.socket.id, name);
+                    Game.game.board.list.push(entry); // Add player to the leaderboard
                 }
                 Board.order(Game.game.board);
                 connection.emit_board(Game.game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
@@ -478,20 +472,14 @@ function submit(menuType) {
                 // Leaderboard
                 let already_in_game = false;
                 for (let i = 0; i < Game.game.board.list.length; i++) {
-                    if (Game.game.board.list[i].player === connection.socket.id) {
+                    if (Game.game.board.list[i].id === connection.socket.id) {
                         already_in_game = true;
                         break;
                     }
                 }
                 if (!already_in_game) {
-                    Game.game.board.list.push({ // Add player to leaderboard
-                        player: connection.socket.id,
-                        name: name,
-                        kills: 0,
-                        deaths: 0,
-                        score: 0,
-                        wins: 0
-                    });
+                    let entry = new BoardEntry(connection.socket.id, name);
+                    Game.game.board.list.push(entry); // Add spectator to the leaderboard
                 }
                 Board.order(Game.game.board);
                 connection.emit_board(Game.game.board); // Must be before spawn because only runs when first entering server, and spawn() runs on respawn as well
