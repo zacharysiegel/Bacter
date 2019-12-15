@@ -179,10 +179,10 @@ class SocketListener {
                 let permissions = this.games.securities[i];
                 if (info.title === permissions.title && pass === permissions.password) {
                     permissions.permiss(this.socket.id);
-                    callback(true);
+                    if (callback) callback(true); // The callback function is not currently in use
                 }
             }
-            callback(false);
+            if (callback) callback(false);
         });
     }
 
@@ -685,7 +685,7 @@ class SocketListener {
     spawn(player, org, ability, host) {
         const g = this.games.getIndexByHost(host); // It is faster to get the index of game from host and feeding that as a starting point into getIndicesByMember (O(n^3) -> O(n^2))
         if (g === -1) {
-            console.error(`[ERROR] :: {SocketListener}.spawn :: Game not found in {Games}.list with host ${info.host}`);
+            console.error(`[ERROR] :: {SocketListener}.spawn :: Game not found in {Games}.list with host ${host}`);
             return; // Return here prevents an index out of bounds exception
         }
         const indices = this.games.getIndicesByMember(player, g);

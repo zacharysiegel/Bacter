@@ -1,4 +1,9 @@
 class Permissions {
+    /**
+     * Construct a new Permissions instance
+     * @param title The title of the relevant game
+     * @param password The password to the game
+     */
     constructor(title, password='') {
         this.title = title;
         this.password = password;
@@ -11,8 +16,7 @@ class Permissions {
      * @return {Boolean}    true if permissed, else false
      */
     isPermissed(id) {
-        if (this.permissed.indexOf(id) !== -1) return true;
-        return false;
+        return this.permissed.indexOf(id) !== -1;
     }
 
     /**
@@ -25,7 +29,7 @@ class Permissions {
             this.permissed.push(id);
             return 0;
         }
-        console.error('Error: Permission.permiss -- id is undefined');
+        console.error('Error: Permission.permiss -- id is invalid');
         return 1;
     }
 

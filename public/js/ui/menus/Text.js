@@ -21,8 +21,9 @@ class Text extends React.Component { // Each input-type component renders a tabl
         // noinspection JSRedundantSwitchStatement
         switch (this.instance) {
             case 'password':
-                if (this.menuType === 'join' || this.menuType === 'spectate') // Caution: password instance exists in create and join/spectate menus
+                if (this.menuType === 'join' || this.menuType === 'spectate') { // Caution: password instance exists in create and join/spectate menus
                     connection.emit('ask permission', { pass: this.state.value, info: Game.game.info }); // Add player to permissed list on server (if there is no password for game)
+                }
                 break;
         }
     }
