@@ -8,26 +8,26 @@
 # If the folders containing built files do not exist, create them
 println="false"
 if [[ ! -d ./src/build ]]; then
-  mkdir ./src/build
-  echo "Created directory ./src/build"
-  println="true"
+    mkdir ./src/build
+    echo "Created directory ./src/build"
+    println="true"
 fi
 if [[ ! -d ./public/build ]]; then
-  mkdir ./public/build
-  echo "Created directory ./public/build"
-  println="true"
+    mkdir ./public/build
+    echo "Created directory ./public/build"
+    println="true"
 fi
 
 # Remove the formerly built files if they exist; If directory does not exist, there is an error above
 if [[ $(ls ./src/build) ]]; then # If ./src/build/ is not empty
-  rm -r ./src/build/* # Server-Side
-  echo "Removed all contents of directory ./src/build"
-  println="true"
+    rm -r ./src/build/* # Server-Side
+    echo "Removed all contents of directory ./src/build"
+    println="true"
 fi
 if [[ $(ls ./public/build/) ]]; then # If ./src/build/ is not empty
-  rm -r ./public/build/* # Client-Side
-  echo "Removed all contents of directory ./public/build"
-  println="true"
+    rm -r ./public/build/* # Client-Side
+    echo "Removed all contents of directory ./public/build"
+    println="true"
 fi
 [[ $println = "true" ]] && echo
 
