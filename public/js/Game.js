@@ -2,7 +2,7 @@ class Game {
     /**
      * All static fields are listed below:
      * (static) Game.game;    // Value set in Game.start
-     * (static) Game.games;   // Initialized to [] in static initializer below Game class
+     * (static) Game.games;   // Initialized to {} in static initializer below Game class
      * (static) Game.state;   // Value set in setup() (./index.js)
      * (static) Game.message; // Value set in setup() (./index.js)
      */
@@ -93,20 +93,12 @@ class Game {
     }
 
     /**
-     * Determine if the game corresponding to the specified host exists in the games array
+     * Determine if the game corresponding to the specified host exists in the games map
      * @param {String} host The host of the game in question (the identifier of a game)
-     * @return {Boolean} True if game was found in games array, else false
+     * @return {Boolean} True if game was found in games map, else false
      */
     static exists(host) {
-        let exists = false;
-
-        Game.games.forEach(game => { // return statement in here does not return Game.exists, it returns the arrow function
-            if (game.info.host === host) {
-                exists = true;
-            }
-        });
-
-        return exists;
+        return Game.games.has(host);
     }
 
     /**
@@ -122,6 +114,6 @@ class Game {
 // Static Initialization Block for class Game
 (function() {
 
-    Game.games = [];
+    Game.games = new Map();
 
 })();

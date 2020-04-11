@@ -64,13 +64,8 @@ class List extends React.Component {
                 }
                 break;
             case 'team':
-                if (getSrc().src === 'title') { // If in title, set game value to game in Game.games array
-                    for (let i = 0; i < Game.games.length; i++) { // Update game on-load (Normally occurs in connection.socket.js @ connection.socket.on('Game')); Used for team option updates
-                        if (Game.games[i].info.host === Game.game.info.host) { // Identify game
-                            Game.game = Game.games[i]; // Set game to updated game from server array
-                            break;
-                        }
-                    }
+                if (getSrc().src === 'title') { // If in title, set game value to game in Game.games map
+                    Game.game = Game.games.map.get(Game.game.info.host); // Update game on-load (Normally occurs @ socket.on('Game')); Used for team option updates
                 }
                 for (let i = 0; i < Game.game.teams.length; i++) { // If is not a team mode, rendering should be blocked in Menu.render()
                     info.push({ value: config.colors.teams[i], inner: config.colors.teams[i][0].toUpperCase() + config.colors.teams[i].slice(1) + ': ' + Game.game.teams[i].length });

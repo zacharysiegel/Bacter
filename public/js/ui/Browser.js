@@ -11,7 +11,7 @@ class Browser extends React.Component {
         ReactDOM.render(<Browser games={Game.games} />, Z.eid('root'));
     }
 
-    // React Lifecycle Hooks
+    // React Lifecycle Functions
     static getDerivedStateFromProps(nextProps, prevState) {
         if (nextProps.games !== prevState.games) {
             return { games: nextProps.games };
@@ -24,11 +24,11 @@ class Browser extends React.Component {
 
     render() {
         let gamerows = [];
-        for (let i = 0; i < this.state.games.length; i++) {
-            if (this.state.games[i].players.length === 0 && this.state.games[i].spectators.length === 0 && this.state.games[i].info.player_count === 0) { // If host has not yet joined the game
+        for (let game of this.state.games) {
+            if (game.players.length === 0 && game.spectators.length === 0 && game.info.player_count === 0) { // If host has not yet joined the game
                 continue;
             }
-            gamerows.push( <GameRow key={i} game={this.state.games[i]} row={i} forceUp={!mouseDown} /> );
+            gamerows.push( <GameRow key={i} game={game} row={i} host={game.info.host} forceUp={!mouseDown} /> );
         }
 
         return (
@@ -67,6 +67,7 @@ class GameRow extends React.Component {
     constructor(props) {
         super(props);
         this.row = props.row;
+        this.host = props.host;
     }
 
     render() {
@@ -78,8 +79,8 @@ class GameRow extends React.Component {
                 <td className='players'>{game.players.length}</td>
                 <td className='spectators'>{game.spectators.length}</td>
                 <td className='playercap'>{game.info.cap}</td>
-                <TableButton forceUp={this.props.forceUp} row={this.row} inner='Join' />
-                <TableButton forceUp={this.props.forceUp} row={this.row} inner='Spectate' />
+                <TableButton forceUp={this.props.forceUp} row={this.row} host={this.host} inner='Join' />
+                <TableButton forceUp={this.props.forceUp} row={this.row} host={this.host} inner='Spectate' />
             </tr>
         );
     }
@@ -93,6 +94,7 @@ class TableButton extends React.Component {
             backgroundColor: 'rgb(255, 255, 255)'
         };
         this.row = props.row;
+        this.host = props.host;
 
         this.handleMouseDown = this.handleMouseDown.bind(this); // Preserve this reference value in handler functions
         this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -116,10 +118,10 @@ class TableButton extends React.Component {
     handleClick(e) {
         switch (this.props.inner) {
             case 'Join':
-                Menu.renderMenu('join', Game.games[this.row]);
+                Menu.renderMenu('join', Game.games.get(this.host));
                 break;
             case 'Spectate':
-                Menu.renderMenu('spectate', Game.games[this.row]);
+                Menu.renderMenu('spectate', Game.games.get(this.host));
                 break;
         }
     }

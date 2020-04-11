@@ -113,7 +113,7 @@ class Abilities {
                 if (current - type.end >= type.cooldown) { // If cooldown has passed
                     type.can = true; // Re-enable abilitY
                     type.cooling = false;
-                    if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
+                    if (Game.state !== 'tutorial') connection.emit_ability(ability); // Server does not store ability for tutorial
                 }
             }
         } else { // If type is shoot, value is an array of booleans
@@ -123,7 +123,7 @@ class Abilities {
                     if (current - type.end[i] >= type.cooldown[i]) { // If cooldown has passed
                         type.can[i] = true; // Re-enable abilitY
                         type.cooling[i] = false;
-                        if (Game.state !== 'tutorial') connection.emit('ability', ability); // Server does not store ability for tutorial
+                        if (Game.state !== 'tutorial') connection.emit_ability(ability); // Server does not store ability for tutorial
                     }
                 }
             }
@@ -157,6 +157,6 @@ class Abilities {
             _ability.shoot.start[i] = undefined;
             _ability.shoot.end[i] = undefined;
         }
-        connection.emit('ability', _ability);
+        connection.emit_ability(_ability);
     }
 }

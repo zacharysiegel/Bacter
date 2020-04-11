@@ -58,8 +58,8 @@ class Connection {
 
     // Data Congruence Listeners
     listen_games() {
-        this.socket.on('games', ({ list, connections }) => {
-            Game.games = list;
+        this.socket.on('games', ({ map, connections }) => {
+            Game.games = new Map(Object.values(map));
             Connection.connections = connections;
             if (Game.state === 'browser') Browser.renderBrowser();
         });
@@ -175,155 +175,155 @@ class Connection {
 
     // Ability Listeners
     listen_tag() {
-        this.socket.on('Tag', () => {
+        this.socket.on('tag', () => {
             ability.tag.value = true;
             clearTimeout(ability.tag.timeout);
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             if (Game.game.info.mode === '') {
                 ability.tag.timeout = setTimeout(() => {
                     ability.tag.value = false;
-                    if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                    if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
                 }, ability.tag.time);
             }
         });
     }
 
     listen_extend() {
-        this.socket.on('Extend', () => {
+        this.socket.on('extend', () => {
             ability.extend.value = true;
             clearTimeout(ability.extend.timeout);
             ability.extend.start = new Date();
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.extend.timeout = setTimeout(() => { // End ability
                 ability.extend.value = false;
                 ability.extend.end = new Date();
                 ability.extend.cooling = true;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.extend.time);
         });
     }
 
     listen_compress() {
-        this.socket.on('Compress', () => {
+        this.socket.on('compress', () => {
             ability.compress.value = true;
             clearTimeout(ability.compress.timeout);
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.compress.timeout = setTimeout(() => {
                 ability.compress.value = false;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.compress.time);
         });
     }
 
     listen_immortality() {
-        this.socket.on('Immortality', () => {
+        this.socket.on('immortality', () => {
             ability.immortality.value = true;
             clearTimeout(ability.immortality.timeout);
             ability.immortality.start = new Date();
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.immortality.timeout = setTimeout(() => { // End ability
                 ability.immortality.value = false;
                 ability.immortality.end = new Date();
                 ability.immortality.cooling = true;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.immortality.time);
         });
     }
 
     listen_freeze() {
-        this.socket.on('Freeze', () => {
+        this.socket.on('freeze', () => {
             ability.freeze.value = true;
             clearTimeout(ability.freeze.timeout);
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.freeze.timeout = setTimeout(() => { // End ability
                 ability.freeze.value = false;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.freeze.time);
         });
     }
 
     listen_neutralize() {
-        this.socket.on('Neutralize', () => {
+        this.socket.on('neutralize', () => {
             ability.neutralize.value = true;
             ability.neutralize.start = new Date();
             clearTimeout(ability.neutralize.timeout);
             ability.neutralize.x = org.cursor.x; // Center of toxin is the cursor (not center of mass)
             ability.neutralize.y = org.cursor.y;
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.neutralize.timeout = setTimeout(() => {
                 ability.neutralize.value = false;
                 ability.neutralize.end = new Date();
                 ability.neutralize.cooling = true;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.neutralize.time);
         });
     }
 
     listen_toxin() {
-        this.socket.on('Toxin', () => {
+        this.socket.on('toxin', () => {
             ability.toxin.value = true;
             ability.toxin.start = new Date();
             clearTimeout(ability.toxin.timeout);
             ability.toxin.x = org.cursor.x; // Center of toxin is the cursor (not center of mass)
             ability.toxin.y = org.cursor.y;
-            if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+            if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             ability.toxin.timeout = setTimeout(() => {
                 ability.toxin.value = false;
                 ability.toxin.end = new Date();
                 ability.toxin.cooling = true;
-                if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+                if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
             }, ability.toxin.time);
         });
     }
 
     // listen_speed() {
-    //    this.socket.on('Speed', () => { // Not updated
+    //    this.socket.on('speed', () => { // Not updated
     //       ability.speed.value = true;
     //       org.speed *= ability.speed.factor;
     //       clearTimeout(ability.speed.timeout);
-    //       if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //       if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       ability.speed.timeout = setTimeout(() => { // End ability
     //          org.speed /= ability.speed.factor;
     //          ability.speed.value = false;
-    //          if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //          if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       }, ability.speed.time);
     //    });
     // }
     // listen_slow() {
-    //    this.socket.on('Slow', () => { // Not updated
+    //    this.socket.on('slow', () => { // Not updated
     //       ability.slow.value = true;
     //       org.speed /= ability.slow.factor; // Divide speed by factor
     //       clearTimeout(ability.slow.timeout);
-    //       if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //       if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       ability.slow.timeout = setTimeout(() => { // End ability
     //          org.speed *= ability.slow.factor; // Multiply speed by factor to reset to original
     //          ability.slow.value = false;
-    //          if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //          if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       }, ability.slow.time);
     //    });
     // }
     // listen_stimulate() {
-    //    this.socket.on('Stimulate', () => {
+    //    this.socket.on('stimulate', () => {
     //       ability.stimulate.value = true;
     //       clearTimeout(ability.stimulate.timeout);
     //       ability.stimulate.start = new Date();
-    //       if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //       if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       ability.stimulate.timeout = setTimeout(() => { // End ability
     //          ability.stimulate.value = false;
     //          ability.stimulate.end = new Date();
     //          ability.stimulate.cooling = true;
-    //          if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //          if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       }, ability.stimulate.time);
     //    });
     // }
     // listen_poison() {
-    //    this.socket.on('Poison', () => {
+    //    this.socket.on('poison', () => {
     //       ability.poison.value = true;
     //       clearTimeout(ability.poison.timeout);
-    //       if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //       if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       ability.poison.timeout = setTimeout(() => { // End ability
     //          ability.poison.value = false;
-    //          if (Game.state !== 'tutorial') this.emit('ability', ability); // Server does not store ability for tutorial
+    //          if (Game.state !== 'tutorial') this.emit_ability(ability); // Server does not store ability for tutorial
     //       }, ability.poison.time);
     //    });
     // }
@@ -378,7 +378,7 @@ class Connection {
      * @param  {Function} denied  The callback function to be called if the client is denied access
      */
     emit_check_permission(granted, denied) {
-        this.socket.binary(false).emit('check permission', Game.game.info.title, result => {
+        this.socket.binary(false).emit('check permission', Game.game.info.host, result => {
             if (result === 'permission granted') {
                 granted();
             } else if (result === 'permission denied') {
@@ -435,7 +435,16 @@ class Connection {
      * }
      */
     emit_org(data) {
-        // this.socket.volatile.binary(false).emit('org', data); // Volatile emits from client are not currently supported by socketio
         this.socket.binary(false).emit('org', data);
+        // this.socket.volatile.binary(false).emit('org', data); // Volatile emits from client are not currently supported by socketio
+    }
+
+    /**
+     * Emit the 'ability' event to the server
+     * @param ability The player's {Ability} instance
+     */
+    emit_ability(ability) {
+        this.socket.binary(false).emit('ability', { ability: ability, host: Game.game.info.host });
+        // this.socket.volatile.binary(false).emit('ability', { ability: ability, host: Game.game.info.host });
     }
 }

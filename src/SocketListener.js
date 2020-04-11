@@ -1,6 +1,13 @@
 const Permissions = require('./Permissions.js');
 
 class SocketListener {
+    /**
+     * Construct a new SocketListener instance
+     * @param {WebSocket} socket The socket to which to listen
+     * @param io The socketio module
+     * @param {Games} games The server's Games instance
+     * @param {Object} config The server's configurations
+     */
     constructor(socket, io, games, config) {
         this.socket = socket;
         this.io = io;
@@ -114,24 +121,9 @@ class SocketListener {
                 });
 
                 if (game.info.protected) { // If game is protected by a password, remove the security info from the securities array
-                    let password_count = this.games.securities.length;
-                    for (let p = 0; p < password_count; p++) {
-                        if (this.games.securities[p].title === game.info.title) { // Find game's security info and remove it
-                            this.games.securities.splice(p, 1);
-                            break;
-                        }
-                    }
+                    this.games.securities.delete(game.info.host);
                 }
-
-                const g = this.games.getIndexByHost(game.info.host); // Location of game in this.games.list (O(n))
-                if (g === -1) {
-                    console.error(`[ERROR] :: listen_game_ended :: Game not found in {Games}.list with host ${game.info.host}`);
-                    return;
-                }
-
-                this.games.list.splice(g, 1); // Delete Game
-                clearInterval(this.games.intervals[g]); // Clear Game Interval
-                this.games.intervals.splice(g, 1);
+                this.games.remove(game.info.host);
 
                 if (this.config.project_state === 'development') console.log('                                               Game Deleted: ' + game.info.title + ' (' + game.info.host + ')'); // Before game deletion so game info can be attained before it is deleted
             }
@@ -158,13 +150,12 @@ class SocketListener {
 
     /**
      * Listen for create password event from client
-     * @param {Games} games Game instance
      */
     listen_create_password() {
         this.socket.on('create password', ({ pass, info }) => {
             let permissions = new Permissions(info.title, pass);
             permissions.permiss(this.socket.id);
-            this.games.securities.push(permissions);
+            this.games.securities.set(info.host, permissions);
         });
     }
 
@@ -174,13 +165,10 @@ class SocketListener {
      */
     listen_ask_permission() {
         this.socket.on('ask permission', ({ pass, info }, callback) => {
-            let len = this.games.securities.length;
-            for (let i = 0; i < len; i++) {
-                let permissions = this.games.securities[i];
-                if (info.title === permissions.title && pass === permissions.password) {
-                    permissions.permiss(this.socket.id);
-                    if (callback) callback(true); // The callback function is not currently in use
-                }
+            let permissions = this.games.securities.get(info.host);
+            if (info.title === permissions.title && pass === permissions.password) {
+                permissions.permiss(this.socket.id);
+                if (callback) callback(true); // The callback function is not currently in use
             }
             if (callback) callback(false);
         });
@@ -193,23 +181,18 @@ class SocketListener {
         /**
          * Check if the player is permitted entry into a game
          *    Responds to the client with a callback specified by the client
-         * @param {String} title Corresponds to game.info.title
+         * @param {String} host The host of the game in question
          * @param {Function} callback  Will be called with a resultant value fed as an argument
          *                                 Run by the client after called on the server
          */
-        this.socket.on('check permission', (title, callback) => {
+        this.socket.on('check permission', (host, callback) => {
             let has_password = false;
             let granted = false;
-            let secured_count = this.games.securities.length;
 
-            for (let i = 0; i < secured_count; i++) {
-                if (this.games.securities[i].title === title) { // Identify game
-                    has_password = true;
-                    if (this.games.securities[i].isPermissed(this.socket.id)) {
-                        granted = true;
-                    }
-
-                    break;
+            if (this.games.securities.has(host)) {
+                has_password = true;
+                if (this.games.securities.get(host).isPermissed(this.socket.id)) {
+                    granted = true;
                 }
             }
 
@@ -275,14 +258,8 @@ class SocketListener {
             this.socket.join(game.info.title); // Join 'Game' Room
             this.socket.inGame = true;
 
-            const g = this.games.getIndexByHost(game.info.host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_spectator_joined :: Game not found in {Games}.list with host ${game.info.host}`);
-                return;
-            }
-
-            this.games.list[g].spectators.push(this.socket.id);
-            if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + this.games.list[g].info.title + ' (' + this.socket.id + ')');
+            game.spectators.push(this.socket.id);
+            if (this.config.project_state === 'development') console.log('                                               Spectator Spawned: ' + game.info.title + ' (' + this.socket.id + ')');
         });
     }
 
@@ -291,18 +268,13 @@ class SocketListener {
      */
     listen_spectator_left() {
         this.socket.on('remove spectator', (host) => {
-            const g = this.games.getIndexByHost(host); // It is faster to get the index of game from host and feeding that as a starting point into getIndicesByMember
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_spectator_left :: Game not found in {Games}.list with host ${host}`);
-                return; // Return here prevents an index out of bounds exception
+            let game = this.games.map.get(host);
+            for (let s = 0; s < game.spectators.length; s++) {
+                if (game.spectators[s] === this.socket.id) {
+                    game.spectators.splice(s, 1);
+                    break;
+                }
             }
-            const indices = this.games.getIndicesByMember(this.socket.id, g);
-            if (indices.s === -1) {
-                console.error(`[ERROR] :: listen_spectator_left :: Spectator not found with ID ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds exception
-            }
-
-            this.games.list[g].spectators.splice(indices.s, 1); // Remove spectator from spectators list
         });
     }
 
@@ -317,45 +289,28 @@ class SocketListener {
          * @param  {Object} {Game}.info
          */
         this.socket.on('end round', (info) => { // info is game.info
-            const g = this.games.getIndexByHost(info.host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_end_round :: Game not found in {Games}.list with host ${info.host}`);
-                return;
-            }
+            let game = this.games.map.get(info.host);
 
-            this.games.list[g].rounds.waiting = false;
-            this.games.list[g].rounds.delayed = true;
-            this.games.list[g].rounds.delaystart = (new Date()).valueOf();
+            game.rounds.waiting = false;
+            game.rounds.delayed = true;
+            game.rounds.delaystart = (new Date()).valueOf();
 
             let delay = setTimeout(() => { // End of round delay
-                const g = this.games.getIndexByHost(info.host); // The value of g is saved in the Closure, but it may change by the time the timeout is called, so it must be recalculated
-                if (g === -1) { // Game could have been deleted concurrently while the timeout was waiting
-                    return;
-                }
+                let game = this.games.map.get(info.host);
+                let shrink = this.games.shrinkIntervals.get(info.host);
 
-                const s = this.games.getShrinkIndex(info.host); // Must recalculate the shrink index in case of concurrent modification
-                if (s === -1) {
-                    console.error(`[ERROR] :: listen_end_round|delay :: Shrink interval not found`);
-                    return;
-                }
+                game.world.width = shrink.width; // shrink.world is preserved from 'round delay'
+                game.world.height = shrink.height; // Reset world width and height
+                this.games.shrinkIntervals.delete(info.host); // Remove shrink interval
 
-                this.games.list[g].world.width = this.games.shrinkIntervals[s].width; // this.games.shrinkIntervals[s].world is preserved from 'round delay'
-                this.games.list[g].world.height = this.games.shrinkIntervals[s].height; // Reset world width and height
-                this.games.shrinkIntervals.splice(s, 1); // Remove shrink interval
+                game.rounds.waiting = true; // When the 'end of round' delay finishes, the 'start of round' delay begins
+                game.rounds.delayed = false;
 
-                this.games.list[g].rounds.waiting = true; // When the 'end of round' delay finishes, the 'start of round' delay begins
-                this.games.list[g].rounds.delayed = false;
-
-                this.forceSpawn(this.games.list[g]);
+                this.forceSpawn(game);
             }, this.config.delay_time);
 
             if (info.mode === 'srv') {
-                const s = this.games.getShrinkIndex(info.host);
-                if (s === -1) { // This will occur if the 'end round' was emitted multiple times at the end of a single round, this will usually not occur
-                    console.error('[WARN] :: listen_end_round :: shrinkInterval not found');
-                    return; // This prevents crash from index out of bounds issue
-                }
-
+                let shrink = this.games.shrinkIntervals.get(info.host);
                 clearInterval(this.games.shrinkIntervals[s].interval); // Stop shrinking the world
             }
         });
@@ -365,40 +320,35 @@ class SocketListener {
      * Listen for the 'preround delay' event from the client
      */
     listen_preround_delay() {
-        this.socket.on('preround delay', (game) => {
-            const g = this.games.getIndexByHost(game.info.host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_preround_delay :: Game not found in {Games}.list with host ${game.info.host}`);
-                return;
-            } else if (this.games.list[g].rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
+        this.socket.on('preround delay', (host) => {
+            let game = this.games.map.get(host);
+
+            if (game.rounds.delayed) { // If round delay has already begun (if the 'round delay' emit happened twice accidentally)
                 console.error(`[WARN]  :: listen_preround_delay :: Round delay has already begun`);
                 return;
             }
 
-            this.games.list[g].rounds.waiting = true;
-            this.games.list[g].rounds.delayed = true;
-            this.games.list[g].rounds.delaystart = (new Date()).valueOf();
+            game.rounds.waiting = true;
+            game.rounds.delayed = true;
+            game.rounds.delaystart = (new Date()).valueOf();
 
             let preround_delay = setTimeout(() => {
-                const g = this.games.getIndexByHost(game.info.host);
-                if (g === -1) { // Game could have been deleted concurrently while the timeout was waiting
-                    return;
-                }
+                let game = this.games.map.get(host);
 
-                this.games.list[g].rounds.waiting = false; // Start Round
-                this.games.list[g].rounds.delayed = false;
+                game.rounds.waiting = false; // Start Round
+                game.rounds.delayed = false;
                 if (game.info.mode === 'srv') { // If is survival mode
-                    this.games.setShrinkInterval(game);
+                    this.games.setShrinkInterval(host);
                 }
-                this.games.list[g].rounds.start = (new Date()).valueOf();
+                game.rounds.start = (new Date()).valueOf();
             }, this.config.delay_time);
 
             let spawn_delay = setTimeout(() => { // Force spawns 1 second before round starts so one player does not join before the others and automatically win game
-                this.forceSpawn(this.games.list[g]);
+                this.forceSpawn(game);
             }, this.config.delay_time - 1000);
 
-            this.games.preRoundTimeouts[game.info.host] = preround_delay;
-            this.games.forceSpawnTimeouts[game.info.host] = spawn_delay;
+            this.games.preRoundTimeouts.set(host, preround_delay);
+            this.games.forceSpawnTimeouts.set(host, spawn_delay);
         });
     }
 
@@ -407,20 +357,18 @@ class SocketListener {
      */
     listen_cancel_preround_delay() {
         this.socket.on('cancel preround delay', (host) => {
-            const g = this.games.getIndexByHost(host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_cancel_preround_delay :: Game not found in {Games}.list with host ${host}`);
-                return;
-            } else if (!this.games.list[g].rounds.delayed) {
+            let game = this.games.map.get(host);
+
+            if (!game.rounds.delayed) {
                 console.error(`[ERROR] :: listen_cancel_preround_delay :: Not during the pre-round delay`);
                 return;
             }
 
-            this.games.list[g].rounds.waiting = true;
-            this.games.list[g].rounds.delayed = false;
-            this.games.list[g].rounds.delaystart = null;
-            clearTimeout(this.games.preRoundTimeouts[host]);
-            clearTimeout(this.games.forceSpawnTimeouts[host]);
+            game.rounds.waiting = true;
+            game.rounds.delayed = false;
+            game.rounds.delaystart = null;
+            clearTimeout(this.games.preRoundTimeouts.get(host));
+            clearTimeout(this.games.forceSpawnTimeouts.get(host));
         });
     }
 
@@ -433,13 +381,8 @@ class SocketListener {
          * @param {Object} { list: board.list, host: game.board.host }
          */
         this.socket.on('board', ({ list, host }) => {
-            const g = this.games.getIndexByHost(host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_board :: Game not found in {Games}.list with host ${host}`);
-                return; // Return here prevents an index out of bounds exception
-            }
-
-            this.games.list[g].board.list = list;
+            let game = this.games.map.get(host);
+            game.board.list = list;
         });
     }
 
@@ -465,25 +408,25 @@ class SocketListener {
          *  }
          */
         this.socket.on('org', ({ cells, offset, pos, cursor, color, skin, team, coefficient, range }) => {
-            const indices = this.games.getIndicesByMember(this.socket.id);
-            if (indices.g === -1) {
-                console.error(`[ERROR] :: listen_org :: Game not found in {Games}.list with member ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds issue
-            } else if (indices.p === -1) {
-                console.error(`[ERROR] :: listen_org :: Player not found in {Games}.list[].orgs with id ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds issue
+            let game = this.games.map.get(host);
+            let org_index = -1;
+            for (let o = 0; o < game.info.player_count; o++) {
+                if (game.orgs[o].player === this.socket.id) {
+                    org_index = o;
+                    break;
+                }
             }
 
-            // this.games.list[indices.g].orgs[indices.p] = org; // Latency is decreased by only sending necessary information rather than the entire org object
-            this.games.list[indices.g].orgs[indices.p].cells = cells; // Only the following attributes of org need to be updated and shared
-            this.games.list[indices.g].orgs[indices.p].count = cells.length;
-            this.games.list[indices.g].orgs[indices.p].off = offset;
-            this.games.list[indices.g].orgs[indices.p].pos = cursor;
-            this.games.list[indices.g].orgs[indices.p].color = color;
-            this.games.list[indices.g].orgs[indices.p].skin = skin;
-            this.games.list[indices.g].orgs[indices.p].team = team;
-            this.games.list[indices.g].orgs[indices.p].coefficient = coefficient;
-            this.games.list[indices.g].orgs[indices.p].range = range;
+            // game.orgs[org_index] = org; // Latency is decreased by only sending necessary information rather than the entire org object
+            game.orgs[org_index].cells = cells; // Only the following attributes of org need to be updated and shared
+            game.orgs[org_index].count = cells.length;
+            game.orgs[org_index].off = offset;
+            game.orgs[org_index].pos = cursor;
+            game.orgs[org_index].color = color;
+            game.orgs[org_index].skin = skin;
+            game.orgs[org_index].team = team;
+            game.orgs[org_index].coefficient = coefficient;
+            game.orgs[org_index].range = range;
         });
     }
 
@@ -491,14 +434,20 @@ class SocketListener {
      * Listen for ability event from client
      */
     listen_ability() {
-        this.socket.on('ability', (ability) => {
-            const indices = this.games.getIndicesByMember(this.socket.id);
-            if (indices.g === -1) {
-                console.error(`[ERROR] :: listen_ability :: Game not found in {Games}.list with member ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds exception
+        this.socket.on('ability', ({ ability, host }) => {
+            let game = this.games.map.get(host);
+            let player_index = -1;
+            for (let a = 0; a < game.info.player_count; a++) {
+                if (game.abilities[a].player === this.socket.id) {
+                    player_index = p;
+                }
             }
 
-            this.games.list[indices.g].abilities[indices.p] = ability;
+            if (player_index === -1) {
+                console.error(`[ERROR] :: listen_ability :: Player not found in game with host ${host}`);
+            }
+
+            game.abilities[player_index] = ability;
         });
     }
 
@@ -507,13 +456,8 @@ class SocketListener {
      */
     listen_teams() {
         this.socket.on('teams', ({teams, host}) => {
-            const g = this.games.getIndexByHost(host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_teams :: Game not found in {Games}.list with host ${host}`);
-                return;
-            }
-
-            this.games.list[g].teams = teams;
+            let game = this.games.map.get(host);
+            game.teams = teams;
         });
     }
 
@@ -529,13 +473,8 @@ class SocketListener {
          *    }
          */
         this.socket.on('flag', ({ flag, host }) => { // Be careful
-            const g = this.games.getIndexByHost(host);
-            if (g === -1) {
-                console.error(`[ERROR] :: listen_flag :: Game not found in {Games}.list with host ${host}`);
-                return;
-            }
-
-            this.games.list[g].flag = flag;
+            let game = this.games.map.get(host);
+            game.flag = flag;
         });
     }
 
@@ -562,35 +501,27 @@ class SocketListener {
             }
         };
 
-        this.socket.on('extend', player => emit_ability('Extend', player));
-        this.socket.on('compress', player => emit_ability('Compress', player));
-        this.socket.on('immortality', player => emit_ability('Immortality', player));
-        this.socket.on('freeze', player => emit_ability('Freeze', player));
-        this.socket.on('neutralize', player => emit_ability('Neutralize', player));
-        this.socket.on('toxin', player => emit_ability('Toxin', player));
-        this.socket.on('tag', player => emit_ability('Tag', player)); // UNRELEASED
-        // this.socket.on('Speed', player => emit_ability('Speed', player)); // OLD
-        // this.socket.on('Slow', player => emit_ability('Slow', player)); // OLD
-        // this.socket.on('Stimulate', player => emit_ability('Stimulate', player)); // OLD
-        // this.socket.on('Poison', player => emit_ability('Poison', player)); // OLD
+        this.socket.on('extend', player => emit_ability('extend', player));
+        this.socket.on('compress', player => emit_ability('compress', player));
+        this.socket.on('immortality', player => emit_ability('immortality', player));
+        this.socket.on('freeze', player => emit_ability('freeze', player));
+        this.socket.on('neutralize', player => emit_ability('neutralize', player));
+        this.socket.on('toxin', player => emit_ability('toxin', player));
+        this.socket.on('tag', player => emit_ability('tag', player)); // UNRELEASED
+        // this.socket.on('speed', player => emit_ability('speed', player)); // OLD
+        // this.socket.on('slow', player => emit_ability('slow', player)); // OLD
+        // this.socket.on('stimulate', player => emit_ability('stimulate', player)); // OLD
+        // this.socket.on('poison', player => emit_ability('poison', player)); // OLD
     }
 
     /**
      * Remove a member from his game
      *    Depends if the member is a host or not
      */
-    removeMember() {
-        const index = this.games.getIndexByHost(this.socket.id);
-        const isHost = index !== -1;
-        if (isHost) { // If current socket is the host of his game, end the game
-            const indices = this.games.getIndicesByMember(this.socket.id, index);
-            if (indices.g === -1) {
-                console.error(`[ERROR] :: removeMember :: Game not found in {Games}.list with member ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds exception
-            }
+    removeMember(host) {
+        let game = this.games.get(host);
 
-            const game = this.games.list[indices.g];
-
+        if (this.socket.id === host) { // If current socket is the host of his game, end the game
             this.io.to(game.info.title).emit('game ended', game); // Remove Players From Hosted Game
             this.io.of('/').in(game.info.title).clients((error, clients) => {
                 if (error) throw error;
@@ -601,53 +532,55 @@ class SocketListener {
                 });
             });
 
-            let secured_count = this.games.securities.length;
-            for (let s = 0; s < secured_count; s++) {
-                if (this.games.securities[s].title === game.info.title) {
-                    this.games.securities.splice(s, 1); // Remove password form securities collection
-                    break;
-                }
-            }
-
-            clearInterval(this.games.intervals[indices.g]); // Clear Game Interval
-            this.games.list.splice(indices.g, 1); // Remove game from this.games.list
-            this.games.intervals.splice(indices.g, 1); // Remvoe the game's interval from the collection of intervals
-
-            const shrink_index = this.games.getShrinkIndex(this.socket.id);
-            if (shrink_index !== -1) {
-                clearInterval(this.games.shrinkIntervals[shrink_index].interval);
-                this.games.shrinkIntervals.splice(shrink_index, 1);
-            }
+            this.games.securities.remove(host); // Remove password form securities collection
+            clearInterval(this.games.intervals.get(host)); // Clear Game Interval
+            this.games.map.delete(host); // Remove game from this.games.list
+            this.games.intervals.delete(host); // Remvoe the game's interval from the collection of intervals
+            clearInterval(this.games.shrinkIntervals.get(host).interval);
+            this.games.shrinkIntervals.delete(host);
 
             if (this.config.project_state === 'development') console.log('                                               Game Removed: ' + game.info.title + ' (' + game.info.host + ')');
         } else { // If current socket is not the host of his game
-            const indices = this.games.getIndicesByMember(this.socket.id);
-            if (indices.g === -1) {
-                console.error(`[ERROR] :: removeMember :: Game not found in {Games}.list with member ${this.socket.id}`);
-                return; // Return here prevents an index out of bounds exception
-            }
-
-            const game = this.games.list[indices.g];
+            const game = this.games.map.get(host);
             if (game === undefined) return; // If this socket is not a member of any game, don't do anything (would crash server otherwise)
 
             this.socket.leave(game.info.title); // Leave 'Game' Room
 
-            game.board.list.splice(indices.l, 1); // Remove member from the leaderboard
-            if (indices.p !== -1) { // If member is a player
-                game.players.splice(indices.p, 1); // Remove player from game's players list
-                game.orgs.splice(indices.p, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
-                game.abilities.splice(indices.p, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
+            let list_index = -1;
+            for (let l = 0; l < game.board.list.length; l++) {
+                if (game.board.list[l].id === this.socket.id) {
+                    list_index = l;
+                    break;
+                }
+            }
+            let player_index = -1;
+            for (let p = 0; p < game.info.player_count; p++) {
+                if (game.players[p] === this.socket.id) {
+                    player_index = p;
+                    break;
+                }
+            }
+            game.board.list.splice(l, 1); // Remove member from the leaderboard
+            if (player_index === -1) { // If member is a spectator
+                let spectator_index = -1;
+                for (let s = 0; s < game.spectators.length; s++) {
+                    spectator_index = s;
+                }
+
+                game.spectators.splice(spectator_index, 1); // Remove spectator from spectators array
+
+                if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + game.info.title + ' (' + this.socket.id + ')');
+            } else { // If member is a player
+                game.players.splice(player_index, 1); // Remove player from game's players list
+                game.orgs.splice(player_index, 1); // Remove player's org from game's orgs list (Orgs array should be indexed identically to players array)
+                game.abilities.splice(player_index, 1); // Remove player's abilities from game's abilities list (Abilities array should be indexed identically to players array)
                 game.info.player_count--; // Reduce the number of players in the game
                 if (game.teams.length > 0) { // If is a team game, remove player from team
-                    let team = game.teams[this.config.colors.teams.indexOf(game.orgs[indices.p].team)]; // Identify player's team
+                    let team = game.teams[this.config.colors.teams.indexOf(game.orgs[player_index].team)]; // Identify player's team
                     team.splice(team.indexOf(this.socket.id), 1); // Remove player from team
                 }
 
                 if (this.config.project_state === 'development') console.log('                                               Player Left: ' + game.info.title + ' (' + this.socket.id + ')');
-            } else { // If member is a spectator
-                game.spectators.splice(indices.s, 1); // Remove spectator from spectators array
-
-                if (this.config.project_state === 'development') console.log('                                               Spectator Left: ' + game.info.title + ' (' + this.socket.id + ')');
             }
         }
     }

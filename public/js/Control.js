@@ -163,7 +163,7 @@ class Control {
         if (Game.game.rounds.waiting && !Game.game.rounds.delayed) { // If waiting for player min to be reached
             if (Game.game.info.player_count >= Game.game.rounds.min) { // If player min is reached
                 if (connection.socket.id === Game.game.info.host) { // Only host must emit
-                    connection.emit('preround delay', Game.game); // End waiting period; Start the pre-round delay period
+                    connection.emit('preround delay', Game.game.info.host); // End waiting period; Start the pre-round delay period
                 }
                 Game.game.rounds.delayed = true; // game will be overwritten, but this will stop host from emitting redundantly if org.interval is called again before game is updated
             }

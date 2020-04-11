@@ -52,8 +52,8 @@ function submit(menuType) {
                     issues.push({ ['game title']: 'Title cannot be left blank' });
                     // alert('Title cannot be left blank');
                 } else {
-                    for (let i = 0; i < Game.games.length; i++) {
-                        if (gametitle === Game.games[i].info.title) { // Find matching title to another game
+                    for (let game in Game.games.values()) {
+                        if (gametitle === game.info.title) { // Find matching title to another game
                             ok = false;
                             issues.push({ ['game title']: 'Title matches that of another game' });
                             // alert('Title matches that of another game');
