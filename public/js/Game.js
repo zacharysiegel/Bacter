@@ -23,7 +23,6 @@ class Game {
      */
     constructor(title, shape, width, height, color, cap, show, mode, team_count, player_min, secured) {
         this.src = 'game'; // Info
-        this.players = [];
         this.info = {
             host: connection.socket.id,
             title: title,

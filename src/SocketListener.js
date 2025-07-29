@@ -436,9 +436,10 @@ class SocketListener {
         this.socket.on('ability', ({ ability, host }) => {
             let game = this.games.map.get(host);
             let player_index = -1;
-            for (let a = 0; a < game.info.player_count; a++) {
-                if (game.abilities[a].player === this.socket.id) {
-                    player_index = p;
+            console.log(this.socket.id, game, ability);
+            for (let i = 0; i < game.info.player_count; i++) {
+                if (game.players[i].player === this.socket.id) {
+                    player_index = i;
                 }
             }
 
