@@ -59,7 +59,7 @@ class Connection {
     // Data Congruence Listeners
     listen_games() {
         this.socket.on('games', ({ map, connections }) => {
-            Game.games = new Map(Object.values(map));
+            Game.games = new Map(Object.entries(map));
             Connection.connections = connections;
             if (Game.state === 'browser') Browser.renderBrowser();
         });

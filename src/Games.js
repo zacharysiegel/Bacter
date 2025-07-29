@@ -65,7 +65,7 @@ class Games {
     setGamesInterval(delay, io) {
         this.games_interval = setInterval(() => {
             io.sockets.volatile.emit('games', {
-                map: this.map,
+                map: Object.fromEntries(this.map.entries()),
                 connections: this.connections
             });
         }, delay); // Every delay, send a copy of the games array to all clients

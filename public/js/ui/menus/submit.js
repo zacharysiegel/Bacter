@@ -29,7 +29,7 @@ function submit(menuType) {
     let color = cInput ? cInput.value.toLowerCase() : null;
     let first = this.state.values[config.menus[this.type].options.indexOf('1st Ability')]; // this value must be instance of Menu component (bind this in submit property in menuSubmit rendering)
     let second = this.state.values[config.menus[this.type].options.indexOf('2nd Ability')]; // Value of second ability input
-    let third = this.state.values[config.menus[this.type].options.indexOf('3rd Ability')]; // Valeu of third ability input
+    let third = this.state.values[config.menus[this.type].options.indexOf('3rd Ability')]; // Value of third ability input
     first = first ? first.toLowerCase() : ''; // toLowerCase() is separated so entire getting of first value need not be repeated in ternary expression
     second = second ? second.toLowerCase() : '';
     third = third ? third.toLowerCase() : '';
