@@ -25,7 +25,6 @@ class SocketListener {
 
         this.socket.join('lobby'); // Join 'lobby' room in '/' namespace
         this.socket.inGame = false;
-        this.socket.emit('games', { list: this.games.list, connections: this.games.connections }); // Copied from 'Games Request'
 
         // Socket Management
         this.listen_disconnect();
