@@ -48,7 +48,7 @@ then
 
     if command_exists authbind # authbind may not be present on the Heroku machine
     then
-        authbind node ./src/build/app.js # Production
+        node ./src/build/app.js # Production
     else # try without authbind
         echo "[WARN] :: The 'authbind' program is not present"
         node ./src/build/app.js
@@ -56,7 +56,7 @@ then
 else
     echo "Project state is set to development"
     echo
-    authbind node ./src/app.js # Development (ES2015-Compliant code is not needed in development)
+    node ./src/app.js # Development (ES2015-Compliant code is not needed in development)
 fi
 
 exit 0
