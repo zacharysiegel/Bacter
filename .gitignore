@@ -19,3 +19,5 @@ node_modules/
 docs/notes.md
 public/build/*
 src/build/*
+
+nohup.out
